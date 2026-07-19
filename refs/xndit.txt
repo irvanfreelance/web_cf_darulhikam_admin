@@ -1,0 +1,447 @@
+BCA
+mbanking
+Open BCA Mobile App
+
+Select m-BCA, then select m-Transfer
+
+Enter your Virtual Account Number, for example 3816523906568, then press OK
+
+Click on Send button at the top right corner to proceed
+
+Click OK to proceed
+
+Enter your PIN to authorize the transaction
+
+
+ibanking
+
+
+Login to KlikBCA Individual (https://ibank.klikbca.com)
+
+Select Transfer, then select Transfer to BCA Virtual Account
+
+Enter the Virtual Account Number, for example 3816523906568
+
+Select Continue to proceed your payment
+
+Enter RESPON KEYBCA APPLI 1 shown in your BCA Token, then click on the Send button
+
+Enter the authentication token code
+
+ATM
+Insert your BCA ATM card and PIN
+
+Enter your ATM PIN
+
+Select Menu Other Transaction
+
+Select Transfer
+
+Select To BCA Virtual Account
+
+Enter Virtual Account Number, for example 3816523906568. Press Correct to proceed
+
+Verify Virtual Account details and then enter amount to be transferred and select Correct to confirm
+
+Confirm your transaction details displayed
+
+Select Yes if the details are correct or No if the details are not correct
+
+Mandiri
+
+livin
+Log in to Livin’ by Mandiri app
+
+Select IDR Transfer > Transfer to new recipient
+
+Enter virtual account number (e.g. 8860863623046)
+
+Enter or confirm payment amount
+
+Click Continue
+
+Enter MPIN
+
+ATM
+
+Insert ATM Card
+
+Select preferred language
+
+Enter ATM PIN
+
+Select PAYMENT > MULTI PAYMENT
+
+Enter company code 88608 (XENDIT), then press CORRECT
+
+Enter virtual account number (e.g. 8860863623046), then press CORRECT
+
+Enter payment amount, then press CORRECT
+
+Confirm payment details
+
+BRI 
+
+BRIMO
+Log in to BRI Mobile Banking
+
+Select Payment > Briva
+
+Enter virtual account number (e.g. 1328216932121)
+
+Enter payment amount
+
+Enter PIN
+
+Tap Send
+
+ATM
+
+Insert ATM Card
+
+Select preferred language
+
+Enter ATM PIN
+
+Select Other Menu > Payment > Other Payment > BRIVA
+
+Enter virtual account number (e.g. 1328216932121)
+
+Enter payment amount
+
+Confirm payment details and press YES
+
+BNI 
+
+mobile
+Log in to BNI mobile banking app
+
+Click Transfer > Virtual Account Billing, then choose debit account
+
+Enter virtual account number (e.g. 880849021633)
+
+Payment amount will be displayed on the screen
+
+Confirm payment information
+
+Enter password
+
+ibanking
+Log in to https://ibank.bni.co.id
+
+Click Transfer > Virtual Account Billing
+
+Enter virtual account number (e.g. 880849021633)
+
+Choose bank account
+
+Payment amount will be displayed on the screen
+
+Enter authentication token code
+
+ATM
+Insert ATM Card
+
+Select preferred language
+
+Enter ATM PIN
+
+Select Other Transaction > Transfer
+
+Choose account type
+
+Enter virtual account number (e.g. 880849021633)
+
+Payment amount will be displayed on the screen
+
+Confirm payment information
+
+BJB
+
+mobile 
+
+Open BJB Mobile app
+
+Enter User ID and Password
+
+Choose Virtual Account
+
+Select the type of account you are using to transfer (i.e. from Savings account)
+
+Enter Virtual Account Number, for example 1234999968795947
+
+Confirm your transaction details displayed
+
+ibanking
+Open https://ib.bankbjb.co.id/bjb.net
+
+Enter User ID and Password
+
+Select Virtual Account
+
+Select the type of account you are using to transfer (i.e. from Savings account)
+
+Enter Virtual Account Number, for example 1234999968795947
+
+Confirm your transaction details displayed
+
+ATM
+Insert your BJB ATM card and PIN
+
+Enter your ATM PIN
+
+Select Menu Transaksi Lainnya
+
+Select Virtual Account
+
+Select the type of account you are using to transfer (i.e. from Savings account)
+
+bnc 
+mobile
+Log in to BNC mobile banking or Neobank app
+
+Click Hematpay VA & QRIS
+
+Enter virtual account number (e.g. 9010001050411994)
+
+Enter payment amount
+
+Confirm payment information
+
+Enter PIN
+
+ATM 
+Insert ATM Card
+
+Select preferred language
+
+Enter ATM PIN
+
+Select Pembayaran VA
+
+Enter virtual account number (e.g. 9010001050411994)
+
+Enter payment amount
+
+Confirm payment information
+
+Enter PIN
+
+BSI 
+byond
+Log in to BYOND BSI
+
+Choose Bayar & Beli
+
+Search Xendit, Choose Prefix VA: 9347 or 9655
+
+Insert code (without prefix) (e.g. 33371937)
+
+Enter PIN
+
+Confirm payment details
+
+ibanking
+Log in to https://bsinet.bankbsi.co.id
+
+Click Payment
+
+Choose source of payment
+
+Click Institution
+
+Enter Xendit as institution name (code 9347)
+
+Enter virtual account number (e.g. 33371937)
+
+Confirm payment details
+
+Enter authentication token code
+
+ATM
+Insert ATM Card
+
+Select preferred language
+
+Enter ATM PIN
+
+Select Payment/Purchase > Institution
+
+Enter virtual account number (e.g. 934733371937)
+
+Confirm payment details
+
+antarbank
+Log in to your bank Account
+
+Click Transfer > Choose BSI
+
+Enter 009 + BSI Virtual Account code 9347 + virtual account number, (e.g. 934733371937)
+
+Enter payment amount
+
+Select source of payment
+
+Choose Online Transfer
+
+Confirm payment details
+
+cimb
+
+Octo
+Open Octo Mobile and enter your User ID and Password
+
+Select the menu Transfer and then choose Other CIMB Niaga
+
+Enter your Virtual Account Number on the menu Input New
+
+Input the payment amount accordingly
+
+Confirm the transaction and enter your password
+
+Your transaction is completed
+
+atm
+Insert your ATM Card
+
+Select your preferred language
+
+Enter your ATM PIN
+
+Select the menu Transfer and then choose Other CIMB Niaga
+
+Enter your Virtual Account Number on the menu Input New
+
+Input the payment amount accordingly
+
+Confirm the transaction and enter your password
+
+Your transaction is completed
+
+ibanking
+Enter the following address https://www.octoclicks.co.id/login and click Enter
+
+Enter User ID and Password
+
+Select the menu Transfer and then choose Other CIMB Niaga
+
+Enter your Virtual Account Number on the menu Input New
+
+Input the payment amount accordingly
+
+Confirm the transaction and enter your password
+
+Your transaction is completed
+
+muamalat
+
+mdin
+Log in to MDIN mobile banking
+
+Select Beli/Bayar > Beli/Bayar Tagihan > Virtual Account
+
+Enter virtual account number (e.g. 9010001112341234234)
+
+Enter payment amount
+
+Confirm payment details
+
+Enter PIN
+
+ibanking
+Log in to Muamalat Internet Banking
+
+Click Payment > Virtual Account
+
+Enter virtual account number (e.g. 9010001112341234234)
+
+Enter payment amount
+
+Confirm payment details
+
+Enter PIN
+
+ATM
+Insert ATM Card
+
+Select preferred language
+
+Enter ATM PIN
+
+Select Pembayaran > Virtual Account
+
+Enter virtual account number (e.g. 9010001112341234234)
+
+Enter payment amount
+
+Confirm payment details
+
+Enter PIN
+
+Permata
+
+mobile
+Log in to Permata mobile app
+
+Select Pembayaran Tagihan > Virtual Account
+
+Enter virtual account number (e.g. 729361827494)
+
+Enter authentication token
+
+ibanking
+Log in to https://www.permatanet.com
+
+Select Pembayaran Tagihan > Virtual Account
+
+Enter virtual account number (e.g. 729361827494)
+
+Confirm payment details
+
+Enter SMS token response code
+
+ATM
+
+Insert ATM Card
+
+Select preferred language
+
+Enter ATM PIN
+
+Select Transaksi Lainnya > Pembayaran > Pembayaran Lainnya > Virtual Account
+
+Enter virtual account number (e.g. 729361827494)
+
+Confirm payment details
+
+Enter PIN
+
+alfamart
+
+Note
+
+You can make a payment to the Alfamart Group (Alfamart, Afamidi, Dan+Dan, Lawson).
+Payments below IDR 2,5 Million are available via Alfamart, Afamidi, Dan+Dan, Lawson.
+Payments above IDR 2,5 Million are not available via Alfamidi.
+Visit the nearest ALFAMART branch before the time on the payment code/barcode runs out
+
+Tell the cashier that you would like to make a payment to “[Merchant Name]” via Xendit or let them scan the barcode above
+
+Present the payment code/barcode to the cashier and confirm that the amount is correct
+
+Inform the cashier if you want to pay using a Cash only, or mixed combination of Cash and Debit/Prepaid Card or E-wallet.
+
+Maximum amount allowed pay by Cash is IDR 2,5 Million, the rest should be combined using Debit/Prepaid Card or E-wallet.
+
+Proceed to make a payment with the amount on your payment code/barcode
+
+indomaret
+
+Visit the nearest INDOMARET branch before the time on the payment code/barcode runs out
+
+Inform the Cashier to make payment to your Brand Name. (If your Brand name is not found, use the name Xendit)
+
+Inform the payment code to the Cashier. If you have a barcode, you can let the cashier scan the barcode.
+
+Confirm that the amount shown is the same with the one that the Cashier had, then proceed to make payment.
+
