@@ -15,30 +15,27 @@ export default function AdminLayout({
 
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar - Fixed */}
+    <div className="h-screen bg-slate-50 flex overflow-hidden">
+      {/* Sidebar */}
       <Sidebar
         isOpen={isSidebarOpen}
         toggle={() => setIsSidebarOpen(!isSidebarOpen)}
       />
 
       {/* Main Content Area */}
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-20'
-          }`}
-      >
+      <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
         <Header title={config?.ngo_name || "Lentera Donasi Admin"} />
 
-        <main className="p-8 flex-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <main className="flex-1 overflow-y-auto p-8 animate-in fade-in slide-in-from-bottom-2 duration-200">
           {children}
-        </main>
 
-        {/* Footer */}
-        <footer className="p-8 pt-0 text-center">
-          <p className="text-xs text-slate-400 font-medium tracking-wide">
-            &copy; 2026 Lentera Donasi.
-          </p>
-        </footer>
+          {/* Footer */}
+          <footer className="mt-8 text-center pb-4">
+            <p className="text-xs text-slate-400 font-medium tracking-wide">
+              &copy; {new Date().getFullYear()} Lentera Donasi.
+            </p>
+          </footer>
+        </main>
       </div>
     </div>
   );

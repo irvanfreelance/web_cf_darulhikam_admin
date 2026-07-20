@@ -65,7 +65,7 @@ export function FileUpload({
     }
   };
 
-  const isImage = value?.match(/\.(jpeg|jpg|gif|png|webp|svg|ico)$/i) || value?.startsWith('blob:');
+  const isImage = value?.match(/\.(jpeg|jpg|gif|png|webp|svg|ico)(\?.*)?$/i) || value?.startsWith('blob:') || value?.includes('images.pexels.com') || value?.includes('images.unsplash.com');
 
   return (
     <div className={cn("space-y-4 w-full", className)}>
