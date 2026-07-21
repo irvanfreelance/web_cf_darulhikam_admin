@@ -15,6 +15,8 @@ interface FileUploadProps {
   label?: string;
   deferred?: boolean;
   onFileSelect?: (file: File) => void;
+  accept?: string;
+  hint?: string;
 }
 
 export function FileUpload({
@@ -25,7 +27,9 @@ export function FileUpload({
   className,
   label,
   deferred = false,
-  onFileSelect
+  onFileSelect,
+  accept = "image/*,.pdf,.doc,.docx",
+  hint = "Max 4.5MB • PNG, JPG, WEBP"
 }: FileUploadProps) {
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -65,7 +69,8 @@ export function FileUpload({
     }
   };
 
-  const isImage = value?.match(/\.(jpeg|jpg|gif|png|webp|svg|ico)(\?.*)?$/i) || value?.startsWith('blob:') || value?.includes('images.pexels.com') || value?.includes('images.unsplash.com');
+  const isVideo = value?.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i);
+  const isImage = !isVideo && (value?.match(/\.(jpeg|jpg|gif|png|webp|svg|ico)(\?.*)?$/i) || value?.startsWith('blob:') || value?.includes('images.pexels.com') || value?.includes('images.unsplash.com'));
 
   return (
     <div className={cn("space-y-4 w-full", className)}>
@@ -77,6 +82,10 @@ export function FileUpload({
             {isImage ? (
               <div className={cn("bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden shadow-sm", className)}>
                 <img src={value} alt="Preview" className="w-full h-full object-cover" />
+              </div>
+            ) : isVideo ? (
+              <div className={cn("bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden shadow-sm", className)}>
+                <video src={value} controls className="w-full h-full object-cover" />
               </div>
             ) : (
               <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 italic text-slate-400 text-xs font-bold">
@@ -116,7 +125,7 @@ export function FileUpload({
                 </div>
                 <div className="text-center px-4">
                   <span className="text-xs font-bold text-slate-400 block">{placeholder}</span>
-                  <span className="text-[10px] text-slate-300 font-medium mt-1 block">Max 4.5MB • PNG, JPG, WEBP</span>
+                  <span className="text-[10px] text-slate-300 font-medium mt-1 block">{hint}</span>
                 </div>
               </>
             )}
@@ -128,7 +137,7 @@ export function FileUpload({
           ref={fileInputRef}
           onChange={handleFileChange}
           className="hidden"
-          accept="image/*,.pdf,.doc,.docx"
+          accept={accept}
         />
       </div>
     </div>

@@ -29,6 +29,7 @@ export default function SettingsPage() {
     primary_color: '#1086b1', 
     logo_url: '',
     favicon_url: '',
+    video_url: '',
     whatsapp_number: '',
     instagram_url: '',
     facebook_url: '',
@@ -211,6 +212,7 @@ export default function SettingsPage() {
         primary_color: config.primary_color || '#1086b1',
         logo_url: config.logo_url || '',
         favicon_url: config.favicon_url || '',
+        video_url: config.video_url || '',
         whatsapp_number: config.whatsapp_number || '',
         instagram_url: config.instagram_url || '',
         facebook_url: config.facebook_url || '',
@@ -342,6 +344,20 @@ export default function SettingsPage() {
                         value={formData.favicon_url}
                         onChange={(url) => setFormData({...formData, favicon_url: url})}
                         className="aspect-square"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="text-left">
+                    <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Video Profil</label>
+                    <div className="w-full aspect-video">
+                      <FileUpload
+                        value={formData.video_url}
+                        onChange={(url) => setFormData({...formData, video_url: url})}
+                        className="aspect-video"
+                        placeholder="Upload video profil organisasi"
+                        accept="video/*"
+                        hint="Max 4.5MB • MP4, WEBM, MOV"
                       />
                     </div>
                   </div>

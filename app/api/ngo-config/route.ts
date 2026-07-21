@@ -7,6 +7,7 @@ const configSchema = z.object({
   ngo_name: z.string().min(3),
   logo_url: z.string().optional().nullable(),
   favicon_url: z.string().optional().nullable(),
+  video_url: z.string().optional().nullable(),
   short_description: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
   legal_info: z.string().optional().nullable(),
@@ -44,35 +45,37 @@ export async function PATCH(req: Request) {
     let res;
     if (check.rows.length > 0) {
       const sql = `
-        UPDATE ngo_configs 
-        SET 
-          ngo_name = $1, 
-          logo_url = $2, 
+        UPDATE ngo_configs
+        SET
+          ngo_name = $1,
+          logo_url = $2,
           favicon_url = $3,
-          short_description = $4, 
-          address = $5, 
-          legal_info = $6,
-          primary_color = $7, 
-          whatsapp_number = $8,
-          instagram_url = $9,
-          facebook_url = $10,
-          meta_pixel_id = $11,
-          meta_capi_token = $12,
-          google_ads_id = $13,
-          google_developer_token = $14,
-          google_analytic_id = $15,
-          tiktok_pixel_id = $16,
-          tiktok_events_api_token = $17,
+          video_url = $4,
+          short_description = $5,
+          address = $6,
+          legal_info = $7,
+          primary_color = $8,
+          whatsapp_number = $9,
+          instagram_url = $10,
+          facebook_url = $11,
+          meta_pixel_id = $12,
+          meta_capi_token = $13,
+          google_ads_id = $14,
+          google_developer_token = $15,
+          google_analytic_id = $16,
+          tiktok_pixel_id = $17,
+          tiktok_events_api_token = $18,
           updated_at = CURRENT_TIMESTAMP
-        WHERE id = $18
+        WHERE id = $19
         RETURNING *
       `;
       res = await query(sql, [
-        validated.ngo_name, 
-        validated.logo_url, 
+        validated.ngo_name,
+        validated.logo_url,
         validated.favicon_url,
-        validated.short_description, 
-        validated.address, 
+        validated.video_url,
+        validated.short_description,
+        validated.address,
         validated.legal_info,
         validated.primary_color,
         validated.whatsapp_number,
@@ -90,20 +93,21 @@ export async function PATCH(req: Request) {
     } else {
       const sql = `
         INSERT INTO ngo_configs (
-          ngo_name, logo_url, favicon_url, short_description, address, legal_info, 
-          primary_color, whatsapp_number, instagram_url, facebook_url, 
-          meta_pixel_id, meta_capi_token, google_ads_id, google_developer_token, google_analytic_id, 
+          ngo_name, logo_url, favicon_url, video_url, short_description, address, legal_info,
+          primary_color, whatsapp_number, instagram_url, facebook_url,
+          meta_pixel_id, meta_capi_token, google_ads_id, google_developer_token, google_analytic_id,
           tiktok_pixel_id, tiktok_events_api_token
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
         RETURNING *
       `;
       res = await query(sql, [
-        validated.ngo_name, 
-        validated.logo_url, 
+        validated.ngo_name,
+        validated.logo_url,
         validated.favicon_url,
-        validated.short_description, 
-        validated.address, 
+        validated.video_url,
+        validated.short_description,
+        validated.address,
         validated.legal_info,
         validated.primary_color,
         validated.whatsapp_number,
