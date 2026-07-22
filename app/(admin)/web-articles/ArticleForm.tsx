@@ -36,6 +36,12 @@ export default function ArticleForm({ initialData }: { initialData?: any }) {
     e.preventDefault();
     setIsSubmitting(true);
     
+    if (!formData.category_id) {
+      alert('Silakan pilih kategori artikel');
+      setIsSubmitting(false);
+      return;
+    }
+    
     try {
       const url = '/api/web-articles';
       const method = initialData ? 'PATCH' : 'POST';

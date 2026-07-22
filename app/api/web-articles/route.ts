@@ -11,11 +11,11 @@ const articleSchema = z.object({
   body: z.string().min(10),
   category_id: z.number().int().positive(),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
-  featured_image_url: z.string().url().optional().nullable(),
+  featured_image_url: z.string().optional().nullable().transform(v => v === '' ? null : v),
   is_featured: z.boolean().default(false),
   seo_title: z.string().optional().nullable(),
   seo_description: z.string().optional().nullable(),
-  canonical_url: z.string().optional().nullable(),
+  canonical_url: z.string().optional().nullable().transform(v => v === '' ? null : v),
   robots_directive: z.enum(['index,follow','noindex,follow','index,nofollow','noindex,nofollow']).default('index,follow'),
 });
 

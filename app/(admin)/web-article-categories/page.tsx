@@ -16,9 +16,10 @@ export default function ArticleCategoriesPage() {
   const [isCreating, setIsCreating] = useState(false);
 
   const handleSave = async (id?: number) => {
+    const slug = editForm.slug.trim() || editForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     const url = '/api/web-article-categories';
     const method = id ? 'PATCH' : 'POST';
-    const body = id ? { id, ...editForm } : editForm;
+    const body = id ? { id, ...editForm, slug } : { ...editForm, slug };
 
     try {
       const res = await fetch(url, {
