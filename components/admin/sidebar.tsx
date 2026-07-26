@@ -8,7 +8,7 @@ import {
   Menu, LogOut, Heart, Tags, CreditCard, BellRing,
   ShieldCheck, History, Wallet, MessageSquare, User,
   Globe, FileText, BarChart2, PieChart, Users2, Shield,
-  Building, HelpCircle, Star, Activity, FileCheck
+  Building, HelpCircle, Star, Activity, FileCheck, BookOpen
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -63,6 +63,37 @@ const websiteMenus = [
   ]}
 ];
 
+// Tutorial Menus — jump links into /tutorial, grouped the same way as the two modules
+const tutorialMenus = [
+  { group: 'WEBSITE CMS', items: [
+    { icon: FileText, label: 'Artikel', href: '/tutorial#web-articles' },
+    { icon: Tags, label: 'Kategori Artikel', href: '/tutorial#web-article-categories' },
+    { icon: MessageSquare, label: 'Testimoni', href: '/tutorial#web-testimonials' },
+    { icon: Users2, label: 'Mitra', href: '/tutorial#web-partners' },
+    { icon: FileCheck, label: 'Laporan Keuangan', href: '/tutorial#web-reports' },
+    { icon: BarChart2, label: 'Impact Metrics', href: '/tutorial#web-metrics' },
+    { icon: Users, label: 'Tim & Pengurus', href: '/tutorial#web-team' },
+    { icon: Shield, label: 'Legalitas', href: '/tutorial#web-legality' },
+    { icon: Building, label: 'Rekening Resmi', href: '/tutorial#web-banks' },
+    { icon: HelpCircle, label: 'FAQ', href: '/tutorial#web-faqs' },
+  ]},
+  { group: 'CROWDFUNDING', items: [
+    { icon: LayoutDashboard, label: 'Dashboard', href: '/tutorial#dashboard' },
+    { icon: Megaphone, label: 'Kampanye', href: '/tutorial#campaigns' },
+    { icon: MessageSquare, label: 'Kabar Penyaluran', href: '/tutorial#campaign-updates' },
+    { icon: Tags, label: 'Kategori', href: '/tutorial#categories' },
+    { icon: Receipt, label: 'Transaksi', href: '/tutorial#transactions' },
+    { icon: Users, label: 'Donatur', href: '/tutorial#donors' },
+    { icon: Heart, label: 'Afiliasi', href: '/tutorial#affiliates' },
+    { icon: Wallet, label: 'Penarikan', href: '/tutorial#withdrawals' },
+    { icon: BellRing, label: 'Notifikasi', href: '/tutorial#notifications' },
+    { icon: ShieldCheck, label: 'Admin', href: '/tutorial#admins' },
+    { icon: CreditCard, label: 'Payment Channels', href: '/tutorial#payment-channels' },
+    { icon: History, label: 'Log Sistem', href: '/tutorial#logs' },
+    { icon: Settings, label: 'Pengaturan', href: '/tutorial#settings' },
+  ]},
+];
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: () => void }) {
@@ -70,17 +101,17 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
   const { data: config } = useSWR('/api/ngo-config', fetcher);
   const { data: session } = useSession();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [activeModule, setActiveModule] = useState<'crowdfund' | 'website'>('crowdfund');
+  const [activeModule, setActiveModule] = useState<'crowdfund' | 'website' | 'tutorial'>('crowdfund');
 
   // Load active module from local storage on mount
   useEffect(() => {
     const savedModule = localStorage.getItem('active_admin_module');
-    if (savedModule === 'crowdfund' || savedModule === 'website') {
+    if (savedModule === 'crowdfund' || savedModule === 'website' || savedModule === 'tutorial') {
       setActiveModule(savedModule);
     }
   }, []);
 
-  const handleModuleChange = (mod: 'crowdfund' | 'website') => {
+  const handleModuleChange = (mod: 'crowdfund' | 'website' | 'tutorial') => {
     setActiveModule(mod);
     localStorage.setItem('active_admin_module', mod);
   };
@@ -94,8 +125,13 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
   const userRole = session?.user?.role ?? '';
   const userImage = session?.user?.image;
 
-  const currentMenus = activeModule === 'crowdfund' ? crowdfundMenus : websiteMenus;
-  const isWebsite = activeModule === 'website';
+  // Visiting /tutorial directly (bookmark, refresh, link) always shows the Tutorial rail + nav,
+  // without needing an effect to sync it into state.
+  const displayModule = pathname === '/tutorial' ? 'tutorial' : activeModule;
+  const currentMenus = displayModule === 'crowdfund' ? crowdfundMenus : displayModule === 'website' ? websiteMenus : tutorialMenus;
+  const isWebsite = displayModule === 'website';
+  const isTutorial = displayModule === 'tutorial';
+  const isCrowdfund = displayModule === 'crowdfund';
 
   return (
     <aside className="h-full flex flex-shrink-0 z-50">
@@ -114,14 +150,14 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
             title="Crowdfunding"
             className={cn(
               "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all",
-              !isWebsite ? "bg-teal-500/20 text-teal-400" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"
+              isCrowdfund ? "bg-teal-500/20 text-teal-400" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"
             )}
           >
-            <LayoutDashboard size={22} strokeWidth={!isWebsite ? 2.5 : 2} />
+            <LayoutDashboard size={22} strokeWidth={isCrowdfund ? 2.5 : 2} />
             <span className="text-[9px] font-bold tracking-tight">CROWDFUND</span>
           </button>
           
-          <button 
+          <button
             onClick={() => handleModuleChange('website')}
             title="Website CMS"
             className={cn(
@@ -132,6 +168,21 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
             <Globe size={22} strokeWidth={isWebsite ? 2.5 : 2} />
             <span className="text-[9px] font-bold tracking-tight">WEBSITE</span>
           </button>
+
+          <div className="w-full h-px bg-slate-800 my-1" />
+
+          <Link
+            href="/tutorial"
+            onClick={() => handleModuleChange('tutorial')}
+            title="Tutorial"
+            className={cn(
+              "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all",
+              isTutorial ? "bg-violet-500/20 text-violet-400" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"
+            )}
+          >
+            <BookOpen size={22} strokeWidth={isTutorial ? 2.5 : 2} />
+            <span className="text-[9px] font-bold tracking-tight">TUTORIAL</span>
+          </Link>
         </div>
       </div>
 
@@ -144,7 +195,7 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
       >
         <div className="h-16 flex items-center px-6 border-b border-slate-800/80 shrink-0">
            <h2 className="text-slate-200 font-bold tracking-tight">
-             {isWebsite ? "Website CMS" : "Crowdfunding"}
+             {isTutorial ? "Tutorial" : isWebsite ? "Website CMS" : "Crowdfunding"}
            </h2>
         </div>
 
@@ -165,13 +216,13 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
                       href={item.href}
                       className={cn(
                         "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group",
-                        isActive 
-                          ? (isWebsite ? "bg-indigo-500/10 text-indigo-400" : "bg-teal-500/10 text-teal-400") 
+                        isActive
+                          ? (isTutorial ? "bg-violet-500/10 text-violet-400" : isWebsite ? "bg-indigo-500/10 text-indigo-400" : "bg-teal-500/10 text-teal-400")
                           : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
                       )}
                     >
                       <item.icon size={18} className={cn(
-                        isActive ? (isWebsite ? "text-indigo-400" : "text-teal-400") : "text-slate-500 group-hover:text-slate-300"
+                        isActive ? (isTutorial ? "text-violet-400" : isWebsite ? "text-indigo-400" : "text-teal-400") : "text-slate-500 group-hover:text-slate-300"
                       )} />
                       <span className={cn(
                         "font-medium text-sm truncate",
