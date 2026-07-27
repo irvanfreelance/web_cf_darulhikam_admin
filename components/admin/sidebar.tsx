@@ -111,6 +111,14 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
     }
   }, []);
 
+  // Visiting /tutorial directly (bookmark, refresh, browser back) forces the Tutorial rail + nav on
+  // arrival, but only then — it must not keep overriding manual Crowdfund/Website clicks afterwards,
+  // since those buttons don't navigate away from /tutorial (they just swap which menu list shows).
+  useEffect(() => {
+    if (pathname === '/tutorial') setActiveModule('tutorial');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
   const handleModuleChange = (mod: 'crowdfund' | 'website' | 'tutorial') => {
     setActiveModule(mod);
     localStorage.setItem('active_admin_module', mod);
@@ -125,13 +133,10 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
   const userRole = session?.user?.role ?? '';
   const userImage = session?.user?.image;
 
-  // Visiting /tutorial directly (bookmark, refresh, link) always shows the Tutorial rail + nav,
-  // without needing an effect to sync it into state.
-  const displayModule = pathname === '/tutorial' ? 'tutorial' : activeModule;
-  const currentMenus = displayModule === 'crowdfund' ? crowdfundMenus : displayModule === 'website' ? websiteMenus : tutorialMenus;
-  const isWebsite = displayModule === 'website';
-  const isTutorial = displayModule === 'tutorial';
-  const isCrowdfund = displayModule === 'crowdfund';
+  const currentMenus = activeModule === 'crowdfund' ? crowdfundMenus : activeModule === 'website' ? websiteMenus : tutorialMenus;
+  const isWebsite = activeModule === 'website';
+  const isTutorial = activeModule === 'tutorial';
+  const isCrowdfund = activeModule === 'crowdfund';
 
   return (
     <aside className="h-full flex flex-shrink-0 z-50">
