@@ -5,13 +5,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ invoice_
   try {
     const { invoice_code } = await params;
 
-    // 1. Fetch Master Invoice
+    // 1. Fetch Master Invoice & Transaction details
     const invoiceSql = `
       SELECT i.*, 
+             t.campaign_id, t.variant_id, t.affiliate_id, t.qty as transaction_qty,
+             t.amount as transaction_amount, t.created_at as transaction_time,
              d.name as donor_name, d.email as donor_email, d.phone as donor_phone,
              pm.name as payment_method_name, pm.type as payment_method_type,
-             c.title as campaign_title, c.slug as campaign_slug,
-             t.amount as transaction_amount, t.qty as transaction_qty, t.created_at as transaction_time,
+             c.title as campaign_title, c.slug as campaign_slug, c.is_qurban, c.is_zakat,
              cv.name as variant_name
       FROM invoices i
       LEFT JOIN donors d ON i.donor_id = d.id

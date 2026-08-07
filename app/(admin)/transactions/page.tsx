@@ -3,13 +3,16 @@
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import { 
-  Search, Filter, Download,
-  CheckCircle, Trash2, Eye, X, Users, Image as ImageIcon
+  Search, Filter, Download, Plus, Pencil, FileSpreadsheet,
+  CheckCircle, Trash2, Eye, X, Image as ImageIcon
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { ManualTransactionModal } from '@/components/admin/manual-transaction-modal';
+import { ImportTransactionModal } from '@/components/admin/import-transaction-modal';
+import { ConfirmModal } from '@/components/ui/confirm-modal';
 import * as XLSX from 'xlsx';
 
 function cn(...inputs: ClassValue[]) {
@@ -59,13 +62,24 @@ export default function TransactionsPage() {
   const [applied, setApplied] = useState<Filters>({ ...DEFAULT_FILTERS });
   const [proofImageUrl, setProofImageUrl] = useState<string | null>(null);
 
+  // Manual Transaction Modal State
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<any | null>(null);
+
+  // Import Excel Modal State
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  // Delete Confirmation Modal State
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; created_at: string; invoice_code: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [page,  setPage]  = useState(1);
   const [limit, setLimit] = useState(10);
   const offset = (page - 1) * limit;
   const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Lightweight campaign list for the dropdown
+  // Lightweight campaign list for dropdowns
   const { data: campaignOptions } = useSWR<{ id: number; title: string }[]>(
     '/api/campaigns?minimal=true&status=ACTIVE',
     fetcher,
@@ -84,7 +98,7 @@ export default function TransactionsPage() {
     { revalidateOnFocus: false }
   );
 
-  // How many applied filters deviate from the default
+  // How many applied filters deviate from default
   const activeFilterCount = [
     applied.startDate  !== DEFAULT_FILTERS.startDate,
     applied.endDate    !== DEFAULT_FILTERS.endDate,
@@ -165,31 +179,31 @@ export default function TransactionsPage() {
     });
   };
 
-  const handleDelete = async (id: number, created_at: string) => {
-    toast('Hapus transaksi ini? Data tidak dapat dikembalikan.', {
-      action: {
-        label: 'Hapus',
-        onClick: async () => {
-          try {
-            const res = await fetch(
-              `/api/transactions?id=${id}&created_at=${created_at}`,
-              { method: 'DELETE' }
-            );
-            if (!res.ok) throw new Error('Failed to delete');
-            toast.success('Transaksi dihapus');
-            mutate();
-          } catch (err: any) {
-            toast.error(err.message);
-          }
-        }
-      }
-    });
+  // Trigger Modal Confirmation for Delete
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    setIsDeleting(true);
+    try {
+      const res = await fetch(
+        `/api/transactions?id=${deleteTarget.id}&created_at=${encodeURIComponent(deleteTarget.created_at)}`,
+        { method: 'DELETE' }
+      );
+      if (!res.ok) throw new Error('Failed to delete transaction');
+
+      toast.success(`Transaksi ${deleteTarget.invoice_code} berhasil dihapus`);
+      setDeleteTarget(null);
+      mutate();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleExport = async () => {
     try {
       toast.loading('Mempersiapkan data export...');
-      // Fetch all filtered data by using a large limit
       const exportParams = new URLSearchParams(queryParams);
       exportParams.set('limit', '5000');
       exportParams.set('offset', '0');
@@ -253,7 +267,24 @@ export default function TransactionsPage() {
           <h1 className="text-2xl font-normal text-slate-800 tracking-tight">Riwayat Transaksi</h1>
           <p className="text-sm text-slate-400 font-medium mt-1">Laporan ledger &amp; donasi</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => {
+              setEditTarget(null);
+              setIsManualModalOpen(true);
+            }}
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold transition-all shadow-indigo-500/20 shadow-lg"
+          >
+            <Plus size={18} /> Tambah Transaksi
+          </button>
+
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-bold transition-all shadow-emerald-500/20 shadow-lg"
+          >
+            <FileSpreadsheet size={18} /> Import Excel
+          </button>
+
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
             className={cn(
@@ -265,7 +296,6 @@ export default function TransactionsPage() {
           >
             <Filter size={18} />
             {isFilterOpen ? 'Tutup Filter' : 'Advanced Filter'}
-            {/* Badge: active filter count */}
             {activeFilterCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow">
                 {activeFilterCount}
@@ -312,7 +342,6 @@ export default function TransactionsPage() {
             value={draft.search}
             onChange={(e) => {
               setDraft(d => ({ ...d, search: e.target.value }));
-              // Auto-apply search for better UX
               setApplied(a => ({ ...a, search: e.target.value }));
               setPage(1);
             }}
@@ -381,8 +410,6 @@ export default function TransactionsPage() {
       {/* ── Advanced Filter Panel ── */}
       {isFilterOpen && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-visible animate-in slide-in-from-top-2 duration-300">
-
-          {/* Panel header */}
           <div className="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
             <p className="text-sm font-bold text-slate-700 tracking-tight">Advanced Filter</p>
             {activeFilterCount > 0 && (
@@ -393,8 +420,6 @@ export default function TransactionsPage() {
           </div>
 
           <div className="p-6 space-y-5">
-
-            {/* Row 1 — Date range + amount */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
               <div className="text-left">
                 <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wide">Tanggal Mulai</label>
@@ -436,7 +461,6 @@ export default function TransactionsPage() {
               </div>
             </div>
 
-            {/* Row 2 — Status + Campaign + Search text */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="text-left">
                 <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wide">Status</label>
@@ -476,23 +500,8 @@ export default function TransactionsPage() {
                   ]}
                 />
               </div>
-              <div className="text-left">
-                <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wide">Pencarian</label>
-                <div className="relative">
-                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Nomor invoice atau donatur..."
-                    value={draft.search}
-                    onChange={(e) => setDraft(d => ({ ...d, search: e.target.value }))}
-                    onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 outline-none transition-all h-12"
-                  />
-                </div>
-              </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex items-center justify-between pt-2 border-t border-slate-50">
               <button
                 onClick={handleResetFilters}
@@ -511,7 +520,7 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      {/* ── Active Filter Chips (visible when panel is closed) ── */}
+      {/* ── Active Filter Chips ── */}
       {!isFilterOpen && activeFilterCount > 0 && (
         <div className="flex flex-wrap gap-2 items-center">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Filter aktif:</span>
@@ -571,9 +580,9 @@ export default function TransactionsPage() {
                 <th className="px-6 py-4 border-b border-slate-100 font-normal w-12 text-center">#</th>
                 <th className="px-6 py-4 border-b border-slate-100 font-bold">Waktu &amp; Kode</th>
                 <th className="px-6 py-4 border-b border-slate-100 font-bold">Donatur</th>
-                <th className="px-6 py-4 border-b border-slate-100 font-normal">Nominal</th>
+                <th className="px-6 py-4 border-b border-slate-100 font-normal text-right">Nominal</th>
                 {activeTab === 'invoices' && <th className="px-6 py-4 border-b border-slate-100 font-bold text-center">Metode</th>}
-                <th className="px-6 py-4 border-b border-slate-100 font-bold">{activeTab === 'invoices' ? 'Kampanye' : 'Kampanye'}</th>
+                <th className="px-6 py-4 border-b border-slate-100 font-bold">Kampanye</th>
                 {activeTab === 'transactions' && <th className="px-6 py-4 border-b border-slate-100 font-bold">Affiliate</th>}
                 <th className="px-6 py-4 border-b border-slate-100 text-center font-bold">Status</th>
                 <th className="px-6 py-4 border-b border-slate-100 text-center font-bold">Aksi</th>
@@ -598,19 +607,20 @@ export default function TransactionsPage() {
                     </td>
                     <td className="px-6 py-5 whitespace-nowrap">
                       <div className="flex flex-col text-left">
-                        <span className="text-sm font-normal text-slate-800">{trx.invoice_code}</span>
-                        <span className="text-xs text-slate-400 font-normal mt-1 tracking-tight">{formatDate(trx.created_at)}</span>
+                        <span className="text-sm font-bold text-slate-800">{trx.invoice_code}</span>
+                        <span className="text-xs text-slate-400 font-normal mt-0.5 tracking-tight">{formatDate(trx.created_at)}</span>
                       </div>
                     </td>
                     <td className="px-6 py-5">
-                      <p className="font-normal text-slate-800 text-base text-left">{trx.donor_name_snapshot}</p>
+                      <p className="font-bold text-slate-800 text-sm text-left">{trx.donor_name_snapshot}</p>
+                      {trx.donor_phone && <p className="text-xs text-slate-400 font-mono mt-0.5">{trx.donor_phone}</p>}
                     </td>
                     <td className="px-6 py-5 text-right">
-                      <p className="font-normal text-slate-800 text-base tracking-tight">
+                      <p className="font-bold text-slate-900 text-sm tracking-tight">
                         {activeTab === 'invoices' ? formatIDR(trx.total_amount) : formatIDR(trx.amount)}
                       </p>
                       {activeTab === 'transactions' && trx.affiliate_commission > 0 && (
-                        <p className="text-xs text-emerald-600 font-normal">Comm: {formatIDR(trx.affiliate_commission)}</p>
+                        <p className="text-xs text-emerald-600 font-semibold">Comm: {formatIDR(trx.affiliate_commission)}</p>
                       )}
                     </td>
                     {activeTab === 'invoices' && (
@@ -623,18 +633,18 @@ export default function TransactionsPage() {
                             title={trx.payment_method}
                           />
                         ) : (
-                          <span className="text-[10px] text-slate-400 font-normal uppercase tracking-tighter line-clamp-1">{trx.payment_method}</span>
+                          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter line-clamp-1">{trx.payment_method}</span>
                         )}
                       </td>
                     )}
                     <td className="px-6 py-5">
                       <div className="flex flex-col text-left">
                         {activeTab === 'invoices' ? (
-                          <span className="text-sm text-slate-600 mt-1 line-clamp-1 font-normal">
+                          <span className="text-sm text-slate-700 line-clamp-1 font-medium">
                             {trx.campaigns?.map((c: any) => c.title).join(', ') || 'No campaign'}
                           </span>
                         ) : (
-                          <span className="text-sm font-normal text-slate-800 line-clamp-1">{trx.campaign_title}</span>
+                          <span className="text-sm font-medium text-slate-800 line-clamp-1">{trx.campaign_title}</span>
                         )}
                       </div>
                     </td>
@@ -642,17 +652,17 @@ export default function TransactionsPage() {
                       <td className="px-6 py-5">
                         {trx.affiliate_name ? (
                           <div className="flex flex-col text-left">
-                            <span className="text-sm font-normal text-indigo-600">{trx.affiliate_name}</span>
+                            <span className="text-sm font-medium text-indigo-600">{trx.affiliate_name}</span>
                             <span className="text-xs text-slate-400 font-mono mt-0.5">{trx.affiliate_code}</span>
                           </div>
                         ) : (
-                          <span className="text-xs text-slate-300 font-normal">—</span>
+                          <span className="text-xs text-slate-300">—</span>
                         )}
                       </td>
                     )}
                     <td className="px-6 py-5 text-center">
                       <span className={cn(
-                        "px-3 py-1.5 rounded-full text-xs font-normal border shadow-sm",
+                        "px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm",
                         trx.status === 'PAID'      ? "bg-teal-50 text-teal-700 border-teal-100"   :
                         trx.status === 'PENDING'   ? "bg-amber-50 text-amber-700 border-amber-100" :
                         trx.status === 'EXPIRED'   ? "bg-slate-50 text-slate-400 border-slate-100" :
@@ -665,23 +675,53 @@ export default function TransactionsPage() {
                       <div className="flex justify-center gap-1">
                         {activeTab === 'invoices' ? (
                           <>
-                            <button onClick={() => handleUpdateStatus(trx.id, trx.created_at, 'PAID')} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all" title="Mark as Paid">
+                            <button
+                              onClick={() => handleUpdateStatus(trx.id, trx.created_at, 'PAID')}
+                              className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+                              title="Tandai Lunas"
+                            >
                               <CheckCircle size={18} />
                             </button>
+                            <button
+                              onClick={() => {
+                                setEditTarget(trx);
+                                setIsManualModalOpen(true);
+                              }}
+                              className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
+                              title="Edit Transaksi"
+                            >
+                              <Pencil size={18} />
+                            </button>
                             {trx.proof_transfer && (
-                              <button onClick={() => setProofImageUrl(trx.proof_transfer)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="Lihat Bukti Transfer">
+                              <button
+                                onClick={() => setProofImageUrl(trx.proof_transfer)}
+                                className="p-2 text-teal-600 hover:bg-teal-50 rounded-xl transition-all"
+                                title="Lihat Bukti Transfer"
+                              >
                                 <ImageIcon size={18} />
                               </button>
                             )}
-                            <button onClick={() => handleDelete(trx.id, trx.created_at)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all">
+                            <button
+                              onClick={() => setDeleteTarget({ id: trx.id, created_at: trx.created_at, invoice_code: trx.invoice_code })}
+                              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                              title="Hapus Transaksi"
+                            >
                               <Trash2 size={18} />
                             </button>
-                            <button onClick={() => router.push(`/transactions/${trx.invoice_code}`)} className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all" title="Detail Transaksi">
+                            <button
+                              onClick={() => router.push(`/transactions/${trx.invoice_code}`)}
+                              className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all"
+                              title="Detail Transaksi"
+                            >
                               <Eye size={18} />
                             </button>
                           </>
                         ) : (
-                          <button onClick={() => router.push(`/transactions/${trx.invoice_code}`)} className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all" title="Detail Transaksi">
+                          <button
+                            onClick={() => router.push(`/transactions/${trx.invoice_code}`)}
+                            className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all"
+                            title="Detail Transaksi"
+                          >
                             <Eye size={18} />
                           </button>
                         )}
@@ -691,7 +731,7 @@ export default function TransactionsPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={9} className="px-6 py-12 text-center text-slate-400 italic">No transactions found.</td>
+                  <td colSpan={9} className="px-6 py-12 text-center text-slate-400 italic font-medium">Data transaksi tidak ditemukan.</td>
                 </tr>
               )}
             </tbody>
@@ -709,6 +749,35 @@ export default function TransactionsPage() {
           isLoading={isLoading}
         />
       </div>
+
+      {/* ── Manual Transaction Modal (Create / Edit) ── */}
+      <ManualTransactionModal
+        isOpen={isManualModalOpen}
+        onClose={() => {
+          setIsManualModalOpen(false);
+          setEditTarget(null);
+        }}
+        onSuccess={() => mutate()}
+        editData={editTarget}
+      />
+
+      {/* ── Import Excel Modal ── */}
+      <ImportTransactionModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => mutate()}
+      />
+
+      {/* ── Delete Confirmation Modal ── */}
+      <ConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+        title={`Hapus Transaksi ${deleteTarget?.invoice_code}?`}
+        description={`Apakah Anda yakin ingin menghapus data transaksi ${deleteTarget?.invoice_code}? Record invoice dan transaksi ini akan dihapus permanen.`}
+        confirmLabel="Hapus Transaksi"
+        isLoading={isDeleting}
+      />
 
       {/* ── Proof of Transfer Modal ── */}
       {proofImageUrl && (
