@@ -7,6 +7,7 @@ import {
   Plus, Search, Edit, Trash2, X, Save, GripVertical, FileText, Loader2, Image as ImageIcon, Copy
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { upload } from '@vercel/blob/client';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
@@ -234,18 +235,11 @@ export default function PaymentChannelsPage() {
       let finalLogoUrl = formData.logo_url;
       if (formData.logo_file) {
         toast('Mengupload gambar ke server...');
-        const fileForm = new FormData();
-        fileForm.append('file', formData.logo_file);
-
-        // Use normal body or fetch directly for Vercel Blob
-        // Note: API expects filename query param and body=file
-        const response = await fetch(`/api/upload?filename=${formData.logo_file.name}`, {
-          method: 'POST',
-          body: formData.logo_file,
+        const blob = await upload(formData.logo_file.name, formData.logo_file, {
+          access: 'public',
+          handleUploadUrl: '/api/upload',
         });
-        if (!response.ok) throw new Error('Gagal mengupload gambar');
-        const blobRes = await response.json();
-        finalLogoUrl = blobRes.url;
+        finalLogoUrl = blob.url;
       }
 
       const method = selectedItem ? 'PATCH' : 'POST';

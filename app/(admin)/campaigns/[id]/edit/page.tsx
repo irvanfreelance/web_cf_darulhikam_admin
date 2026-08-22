@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { toast } from 'sonner';
+import { upload } from '@vercel/blob/client';
 import { NumberInput } from '@/components/ui/number-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -72,16 +73,11 @@ export default function EditCampaignPage() {
       let finalImageUrl = formData.image_url;
       if (imageFile) {
         toast('Mengupload gambar ke server...');
-        const fileForm = new FormData();
-        fileForm.append('file', imageFile);
-        
-        const response = await fetch(`/api/upload?filename=${imageFile.name}`, {
-          method: 'POST',
-          body: imageFile,
+        const blob = await upload(imageFile.name, imageFile, {
+          access: 'public',
+          handleUploadUrl: '/api/upload',
         });
-        if (!response.ok) throw new Error('Gagal mengupload gambar');
-        const blobRes = await response.json();
-        finalImageUrl = blobRes.url;
+        finalImageUrl = blob.url;
       }
 
       // 1. Update Core Campaign — parse suggestion_amounts back to array

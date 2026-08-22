@@ -6,6 +6,7 @@ import {
   Plus, Search, Edit, Trash2, X, Save, Loader2, Image as ImageIcon, MessageSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { upload } from '@vercel/blob/client';
 
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
@@ -87,16 +88,11 @@ export default function CampaignUpdatesPage() {
       let finalImageUrl = formData.image_url;
       if (formData.image_file) {
         toast('Mengupload gambar ke server...');
-        const fileForm = new FormData();
-        fileForm.append('file', formData.image_file);
-        
-        const response = await fetch(`/api/upload?filename=${formData.image_file.name}`, {
-          method: 'POST',
-          body: formData.image_file,
+        const blob = await upload(formData.image_file.name, formData.image_file, {
+          access: 'public',
+          handleUploadUrl: '/api/upload',
         });
-        if (!response.ok) throw new Error('Gagal mengupload gambar');
-        const blobRes = await response.json();
-        finalImageUrl = blobRes.url;
+        finalImageUrl = blob.url;
       }
 
       const method = selectedItem ? 'PATCH' : 'POST';
