@@ -8,7 +8,7 @@ import {
   Menu, LogOut, Heart, Tags, CreditCard, BellRing,
   ShieldCheck, History, Wallet, MessageSquare, User,
   Globe, FileText, BarChart2, PieChart, Users2, Shield,
-  Building, HelpCircle, Star, Activity, FileCheck, BookOpen, Info
+  Building, HelpCircle, Star, Activity, FileCheck, BookOpen, Info, HeartHandshake
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -48,6 +48,7 @@ const websiteMenus = [
     { icon: Tags, label: 'Kategori Artikel', href: '/web-article-categories' },
     { icon: MessageSquare, label: 'Testimoni', href: '/web-testimonials' },
     { icon: Users2, label: 'Mitra', href: '/web-partners' },
+    { icon: HeartHandshake, label: 'Program Peduli', href: '/web-care-categories' },
   ]},
   { group: 'TRANSPARANSI', items: [
     { icon: FileCheck, label: 'Laporan Keuangan', href: '/web-reports' },
@@ -71,6 +72,7 @@ const tutorialMenus = [
     { icon: Tags, label: 'Kategori Artikel', href: '/tutorial#web-article-categories' },
     { icon: MessageSquare, label: 'Testimoni', href: '/tutorial#web-testimonials' },
     { icon: Users2, label: 'Mitra', href: '/tutorial#web-partners' },
+    { icon: HeartHandshake, label: 'Program Peduli', href: '/tutorial#web-care-categories' },
     { icon: FileCheck, label: 'Laporan Keuangan', href: '/tutorial#web-reports' },
     { icon: BarChart2, label: 'Impact Metrics', href: '/tutorial#web-metrics' },
     { icon: Info, label: 'Tentang Kami', href: '/tutorial#web-about' },
