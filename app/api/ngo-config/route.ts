@@ -132,7 +132,7 @@ export async function PATCH(req: Request) {
     }
     
     try {
-      await invalidateCache(['ngo_config', 'ngo_settings']);
+      await invalidateCache(['ngo_config', 'ngo_settings', 'ngo:configs:global_v4']);
     } catch (redisError) {
       console.warn('Redis flush failed, but database was updated:', redisError);
     }
