@@ -13,6 +13,8 @@ const configSchema = z.object({
   legal_info: z.string().optional().nullable(),
   primary_color: z.string().regex(/^#[0-9A-F]{6}$/i).default('#1086b1'),
   whatsapp_number: z.string().optional().nullable(),
+  email: z.string().optional().nullable(),
+  office_hours: z.string().optional().nullable(),
   instagram_url: z.string().optional().nullable(),
   facebook_url: z.string().optional().nullable(),
   meta_pixel_id: z.string().optional().nullable(),
@@ -56,17 +58,19 @@ export async function PATCH(req: Request) {
           legal_info = $7,
           primary_color = $8,
           whatsapp_number = $9,
-          instagram_url = $10,
-          facebook_url = $11,
-          meta_pixel_id = $12,
-          meta_capi_token = $13,
-          google_ads_id = $14,
-          google_developer_token = $15,
-          google_analytic_id = $16,
-          tiktok_pixel_id = $17,
-          tiktok_events_api_token = $18,
+          email = $10,
+          office_hours = $11,
+          instagram_url = $12,
+          facebook_url = $13,
+          meta_pixel_id = $14,
+          meta_capi_token = $15,
+          google_ads_id = $16,
+          google_developer_token = $17,
+          google_analytic_id = $18,
+          tiktok_pixel_id = $19,
+          tiktok_events_api_token = $20,
           updated_at = CURRENT_TIMESTAMP
-        WHERE id = $19
+        WHERE id = $21
         RETURNING *
       `;
       res = await query(sql, [
@@ -79,6 +83,8 @@ export async function PATCH(req: Request) {
         validated.legal_info,
         validated.primary_color,
         validated.whatsapp_number,
+        validated.email,
+        validated.office_hours,
         validated.instagram_url,
         validated.facebook_url,
         validated.meta_pixel_id,
@@ -94,11 +100,11 @@ export async function PATCH(req: Request) {
       const sql = `
         INSERT INTO ngo_configs (
           ngo_name, logo_url, favicon_url, video_url, short_description, address, legal_info,
-          primary_color, whatsapp_number, instagram_url, facebook_url,
+          primary_color, whatsapp_number, email, office_hours, instagram_url, facebook_url,
           meta_pixel_id, meta_capi_token, google_ads_id, google_developer_token, google_analytic_id,
           tiktok_pixel_id, tiktok_events_api_token
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
         RETURNING *
       `;
       res = await query(sql, [
@@ -111,6 +117,8 @@ export async function PATCH(req: Request) {
         validated.legal_info,
         validated.primary_color,
         validated.whatsapp_number,
+        validated.email,
+        validated.office_hours,
         validated.instagram_url,
         validated.facebook_url,
         validated.meta_pixel_id,

@@ -31,6 +31,8 @@ export default function SettingsPage() {
     favicon_url: '',
     video_url: '',
     whatsapp_number: '',
+    email: '',
+    office_hours: '',
     instagram_url: '',
     facebook_url: '',
     meta_pixel_id: '',
@@ -214,6 +216,8 @@ export default function SettingsPage() {
         favicon_url: config.favicon_url || '',
         video_url: config.video_url || '',
         whatsapp_number: config.whatsapp_number || '',
+        email: config.email || '',
+        office_hours: config.office_hours || '',
         instagram_url: config.instagram_url || '',
         facebook_url: config.facebook_url || '',
         meta_pixel_id: config.meta_pixel_id || '',
@@ -389,6 +393,16 @@ export default function SettingsPage() {
                   <div className="text-left">
                     <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">WhatsApp Organisasi</label>
                     <Input type="text" value={formData.whatsapp_number} onChange={(e) => setFormData({...formData, whatsapp_number: e.target.value})} placeholder="628123456789" />
+                  </div>
+
+                  <div className="text-left">
+                    <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Email Resmi</label>
+                    <Input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="layanan@organisasi.org" />
+                  </div>
+
+                  <div className="text-left">
+                    <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Jam Operasional</label>
+                    <Input type="text" value={formData.office_hours} onChange={(e) => setFormData({...formData, office_hours: e.target.value})} placeholder="Senin - Jumat: 08.00 - 17.00 WIB" />
                   </div>
                 </div>
               </div>
