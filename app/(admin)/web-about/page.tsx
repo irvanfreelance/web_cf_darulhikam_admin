@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import useSWR from 'swr';
+import { toast } from 'sonner';
 import { Plus, Edit2, Trash2, Save, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
@@ -47,12 +48,13 @@ function ContentSection() {
       });
       if (res.ok) {
         mutate();
+        toast.success('Konten berhasil disimpan');
       } else {
         const err = await res.json();
-        alert(err.error || 'Gagal menyimpan konten');
+        toast.error(err.error || 'Gagal menyimpan konten');
       }
     } catch (e) {
-      alert('Terjadi kesalahan sistem');
+      toast.error('Terjadi kesalahan sistem');
     } finally {
       setIsSaving(false);
     }
@@ -145,12 +147,13 @@ function TimelineSection() {
       if (res.ok) {
         setIsModalOpen(false);
         mutate();
+        toast.success(editingItem ? 'Linimasa berhasil diperbarui' : 'Linimasa berhasil ditambahkan');
       } else {
         const err = await res.json();
-        alert(err.error || 'Gagal menyimpan linimasa');
+        toast.error(err.error || 'Gagal menyimpan linimasa');
       }
     } catch (e) {
-      alert('Terjadi kesalahan sistem');
+      toast.error('Terjadi kesalahan sistem');
     } finally {
       setIsSubmitting(false);
     }
@@ -159,8 +162,12 @@ function TimelineSection() {
   const handleDelete = async (id: number) => {
     if (!confirm('Hapus entri linimasa ini?')) return;
     const res = await fetch(`/api/web-history?id=${id}`, { method: 'DELETE' });
-    if (res.ok) mutate();
-    else alert('Gagal menghapus data');
+    if (res.ok) {
+      mutate();
+      toast.success('Entri linimasa berhasil dihapus');
+    } else {
+      toast.error('Gagal menghapus data');
+    }
   };
 
   return (
@@ -258,12 +265,13 @@ function MissionSection() {
       if (res.ok) {
         setIsModalOpen(false);
         mutate();
+        toast.success(editingItem ? 'Poin misi berhasil diperbarui' : 'Poin misi berhasil ditambahkan');
       } else {
         const err = await res.json();
-        alert(err.error || 'Gagal menyimpan poin misi');
+        toast.error(err.error || 'Gagal menyimpan poin misi');
       }
     } catch (e) {
-      alert('Terjadi kesalahan sistem');
+      toast.error('Terjadi kesalahan sistem');
     } finally {
       setIsSubmitting(false);
     }
@@ -272,8 +280,12 @@ function MissionSection() {
   const handleDelete = async (id: number) => {
     if (!confirm('Hapus poin misi ini?')) return;
     const res = await fetch(`/api/web-mission?id=${id}`, { method: 'DELETE' });
-    if (res.ok) mutate();
-    else alert('Gagal menghapus data');
+    if (res.ok) {
+      mutate();
+      toast.success('Poin misi berhasil dihapus');
+    } else {
+      toast.error('Gagal menghapus data');
+    }
   };
 
   return (
