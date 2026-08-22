@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { invalidateCache } from '@/lib/redis';
 import { z } from 'zod';
 
 const schema = z.object({
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
       [data.bank_name, data.account_number, data.account_name, data.bank_code, data.logo_url, data.is_active, data.display_order]
     );
+    await invalidateCache(['web:bank_accounts']);
     return NextResponse.json(res.rows[0]);
   } catch (error: any) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: error.issues }, { status: 400 });
@@ -71,6 +73,7 @@ export async function PATCH(req: Request) {
       `UPDATE web_bank_accounts SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING *`,
       params
     );
+    await invalidateCache(['web:bank_accounts']);
     return NextResponse.json(res.rows[0]);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -84,6 +87,7 @@ export async function DELETE(req: Request) {
     if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
     
     await query(`DELETE FROM web_bank_accounts WHERE id = $1`, [id]);
+    await invalidateCache(['web:bank_accounts']);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
