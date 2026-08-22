@@ -1,29 +1,37 @@
-import { put } from '@vercel/blob';
+import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { NextResponse } from 'next/server';
 
+// Client-direct upload: the browser uploads bytes straight to Vercel Blob using
+// a short-lived token minted here. This route only ever sees a small JSON
+// handshake, so it is NOT subject to the ~4.5MB request body limit that
+// Vercel imposes on Node.js serverless functions — proxying large files
+// (e.g. report PDFs) through that limit previously caused silent truncation.
 export async function POST(request: Request): Promise<NextResponse> {
+  const body = (await request.json()) as HandleUploadBody;
+
   try {
-    const { searchParams } = new URL(request.url);
-    const filename = searchParams.get('filename');
-
-    if (!filename) {
-      return NextResponse.json({ error: 'Filename is required' }, { status: 400 });
-    }
-
-    const { body } = request;
-
-    if (!body) {
-      return NextResponse.json({ error: 'Body is required' }, { status: 400 });
-    }
-
-    const blob = await put(filename, body, {
-      access: 'public',
-      addRandomSuffix: true,
+    const jsonResponse = await handleUpload({
+      body,
+      request,
+      onBeforeGenerateToken: async () => ({
+        allowedContentTypes: [
+          'image/*',
+          'video/*',
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ],
+        addRandomSuffix: true,
+      }),
+      onUploadCompleted: async () => {},
     });
 
-    return NextResponse.json(blob);
+    return NextResponse.json(jsonResponse);
   } catch (error) {
     console.error('Upload Error:', error);
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Upload failed' },
+      { status: 400 }
+    );
   }
 }
