@@ -4,11 +4,7 @@ import { invalidateCache } from '@/lib/redis';
 import { z } from 'zod';
 
 const schema = z.object({
-  title: z.string().min(2),
-  document_number: z.string().optional().nullable(),
-  issued_by: z.string().optional().nullable(),
-  issued_date: z.string().optional().nullable().transform(v => v === '' ? null : v),
-  file_url: z.string().optional().nullable().transform(v => v === '' ? null : v),
+  content: z.string().min(2),
   is_active: z.boolean().default(true),
   display_order: z.number().int().default(0),
 });
@@ -17,13 +13,13 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search');
-    let sql = `SELECT * FROM web_legality`;
+    let sql = `SELECT * FROM web_mission_points`;
     const params: any[] = [];
     if (search) {
-      sql += ` WHERE (title ILIKE $1 OR document_number ILIKE $1 OR issued_by ILIKE $1)`;
+      sql += ` WHERE content ILIKE $1`;
       params.push(`%${search}%`);
     }
-    sql += ` ORDER BY display_order ASC, id DESC LIMIT 100`;
+    sql += ` ORDER BY display_order ASC, id ASC LIMIT 100`;
     const data = await query(sql, params);
     return NextResponse.json(data.rows);
   } catch (error: any) {
@@ -35,13 +31,13 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const data = schema.parse(body);
-    
+
     const res = await query(
-      `INSERT INTO web_legality (title, document_number, issued_by, issued_date, file_url, is_active, display_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [data.title, data.document_number, data.issued_by, data.issued_date, data.file_url, data.is_active, data.display_order]
+      `INSERT INTO web_mission_points (content, is_active, display_order)
+       VALUES ($1, $2, $3) RETURNING *`,
+      [data.content, data.is_active, data.display_order]
     );
-    await invalidateCache(['web:legality']);
+    await invalidateCache(['web:mission_points']);
     return NextResponse.json(res.rows[0]);
   } catch (error: any) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: error.issues }, { status: 400 });
@@ -53,27 +49,27 @@ export async function PATCH(req: Request) {
   try {
     const body = await req.json();
     if (!body.id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
-    
+
     const data = schema.partial().parse(body);
     const fields: string[] = [];
     const params: any[] = [];
     let idx = 1;
-    
+
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined) {
         fields.push(`${key} = $${idx++}`);
         params.push(value);
       }
     }
-    
+
     if (fields.length === 0) return NextResponse.json({ error: 'No data to update' }, { status: 400 });
-    
+
     params.push(body.id);
     const res = await query(
-      `UPDATE web_legality SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING *`,
+      `UPDATE web_mission_points SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING *`,
       params
     );
-    await invalidateCache(['web:legality']);
+    await invalidateCache(['web:mission_points']);
     return NextResponse.json(res.rows[0]);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -85,9 +81,9 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
-    
-    await query(`DELETE FROM web_legality WHERE id = $1`, [id]);
-    await invalidateCache(['web:legality']);
+
+    await query(`DELETE FROM web_mission_points WHERE id = $1`, [id]);
+    await invalidateCache(['web:mission_points']);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

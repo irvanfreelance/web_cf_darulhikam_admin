@@ -8,7 +8,7 @@ import {
   Menu, LogOut, Heart, Tags, CreditCard, BellRing,
   ShieldCheck, History, Wallet, MessageSquare, User,
   Globe, FileText, BarChart2, PieChart, Users2, Shield,
-  Building, HelpCircle, Star, Activity, FileCheck, BookOpen
+  Building, HelpCircle, Star, Activity, FileCheck, BookOpen, Info
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -54,6 +54,7 @@ const websiteMenus = [
     { icon: BarChart2, label: 'Impact Metrics', href: '/web-metrics' },
   ]},
   { group: 'ORGANISASI', items: [
+    { icon: Info, label: 'Tentang Kami', href: '/web-about' },
     { icon: Users, label: 'Tim & Pengurus', href: '/web-team' },
     { icon: Shield, label: 'Legalitas', href: '/web-legality' },
     { icon: Building, label: 'Rekening Resmi', href: '/web-banks' },
@@ -72,6 +73,7 @@ const tutorialMenus = [
     { icon: Users2, label: 'Mitra', href: '/tutorial#web-partners' },
     { icon: FileCheck, label: 'Laporan Keuangan', href: '/tutorial#web-reports' },
     { icon: BarChart2, label: 'Impact Metrics', href: '/tutorial#web-metrics' },
+    { icon: Info, label: 'Tentang Kami', href: '/tutorial#web-about' },
     { icon: Users, label: 'Tim & Pengurus', href: '/tutorial#web-team' },
     { icon: Shield, label: 'Legalitas', href: '/tutorial#web-legality' },
     { icon: Building, label: 'Rekening Resmi', href: '/tutorial#web-banks' },
