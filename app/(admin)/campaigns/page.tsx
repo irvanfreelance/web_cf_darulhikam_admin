@@ -229,7 +229,10 @@ export default function CampaignsPage() {
         onClick: async () => {
           try {
             const res = await fetch(`/api/campaigns?id=${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Failed to delete');
+            if (!res.ok) {
+              const err = await res.json().catch(() => null);
+              throw new Error(err?.error || 'Failed to delete');
+            }
             toast.success('Kampanye dihapus');
             mutate();
           } catch (err: any) {
