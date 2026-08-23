@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import useSWR from 'swr';
+import { upload } from '@vercel/blob/client';
 import {
   Plus, Search, Edit2, Trash2, Save, Loader2,
   GraduationCap, HandCoins, Leaf, HeartPulse, Users, MoonStar, Heart,
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { FileUpload } from '@/components/ui/file-upload';
+import { cn } from '@/lib/utils';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -31,6 +33,9 @@ function CategoryIcon({ item, className }: { item: any; className?: string }) {
 export default function CareCategoriesPage() {
   const [search, setSearch] = useState('');
   const { data: categories, mutate, isLoading } = useSWR(`/api/web-care-categories?search=${search}`, fetcher);
+  const { data: iconLibrary, mutate: mutateIcons } = useSWR('/api/web-icon-library', fetcher);
+  const iconInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingIcon, setIsUploadingIcon] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -96,6 +101,32 @@ export default function CareCategoriesPage() {
       alert('Terjadi kesalahan sistem');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleIconFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setIsUploadingIcon(true);
+    try {
+      const blob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+      });
+      const res = await fetch('/api/web-icon-library', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: blob.url, label: file.name.replace(/\.[^.]+$/, '') }),
+      });
+      if (!res.ok) throw new Error('Gagal menyimpan ikon');
+      const newIcon = await res.json();
+      await mutateIcons();
+      setFormData(prev => ({ ...prev, icon_url: newIcon.url }));
+    } catch (err) {
+      alert('Gagal mengupload ikon');
+    } finally {
+      setIsUploadingIcon(false);
     }
   };
 
@@ -228,13 +259,36 @@ export default function CareCategoriesPage() {
           </div>
 
           <div>
-            <FileUpload
-              label="Ikon Kategori"
-              hint="PNG/SVG persegi, disarankan latar transparan"
-              value={formData.icon_url}
-              onChange={(url) => setFormData({ ...formData, icon_url: url })}
-              className="h-28 w-28"
-            />
+            <label className="block text-xs font-bold text-slate-700 mb-2">Ikon Kategori *</label>
+            <div className="grid grid-cols-8 gap-2">
+              {(iconLibrary || []).map((icon: any) => (
+                <button
+                  key={icon.id}
+                  type="button"
+                  title={icon.label || 'Ikon'}
+                  onClick={() => setFormData({ ...formData, icon_url: icon.url })}
+                  className={cn(
+                    "aspect-square rounded-xl border-2 p-1.5 flex items-center justify-center transition-all overflow-hidden",
+                    formData.icon_url === icon.url
+                      ? "border-[#83b64e] bg-[#83b64e]/10"
+                      : "border-slate-200 hover:border-slate-300"
+                  )}
+                >
+                  <img src={icon.url} alt="" className="w-full h-full object-contain" />
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => iconInputRef.current?.click()}
+                disabled={isUploadingIcon}
+                title="Upload ikon baru"
+                className="aspect-square rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400 hover:border-[#83b64e] hover:text-[#83b64e] transition-all disabled:opacity-50"
+              >
+                {isUploadingIcon ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+              </button>
+              <input ref={iconInputRef} type="file" accept="image/*" className="hidden" onChange={handleIconFileChange} />
+            </div>
+            <p className="text-[10px] text-slate-400 mt-2">Klik &ldquo;+&rdquo; untuk upload ikon baru (PNG, latar transparan disarankan) — sekali upload bisa dipakai ulang di kategori lain.</p>
           </div>
 
           <div>
