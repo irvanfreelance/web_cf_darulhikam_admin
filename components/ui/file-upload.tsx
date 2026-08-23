@@ -4,7 +4,7 @@ import * as React from "react"
 import { Image as ImageIcon, X, Upload, Loader2, Link as LinkIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import type { PutBlobResult } from '@vercel/blob';
+import { upload } from '@vercel/blob/client';
 
 interface FileUploadProps {
   value?: string;
@@ -29,7 +29,7 @@ export function FileUpload({
   deferred = false,
   onFileSelect,
   accept = "image/*,.pdf,.doc,.docx",
-  hint = "Max 4.5MB • PNG, JPG, WEBP"
+  hint = "PNG, JPG, WEBP"
 }: FileUploadProps) {
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -37,16 +37,10 @@ export function FileUpload({
   const handleUpload = async (file: File) => {
     setIsUploading(true);
     try {
-      const response = await fetch(`/api/upload?filename=${file.name}`, {
-        method: 'POST',
-        body: file,
+      const newBlob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
       });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const newBlob = (await response.json()) as PutBlobResult;
       onChange(newBlob.url);
       toast.success("File berhasil diupload");
     } catch (error) {

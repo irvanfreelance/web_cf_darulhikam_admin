@@ -8,6 +8,7 @@ import {
   CheckCircle2, AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { upload } from '@vercel/blob/client';
 
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
@@ -38,16 +39,11 @@ export default function NewCampaignPage() {
       let finalImageUrl = formData.image_url;
       if (imageFile) {
         toast('Mengupload gambar ke server...');
-        const fileForm = new FormData();
-        fileForm.append('file', imageFile);
-        
-        const response = await fetch(`/api/upload?filename=${imageFile.name}`, {
-          method: 'POST',
-          body: imageFile,
+        const blob = await upload(imageFile.name, imageFile, {
+          access: 'public',
+          handleUploadUrl: '/api/upload',
         });
-        if (!response.ok) throw new Error('Gagal mengupload gambar');
-        const blobRes = await response.json();
-        finalImageUrl = blobRes.url;
+        finalImageUrl = blob.url;
       }
 
       const postData = { ...formData, image_url: finalImageUrl };

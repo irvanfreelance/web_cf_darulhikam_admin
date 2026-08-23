@@ -3,10 +3,21 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
   function middleware(req) {
+    const { pathname } = req.nextUrl;
+
     // If authenticated user visits /login, redirect to dashboard
-    if (req.nextUrl.pathname.startsWith("/login") && req.nextauth.token) {
+    if (pathname.startsWith("/login") && req.nextauth.token) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
+
+    // Unauthenticated API calls must fail with JSON, not an HTML redirect to
+    // /login — a redirected response still resolves as 200/`res.ok`, so
+    // callers doing res.json() (e.g. the @vercel/blob client upload flow)
+    // get a cryptic parse failure instead of a clear auth error.
+    if (pathname.startsWith("/api/") && !req.nextauth.token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     return NextResponse.next();
   },
   {
@@ -14,10 +25,11 @@ export default withAuth(
       authorized({ token, req }) {
         const { pathname } = req.nextUrl;
 
-        // Always allow access to login page and api/auth routes
+        // Always allow access to login page, api/auth routes, and API
+        // routes (handled above so they get a JSON 401 instead of a redirect)
         if (
           pathname.startsWith("/login") ||
-          pathname.startsWith("/api/auth")
+          pathname.startsWith("/api/")
         ) {
           return true;
         }

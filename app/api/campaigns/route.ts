@@ -11,7 +11,9 @@ const campaignSchema = z.object({
   image_url: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
   target_amount: z.coerce.number().nullable().optional(),
-  end_date: z.string().nullable().optional(),
+  // '' comes from campaigns with no end date (has_no_time_limit) — an empty
+  // string is not a valid timestamptz, so it must become null before the SQL layer.
+  end_date: z.string().nullable().optional().transform(v => v === '' ? null : v),
   // Bool flags
   is_zakat: z.boolean().default(false),
   is_qurban: z.boolean().default(false),
@@ -199,6 +201,14 @@ export async function DELETE(req: Request) {
     await invalidateCache(['campaigns', 'campaigns_list', 'api:campaigns:carousel_v1', 'web:footer_programs']);
     return NextResponse.json({ success: true });
   } catch (error: any) {
+    // Postgres foreign_key_violation — campaign still has related transactions
+    // (RESTRICT, by design: never silently orphan donation/financial records).
+    if (error.code === '23503') {
+      return NextResponse.json(
+        { error: 'Kampanye ini tidak bisa dihapus karena sudah memiliki transaksi/donasi terkait. Nonaktifkan kampanye ini saja (ubah status ke Nonaktif) jika ingin menyembunyikannya dari publik.' },
+        { status: 409 }
+      );
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

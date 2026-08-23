@@ -10,6 +10,7 @@ import {
   Layers, Package, QrCode, Tags
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { upload } from '@vercel/blob/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FileUpload } from '@/components/ui/file-upload';
@@ -60,16 +61,11 @@ export default function CampaignDetailPage() {
       let finalImageUrl = formData.image_url;
       if (formData.image_file) {
         toast('Mengupload gambar ke server...');
-        const fileForm = new FormData();
-        fileForm.append('file', formData.image_file);
-        
-        const response = await fetch(`/api/upload?filename=${formData.image_file.name}`, {
-          method: 'POST',
-          body: formData.image_file,
+        const blob = await upload(formData.image_file.name, formData.image_file, {
+          access: 'public',
+          handleUploadUrl: '/api/upload',
         });
-        if (!response.ok) throw new Error('Gagal mengupload gambar');
-        const blobRes = await response.json();
-        finalImageUrl = blobRes.url;
+        finalImageUrl = blob.url;
       }
 
       const res = await fetch('/api/campaign-updates', {
