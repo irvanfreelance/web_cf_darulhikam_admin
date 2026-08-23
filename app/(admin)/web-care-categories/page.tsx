@@ -268,10 +268,10 @@ export default function CareCategoriesPage() {
                   title={icon.label || 'Ikon'}
                   onClick={() => setFormData({ ...formData, icon_url: icon.url })}
                   className={cn(
-                    "aspect-square rounded-xl border-2 p-1.5 flex items-center justify-center transition-all overflow-hidden",
+                    "aspect-square rounded-xl bg-[#83b64e] p-2 flex items-center justify-center transition-all overflow-hidden",
                     formData.icon_url === icon.url
-                      ? "border-[#83b64e] bg-[#83b64e]/10"
-                      : "border-slate-200 hover:border-slate-300"
+                      ? "ring-2 ring-offset-2 ring-slate-800"
+                      : "opacity-70 hover:opacity-100"
                   )}
                 >
                   <img src={icon.url} alt="" className="w-full h-full object-contain" />
