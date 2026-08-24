@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import useSWR from 'swr';
-import { BarChart2, Plus, Search, Edit2, Trash2, Save, Loader2 } from 'lucide-react';
+import { BarChart2, Plus, Search, Edit2, Trash2, Save, Loader2, Map } from 'lucide-react';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
+import DistributionMapModal from '@/components/admin/distribution-map-modal';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -15,6 +16,7 @@ export default function MetricsPage() {
   const { data: metrics, error, mutate, isLoading } = useSWR(`/api/web-metrics?search=${search}`, fetcher);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMapOpen, setIsMapOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -158,6 +160,15 @@ export default function MetricsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
+                      {item.metric_key.includes('province') && (
+                        <button 
+                          onClick={() => setIsMapOpen(true)} 
+                          className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors mr-1"
+                          title="Lihat Peta Sebaran"
+                        >
+                          <Map size={16} />
+                        </button>
+                      )}
                       <button onClick={() => handleOpenEdit(item)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
                         <Edit2 size={16} />
                       </button>
@@ -174,6 +185,12 @@ export default function MetricsPage() {
           <div className="text-center py-12 text-slate-400 font-medium">Belum ada data metric.</div>
         )}
       </div>
+
+      {/* Map Modal */}
+      <DistributionMapModal 
+        isOpen={isMapOpen} 
+        onClose={() => setIsMapOpen(false)} 
+      />
 
       {/* Form Modal */}
       <Modal
