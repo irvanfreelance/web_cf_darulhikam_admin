@@ -2,8 +2,11 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import { X, Users, Heart, Sprout, BookOpen, HandHeart, BriefcaseMedical } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 // Dynamically import the map component so Leaflet doesn't break SSR
 const DynamicDistributionMap = dynamic(
@@ -24,6 +27,15 @@ interface DistributionMapModalProps {
 }
 
 export default function DistributionMapModal({ isOpen, onClose }: DistributionMapModalProps) {
+  const { data: metrics } = useSWR(isOpen ? '/api/web-metrics' : null, fetcher);
+
+  // Helper function to get metric value safely
+  const getMetricValue = (key: string, defaultValue: string = "0") => {
+    if (!metrics || !Array.isArray(metrics)) return defaultValue;
+    const metric = metrics.find(m => m.metric_key === key);
+    return metric ? Number(metric.value).toLocaleString('id-ID') + (metric.suffix || '') : defaultValue;
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -69,7 +81,7 @@ export default function DistributionMapModal({ isOpen, onClose }: DistributionMa
                  </div>
                </div>
                <div className="text-4xl md:text-5xl font-extrabold text-[#76b541] tracking-tighter mt-2">
-                 225.780
+                 {getMetricValue('total_beneficiaries_k', '225.780')}
                </div>
                <div className="text-slate-500 font-semibold">Penerima Manfaat</div>
              </div>
@@ -127,12 +139,12 @@ export default function DistributionMapModal({ isOpen, onClose }: DistributionMa
               <p className="text-white/80 font-medium text-sm">LAZ DARUL HIKAM</p>
            </div>
            
-           <StatItem icon={BookOpen} label="Peduli Pendidikan" value="8.983" />
-           <StatItem icon={Sprout} label="Peduli Lingkungan" value="16.014" />
-           <StatItem icon={HandHeart} label="Peduli Umat" value="49.678" />
-           <StatItem icon={BriefcaseMedical} label="Peduli Kesehatan" value="2.941" />
-           <StatItem icon={Heart} label="Peduli Ekonomi" value="9.849" />
-           <StatItem icon={Heart} label="Program Khusus" value="147.298" />
+           <StatItem icon={BookOpen} label="Peduli Pendidikan" value={getMetricValue('map_peduli_pendidikan', '8.983')} />
+           <StatItem icon={Sprout} label="Peduli Lingkungan" value={getMetricValue('map_peduli_lingkungan', '16.014')} />
+           <StatItem icon={HandHeart} label="Peduli Umat" value={getMetricValue('map_peduli_umat', '49.678')} />
+           <StatItem icon={BriefcaseMedical} label="Peduli Kesehatan" value={getMetricValue('map_peduli_kesehatan', '2.941')} />
+           <StatItem icon={Heart} label="Peduli Ekonomi" value={getMetricValue('map_peduli_ekonomi', '9.849')} />
+           <StatItem icon={Heart} label="Program Khusus" value={getMetricValue('map_program_khusus', '147.298')} />
         </div>
 
       </div>
