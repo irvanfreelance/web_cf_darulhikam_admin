@@ -94,7 +94,7 @@ export default function PengajuanCAPage() {
   const commitSearch = () => { setKeyword(keywordDraft); setPage(1); };
 
   const handleApprove = async (id: number) => {
-    const res = await fetch(`/api/fins/pengajuan-ca/${id}/approve`, {
+    const res = await fetch(`/api/fins/pengajuan-ca/line/${id}/approve`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'approve' }),
     });
     if (!res.ok) {
@@ -107,14 +107,14 @@ export default function PengajuanCAPage() {
   };
   const handleReject = async (id: number) => {
     if (!window.confirm('Tolak pengajuan CA ini?')) return;
-    await fetch(`/api/fins/pengajuan-ca/${id}/approve`, {
+    await fetch(`/api/fins/pengajuan-ca/line/${id}/approve`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reject' }),
     });
     toast.success('Pengajuan ditolak');
     mutate();
   };
   const handleSetUnapprove = async (id: number) => {
-    await fetch(`/api/fins/pengajuan-ca/${id}/approve`, {
+    await fetch(`/api/fins/pengajuan-ca/line/${id}/approve`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'unapprove' }),
     });
     mutate();
