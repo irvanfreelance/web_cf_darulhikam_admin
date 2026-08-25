@@ -9,14 +9,19 @@ function ComingSoonContent() {
   const title = searchParams.get('title') || 'Halaman ini';
 
   return (
-    <div className="p-8">
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-16 flex flex-col items-center justify-center text-center gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center">
-          <Construction size={28} className="text-amber-500" />
+    <div className="space-y-6">
+      <div className="text-left">
+        <h1 className="text-2xl font-normal text-slate-800 tracking-tight">{title}</h1>
+        <p className="text-sm text-slate-400 font-medium mt-1">Segera hadir</p>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-16 flex flex-col items-center justify-center text-center gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-teal-50 flex items-center justify-center">
+          <Construction size={28} className="text-teal-600" />
         </div>
-        <h1 className="text-lg font-bold text-slate-800">{title}</h1>
+        <h2 className="text-base font-semibold text-slate-800">Halaman ini sedang dalam pengembangan</h2>
         <p className="text-sm text-slate-400 max-w-sm">
-          Halaman ini sedang dalam pengembangan dan akan segera tersedia.
+          Fitur {title} akan segera tersedia di panel admin ini.
         </p>
       </div>
     </div>
