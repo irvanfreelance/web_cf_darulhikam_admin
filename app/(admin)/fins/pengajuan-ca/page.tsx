@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import useSWR from 'swr';
 import {
   Plus, Minus, Upload, Download, Search, X, CheckCircle, XCircle,
-  RotateCcw, Trash2, CheckCheck, ArrowLeft, Save,
+  RotateCcw, Trash2, CheckCheck, ArrowLeft, Save, Pencil, Check,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -74,6 +74,7 @@ export default function PengajuanCAPage() {
   const [header, setHeader] = useState(emptyHeader());
   const [draftLine, setDraftLine] = useState(emptyDraftLine());
   const [detailLines, setDetailLines] = useState<DetailLine[]>([]);
+  const [editingLineKey, setEditingLineKey] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const queryParams = new URLSearchParams({
@@ -173,6 +174,7 @@ export default function PengajuanCAPage() {
     setHeader(emptyHeader());
     setDetailLines([]);
     setDraftLine(emptyDraftLine());
+    setEditingLineKey(null);
     setView('form');
   };
 
@@ -194,6 +196,7 @@ export default function PengajuanCAPage() {
       nominal: Number(l.nominal), keterangan: l.keterangan,
     })));
     setDraftLine(emptyDraftLine());
+    setEditingLineKey(null);
     setView('form');
   };
 
@@ -203,18 +206,37 @@ export default function PengajuanCAPage() {
       return;
     }
     const jt = (masters?.jenisTransaksi || []).find((j: { coa: string; nama: string }) => j.nama === draftLine.jenisTransaksi);
-    setDetailLines(prev => [...prev, {
-      key: `draft-${Date.now()}-${Math.random()}`,
-      coa: jt?.coa || '',
-      namaAkun: draftLine.jenisTransaksi,
-      quantity: 1,
-      nominal: parseNumber(draftLine.nominal),
-      keterangan: draftLine.keterangan,
-    }]);
+
+    if (editingLineKey) {
+      // Update the existing line in place, keeping its key (and, if it's a
+      // persisted line, its `realisasi`/id) so PUT correctly matches it up
+      // instead of dropping history via delete-then-recreate.
+      setDetailLines(prev => prev.map(l => l.key === editingLineKey
+        ? { ...l, coa: jt?.coa || '', namaAkun: draftLine.jenisTransaksi, nominal: parseNumber(draftLine.nominal), keterangan: draftLine.keterangan }
+        : l
+      ));
+      setEditingLineKey(null);
+    } else {
+      setDetailLines(prev => [...prev, {
+        key: `draft-${Date.now()}-${Math.random()}`,
+        coa: jt?.coa || '',
+        namaAkun: draftLine.jenisTransaksi,
+        quantity: 1,
+        nominal: parseNumber(draftLine.nominal),
+        keterangan: draftLine.keterangan,
+      }]);
+    }
     setDraftLine(emptyDraftLine());
   };
-  const clearDraftLine = () => setDraftLine(emptyDraftLine());
-  const removeDetailLine = (key: string) => setDetailLines(prev => prev.filter(l => l.key !== key));
+  const clearDraftLine = () => { setDraftLine(emptyDraftLine()); setEditingLineKey(null); };
+  const startEditLine = (line: DetailLine) => {
+    setEditingLineKey(line.key);
+    setDraftLine({ jenisTransaksi: line.namaAkun, nominal: String(line.nominal), keterangan: line.keterangan });
+  };
+  const removeDetailLine = (key: string) => {
+    setDetailLines(prev => prev.filter(l => l.key !== key));
+    if (editingLineKey === key) { setEditingLineKey(null); setDraftLine(emptyDraftLine()); }
+  };
 
   const persistLines = async () => {
     if (detailLines.length === 0) {
@@ -255,6 +277,7 @@ export default function PengajuanCAPage() {
     setHeader(emptyHeader());
     setDetailLines([]);
     setDraftLine(emptyDraftLine());
+    setEditingLineKey(null);
   };
   const handleSave = async () => {
     if (!(await persistLines())) return;
@@ -324,9 +347,14 @@ export default function PengajuanCAPage() {
                     <input type="text" placeholder="Keterangan" value={draftLine.keterangan}
                       onChange={e => setDraftLine(prev => ({ ...prev, keterangan: e.target.value }))}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-normal text-slate-900 focus:outline-none focus:border-teal-500 transition-all" />
-                    <button type="button" title="Tambah Baris" onClick={addDetailLine} className="shrink-0 h-[46px] w-[46px] rounded-xl bg-teal-600 text-white flex items-center justify-center hover:bg-teal-700 transition-all active:scale-95 shadow-lg shadow-teal-500/20"><Plus size={16} strokeWidth={3} /></button>
+                    <button type="button" title={editingLineKey ? 'Update Baris' : 'Tambah Baris'} onClick={addDetailLine} className={`shrink-0 h-[46px] w-[46px] rounded-xl text-white flex items-center justify-center transition-all active:scale-95 shadow-lg ${editingLineKey ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-500/20' : 'bg-teal-600 hover:bg-teal-700 shadow-teal-500/20'}`}>
+                      {editingLineKey ? <Check size={16} strokeWidth={3} /> : <Plus size={16} strokeWidth={3} />}
+                    </button>
                     <button type="button" title="Kosongkan" onClick={clearDraftLine} className="shrink-0 h-[46px] w-[46px] rounded-xl bg-white border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-50 transition-all"><Minus size={16} /></button>
                   </div>
+                  {editingLineKey && (
+                    <p className="text-xs text-amber-600 font-medium mt-2">Mengubah baris — klik &lsquo;centang&rsquo; untuk menyimpan perubahan.</p>
+                  )}
                 </div>
               </div>
 
@@ -350,7 +378,7 @@ export default function PengajuanCAPage() {
                         <tr><td colSpan={8} className="px-5 py-10 text-center text-slate-400 italic">Belum ada baris detail</td></tr>
                       )}
                       {detailLines.map(l => (
-                        <tr key={l.key} className="hover:bg-slate-50/50 transition-colors">
+                        <tr key={l.key} className={`transition-colors ${editingLineKey === l.key ? 'bg-amber-50/60' : 'hover:bg-slate-50/50'}`}>
                           <td className="px-5 py-4 font-mono text-xs text-slate-500">{l.coa}</td>
                           <td className="px-5 py-4 text-sm font-normal text-slate-800">{l.namaAkun}</td>
                           <td className="px-5 py-4 text-center text-sm text-slate-600">{l.quantity}</td>
@@ -359,7 +387,10 @@ export default function PengajuanCAPage() {
                           <td className="px-5 py-4 text-sm text-slate-600">{l.keterangan || '-'}</td>
                           <td className="px-5 py-4 text-sm text-slate-600">{officeOptions.find((o: { id: number; name: string }) => o.id === header.officeId)?.name}</td>
                           <td className="px-5 py-4 text-center">
-                            <button onClick={() => removeDetailLine(l.key)} title="Hapus baris" className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors"><Trash2 size={16} /></button>
+                            <div className="flex items-center justify-center gap-1">
+                              <button onClick={() => startEditLine(l)} title="Ubah baris" className="p-1.5 text-slate-400 hover:text-teal-600 transition-colors"><Pencil size={16} /></button>
+                              <button onClick={() => removeDetailLine(l.key)} title="Hapus baris" className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors"><Trash2 size={16} /></button>
+                            </div>
                           </td>
                         </tr>
                       ))}
