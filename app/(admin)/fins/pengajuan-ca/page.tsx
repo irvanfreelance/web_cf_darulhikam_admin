@@ -518,6 +518,7 @@ export default function PengajuanCAPage() {
                         {r.status !== 'approved' && <button title="Approve" onClick={() => handleApprove(r.id)} className="p-1.5 text-slate-400 hover:text-emerald-600 transition-colors"><CheckCircle size={16} /></button>}
                         {r.status !== 'rejected' && <button title="Reject" onClick={() => handleReject(r.id)} className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors"><XCircle size={16} /></button>}
                         {r.status !== 'unapprove' && <button title="Set Unapprove" onClick={() => handleSetUnapprove(r.id)} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"><RotateCcw size={16} /></button>}
+                        <button title="Ubah Pengajuan" onClick={() => openEdit(r.id_buku)} className="p-1.5 text-slate-400 hover:text-teal-600 transition-colors"><Pencil size={16} /></button>
                         <button title="Hapus" onClick={() => handleDeleteRecord(r.id)} className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors"><Trash2 size={16} /></button>
                       </div>
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_BADGE[r.status]}`}>
