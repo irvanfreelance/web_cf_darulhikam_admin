@@ -41,7 +41,9 @@ export default function SettingsPage() {
     google_developer_token: '',
     tiktok_pixel_id: '',
     tiktok_events_api_token: '',
-    google_analytic_id: ''
+    google_analytic_id: '',
+    jejak_kebaikan_title: '',
+    jejak_kebaikan_subtitle: ''
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -226,7 +228,9 @@ export default function SettingsPage() {
         google_developer_token: config.google_developer_token || '',
         tiktok_pixel_id: config.tiktok_pixel_id || '',
         tiktok_events_api_token: config.tiktok_events_api_token || '',
-        google_analytic_id: config.google_analytic_id || ''
+        google_analytic_id: config.google_analytic_id || '',
+        jejak_kebaikan_title: config.jejak_kebaikan_title || '',
+        jejak_kebaikan_subtitle: config.jejak_kebaikan_subtitle || ''
       });
     }
   }, [config, configLoading]);
@@ -441,7 +445,24 @@ export default function SettingsPage() {
 
             <section className="space-y-6 pt-4">
               <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-50 pb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"/><path d="M16 5V3"/><path d="M8 5V3"/><path d="M3 9h18"/><path d="M16 19h6"/><path d="M19 16v6"/></svg> 
+                <SettingsIcon size={20} className="text-emerald-500" /> Banner Statistik (Jejak Kebaikan)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="text-left">
+                  <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Judul Banner</label>
+                  <Input type="text" value={formData.jejak_kebaikan_title} onChange={(e) => setFormData({...formData, jejak_kebaikan_title: e.target.value})} placeholder="Jejak Kebaikan" />
+                </div>
+                <div className="text-left">
+                  <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Subjudul Banner</label>
+                  <Input type="text" value={formData.jejak_kebaikan_subtitle} onChange={(e) => setFormData({...formData, jejak_kebaikan_subtitle: e.target.value})} placeholder="LAZ DARUL HIKAM" />
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-400 -mt-2">Ditampilkan di panel hijau bagian bawah pada Peta Sebaran. Kartu kategori & angkanya dikelola di menu &ldquo;Jejak Kebaikan&rdquo; (Website CMS).</p>
+            </section>
+
+            <section className="space-y-6 pt-4">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b border-slate-50 pb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"/><path d="M16 5V3"/><path d="M8 5V3"/><path d="M3 9h18"/><path d="M16 19h6"/><path d="M19 16v6"/></svg>
                 Tracking & Marketing Pixels
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
