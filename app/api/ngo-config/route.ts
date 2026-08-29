@@ -24,6 +24,8 @@ const configSchema = z.object({
   google_analytic_id: z.string().optional().nullable(),
   tiktok_pixel_id: z.string().optional().nullable(),
   tiktok_events_api_token: z.string().optional().nullable(),
+  jejak_kebaikan_title: z.string().optional().nullable(),
+  jejak_kebaikan_subtitle: z.string().optional().nullable(),
 });
 
 export async function GET() {
@@ -69,8 +71,10 @@ export async function PATCH(req: Request) {
           google_analytic_id = $18,
           tiktok_pixel_id = $19,
           tiktok_events_api_token = $20,
+          jejak_kebaikan_title = $21,
+          jejak_kebaikan_subtitle = $22,
           updated_at = CURRENT_TIMESTAMP
-        WHERE id = $21
+        WHERE id = $23
         RETURNING *
       `;
       res = await query(sql, [
@@ -94,6 +98,8 @@ export async function PATCH(req: Request) {
         validated.google_analytic_id,
         validated.tiktok_pixel_id,
         validated.tiktok_events_api_token,
+        validated.jejak_kebaikan_title,
+        validated.jejak_kebaikan_subtitle,
         check.rows[0].id
       ]);
     } else {
@@ -102,9 +108,9 @@ export async function PATCH(req: Request) {
           ngo_name, logo_url, favicon_url, video_url, short_description, address, legal_info,
           primary_color, whatsapp_number, email, office_hours, instagram_url, facebook_url,
           meta_pixel_id, meta_capi_token, google_ads_id, google_developer_token, google_analytic_id,
-          tiktok_pixel_id, tiktok_events_api_token
+          tiktok_pixel_id, tiktok_events_api_token, jejak_kebaikan_title, jejak_kebaikan_subtitle
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
         RETURNING *
       `;
       res = await query(sql, [
@@ -127,7 +133,9 @@ export async function PATCH(req: Request) {
         validated.google_developer_token,
         validated.google_analytic_id,
         validated.tiktok_pixel_id,
-        validated.tiktok_events_api_token
+        validated.tiktok_events_api_token,
+        validated.jejak_kebaikan_title,
+        validated.jejak_kebaikan_subtitle
       ]);
     }
     

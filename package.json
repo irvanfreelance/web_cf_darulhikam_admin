@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "migrate": "tsx scripts/seed.ts",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "seed:distribution-points": "tsx scripts/seed_distribution_points.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
