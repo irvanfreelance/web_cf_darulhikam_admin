@@ -28,17 +28,20 @@ COMMENT ON CONSTRAINT fk_fins_budget_campaign ON fins_budget
   IS 'Anggaran FINS → campaign crowdfunding (SET NULL jika campaign dihapus)';
 
 -- ============================================================
--- 2. fins_trans composite FK → invoices(id, created_at)
---    invoices adalah partitioned table — FK ke parent table,
+-- 2. fins_trans composite FK → transactions(id, created_at)
+--    transactions adalah partitioned table — FK harus ke parent
+--    table (bukan ke child partition seperti transactions_y2026m10),
 --    didukung sejak PostgreSQL 14 (Neon menggunakan PG 16+).
+--    Referensi ke transactions (bukan invoices) karena fins_trans
+--    merepresentasikan satu line-item transaksi per-campaign.
 -- ============================================================
 ALTER TABLE fins_trans
-  ADD CONSTRAINT fk_fins_trans_invoice
-    FOREIGN KEY (crowdfunding_invoice_id, crowdfunding_invoice_created_at)
-    REFERENCES invoices(id, created_at) ON DELETE SET NULL;
+  ADD CONSTRAINT fk_fins_trans_transaction
+    FOREIGN KEY (crowdfunding_transaction_id, crowdfunding_transaction_created_at)
+    REFERENCES transactions(id, created_at) ON DELETE SET NULL;
 
-COMMENT ON CONSTRAINT fk_fins_trans_invoice ON fins_trans
-  IS 'fins_trans → invoice donasi crowdfunding (composite FK ke partitioned table)';
+COMMENT ON CONSTRAINT fk_fins_trans_transaction ON fins_trans
+  IS 'fins_trans → transactions donasi crowdfunding (composite FK ke parent table partisi)';
 
 -- ============================================================
 -- 3. invoices.fins_trans_id → fins_trans(id)

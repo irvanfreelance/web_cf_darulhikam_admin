@@ -231,18 +231,18 @@ CREATE TABLE fins_trans (
   note                         text          NOT NULL DEFAULT '',
   dtu                          timestamptz   NOT NULL DEFAULT NOW(),
   -- FK crowdfunding ditambahkan post-seed: lihat 05_fins_deferred_fk.sql
-  crowdfunding_invoice_id         bigint,
-  crowdfunding_invoice_created_at timestamptz,
+  crowdfunding_transaction_id         bigint,
+  crowdfunding_transaction_created_at timestamptz,
   UNIQUE (id_trans)
 );
 
-COMMENT ON TABLE  fins_trans                          IS 'Transaksi keuangan utama FINS';
-COMMENT ON COLUMN fins_trans.id_trans                 IS 'Business code: YYMMDDHHmmss + 6 random digits';
-COMMENT ON COLUMN fins_trans.jenis                    IS 'r=penerimaan (revenue), e=pengeluaran (expense)';
-COMMENT ON COLUMN fins_trans.mutasi                   IS '1=kas masuk, 2=bank masuk, 3=manual TF, 4=QRIS, 6=retail, 10=lainnya, e=ewallet, r=reject';
-COMMENT ON COLUMN fins_trans.approve                  IS 'u=pending, a=approved, r=rejected, as=approve supervisor, aj=approve jurnal, ac=approve cancel, hc=hold cancel';
-COMMENT ON COLUMN fins_trans.kinerja                  IS 'Kinerja=program kinerja, Komersil=komersil/operasional';
-COMMENT ON COLUMN fins_trans.crowdfunding_invoice_id  IS '[FK crowdfunding] Invoice donasi yang memicu transaksi ini';
+COMMENT ON TABLE  fins_trans                              IS 'Transaksi keuangan utama FINS';
+COMMENT ON COLUMN fins_trans.id_trans                     IS 'Business code: YYMMDDHHmmss + 6 random digits';
+COMMENT ON COLUMN fins_trans.jenis                        IS 'r=penerimaan (revenue), e=pengeluaran (expense)';
+COMMENT ON COLUMN fins_trans.mutasi                       IS '1=kas masuk, 2=bank masuk, 3=manual TF, 4=QRIS, 6=retail, 10=lainnya, e=ewallet, r=reject';
+COMMENT ON COLUMN fins_trans.approve                      IS 'u=pending, a=approved, r=rejected, as=approve supervisor, aj=approve jurnal, ac=approve cancel, hc=hold cancel';
+COMMENT ON COLUMN fins_trans.kinerja                      IS 'Kinerja=program kinerja, Komersil=komersil/operasional';
+COMMENT ON COLUMN fins_trans.crowdfunding_transaction_id  IS '[FK crowdfunding] transactions.id (line item per-campaign) yang memicu transaksi FINS ini';
 
 CREATE INDEX idx_fins_trans_id_trans       ON fins_trans (id_trans);
 CREATE INDEX idx_fins_trans_id_transaksi   ON fins_trans (id_transaksi);
@@ -257,8 +257,8 @@ CREATE INDEX idx_fins_trans_mutasi         ON fins_trans (mutasi);
 CREATE INDEX idx_fins_trans_jenis          ON fins_trans (jenis);
 CREATE INDEX idx_fins_trans_coa_debet      ON fins_trans (coa_debet);
 CREATE INDEX idx_fins_trans_coa_kredit     ON fins_trans (coa_kredit);
-CREATE INDEX idx_fins_trans_invoice        ON fins_trans (crowdfunding_invoice_id, crowdfunding_invoice_created_at)
-  WHERE crowdfunding_invoice_id IS NOT NULL;
+CREATE INDEX idx_fins_trans_transaction    ON fins_trans (crowdfunding_transaction_id, crowdfunding_transaction_created_at)
+  WHERE crowdfunding_transaction_id IS NOT NULL;
 CREATE INDEX idx_fins_trans_dtu            ON fins_trans (dtu DESC);
 
 -- ============================================================
