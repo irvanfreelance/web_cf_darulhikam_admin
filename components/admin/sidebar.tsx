@@ -63,7 +63,7 @@ const finsMenus: AccordionGroup[] = [
     { icon: Settings, label: 'Program', href: '/fins/coming-soon?title=Program' },
   ]},
   { category: 'FINS', items: [
-    { icon: Hash, label: 'Kode Bank', href: '/fins/coming-soon?title=Kode+Bank' },
+    { icon: Hash, label: 'Kode Bank', href: '/fins/kode-bank' },
     { icon: CreditCard, label: 'Rekening Bank', href: '/fins/coming-soon?title=Rekening+Bank' },
     { icon: FileSpreadsheet, label: 'Chart of Accounts', href: '/fins/coming-soon?title=Chart+of+Accounts' },
     { icon: Building2, label: 'COA Kantor', href: '/fins/coming-soon?title=COA+Kantor' },
