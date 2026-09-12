@@ -39,8 +39,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ idBuku: 
       const realisasi = realisasiById.get(keyId) || 0;
       await client.query(
         `INSERT INTO fins_ca_pengajuan
-          (id_buku, tanggal, coa_debet, coa_kredit, nama_akun, keterangan, quantity, nominal, realisasi, user_input, user_approve, status, office_id, sumber_dana, department_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, '', '', 'unapprove', $10, $11, $12)`,
+          (id_buku, tanggal, coa_debet, coa_kredit, nama_akun, keterangan, quantity, nominal, realisasi, user_input, user_approve, approve, office_id, sumber_dana, department_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, '', '', 'us', $10, $11, $12)`,
         [
           idBuku,
           header.tanggal.slice(0, 10),

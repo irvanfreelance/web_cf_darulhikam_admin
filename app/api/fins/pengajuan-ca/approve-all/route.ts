@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     periodeFrom?: string; periodeTo?: string; keyword?: string; officeId?: string;
   };
 
-  const conditions: string[] = [`status = 'unapprove'`];
+  const conditions: string[] = [`approve = 'us'`];
   const params: any[] = [];
 
   if (periodeFrom) { params.push(periodeFrom); conditions.push(`tanggal >= $${params.length}`); }
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
 
   if (approveIds.length > 0) {
     await query(
-      `UPDATE fins_ca_pengajuan SET status = 'approved', user_approve = $1, updated_at = NOW() WHERE id = ANY($2::bigint[])`,
+      `UPDATE fins_ca_pengajuan SET approve = 'as', user_approve = $1, updated_at = NOW() WHERE id = ANY($2::bigint[])`,
       [userName, approveIds]
     );
   }

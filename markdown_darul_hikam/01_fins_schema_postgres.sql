@@ -102,6 +102,7 @@ CREATE TABLE fins_saldo_dana (
   coa_expend  text         NOT NULL DEFAULT '',   -- CSV list of pengeluaran COA
   coa_receipt text         NOT NULL DEFAULT '',   -- CSV list of penerimaan COA
   ops         varchar(1)   NOT NULL DEFAULT 'n'   CHECK (ops IN ('y','n')),
+  active      varchar(1)   NOT NULL DEFAULT 'y'   CHECK (active IN ('y','n')),  -- added 21_fins_saldo_dana_active.sql
   dtu         timestamptz  NOT NULL DEFAULT NOW(),
   PRIMARY KEY (coa_dana),
   FOREIGN KEY (coa_dana) REFERENCES fins_coa(coa) ON DELETE RESTRICT
@@ -110,6 +111,7 @@ CREATE TABLE fins_saldo_dana (
 COMMENT ON TABLE  fins_saldo_dana          IS 'Pemetaan dana ekuitas ke COA penerimaan/pengeluaran';
 COMMENT ON COLUMN fins_saldo_dana.coa_dana IS 'COA dana/ekuitas (level 300.xx)';
 COMMENT ON COLUMN fins_saldo_dana.ops      IS 'y=dana operasional';
+COMMENT ON COLUMN fins_saldo_dana.active   IS 'y=mapping aktif, n=non-aktif (independen dari status fins_coa.active)';
 
 -- ============================================================
 -- TABLE 5: fins_aset

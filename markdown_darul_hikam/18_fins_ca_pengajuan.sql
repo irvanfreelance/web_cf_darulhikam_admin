@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS fins_jabatan (
 
 CREATE TABLE IF NOT EXISTS fins_level_approve (
   id          bigserial    PRIMARY KEY,
-  jabatan     varchar(150) NOT NULL,
+  jabatan     varchar(150) NOT NULL UNIQUE,
   expend_min  numeric(20,2) NOT NULL DEFAULT 0,
   expend_max  numeric(20,2),
   receipt_min numeric(20,2) NOT NULL DEFAULT 0,

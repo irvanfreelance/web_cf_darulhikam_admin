@@ -36,7 +36,7 @@ const finsMenus: AccordionGroup[] = [
   { category: 'Home', items: [
     { icon: LayoutDashboard, label: 'Dashboard Cash Bank', href: '/fins/coming-soon?title=Dashboard+Cash+Bank' },
     { icon: FileText, label: 'Pengajuan CA', href: '/fins/pengajuan-ca' },
-    { icon: Send, label: 'Pencairan', href: '/fins/coming-soon?title=Pencairan' },
+    { icon: Send, label: 'Pencairan', href: '/fins/pencairan' },
     { icon: ClipboardCheck, label: 'Pertanggungjawaban CA', href: '/fins/coming-soon?title=Pertanggungjawaban+CA' },
     { icon: Receipt, label: 'Pengeluaran', href: '/fins/coming-soon?title=Pengeluaran' },
     { icon: Wallet, label: 'Penerimaan', href: '/fins/coming-soon?title=Penerimaan' },
@@ -64,11 +64,11 @@ const finsMenus: AccordionGroup[] = [
   ]},
   { category: 'FINS', items: [
     { icon: Hash, label: 'Kode Bank', href: '/fins/kode-bank' },
-    { icon: CreditCard, label: 'Rekening Bank', href: '/fins/coming-soon?title=Rekening+Bank' },
-    { icon: FileSpreadsheet, label: 'Chart of Accounts', href: '/fins/coming-soon?title=Chart+of+Accounts' },
-    { icon: Building2, label: 'COA Kantor', href: '/fins/coming-soon?title=COA+Kantor' },
-    { icon: Wallet, label: 'Saldo Dana', href: '/fins/coming-soon?title=Saldo+Dana' },
-    { icon: BadgeCheck, label: 'Level Approve', href: '/fins/coming-soon?title=Level+Approve' },
+    { icon: CreditCard, label: 'Rekening Bank', href: '/fins/rekening-bank' },
+    { icon: FileSpreadsheet, label: 'Chart of Accounts', href: '/fins/coa' },
+    { icon: Building2, label: 'COA Kantor', href: '/fins/coa-kantor' },
+    { icon: Wallet, label: 'Saldo Dana', href: '/fins/saldo-dana' },
+    { icon: BadgeCheck, label: 'Level Approve', href: '/fins/level-approve' },
     { icon: Calculator, label: 'Rumus Report', href: '/fins/coming-soon?title=Rumus+Report' },
   ]},
 ];

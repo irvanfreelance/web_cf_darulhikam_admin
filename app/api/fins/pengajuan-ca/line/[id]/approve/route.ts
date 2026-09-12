@@ -29,12 +29,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
   }
 
-  const status = action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'unapprove';
+  const approveCode = action === 'approve' ? 'as' : action === 'reject' ? 'rs' : 'us';
   const approver = action === 'unapprove' ? '' : userName;
 
   const res = await query(
-    `UPDATE fins_ca_pengajuan SET status = $1, user_approve = $2, updated_at = NOW() WHERE id = $3 RETURNING *`,
-    [status, approver, id]
+    `UPDATE fins_ca_pengajuan SET approve = $1, user_approve = $2, updated_at = NOW() WHERE id = $3 RETURNING *`,
+    [approveCode, approver, id]
   );
   if (res.rows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json(res.rows[0]);

@@ -23,15 +23,15 @@ const nowLocal = () => {
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
-  { value: 'unapprove', label: 'Unapprove' },
-  { value: 'rejected', label: 'Rejected' },
-  { value: 'approved', label: 'Approved' },
+  { value: 'us', label: 'Unapprove' },
+  { value: 'rs', label: 'Rejected' },
+  { value: 'as', label: 'Approved' },
 ];
 
 type PengajuanRow = {
   id: number; id_buku: string; tanggal: string; coa_debet: string; coa_kredit: string;
   nama_akun: string; keterangan: string; quantity: number; nominal: string; realisasi: string;
-  user_input: string; user_approve: string; status: 'unapprove' | 'approved' | 'rejected';
+  user_input: string; user_approve: string; approve: 'us' | 'as' | 'rs' | 'u' | 'a' | 'r';
   office_id: number; office_nama: string; sumber_dana: string; department_id: number | null;
 };
 
@@ -47,12 +47,14 @@ const emptyHeader = () => ({
 const emptyDraftLine = () => ({ jenisTransaksi: '', nominal: '', keterangan: '' });
 
 const STATUS_BADGE: Record<string, string> = {
-  approved: 'bg-emerald-50 text-emerald-600',
-  rejected: 'bg-rose-50 text-rose-600',
-  unapprove: 'bg-amber-50 text-amber-600',
+  as: 'bg-emerald-50 text-emerald-600',
+  a: 'bg-emerald-50 text-emerald-600',
+  rs: 'bg-rose-50 text-rose-600',
+  r: 'bg-rose-50 text-rose-600',
+  us: 'bg-amber-50 text-amber-600',
 };
 const STATUS_TEXT: Record<string, string> = {
-  approved: 'Approved', rejected: 'Rejected', unapprove: 'UnApprove',
+  as: 'Approved', a: 'Approved (Cair)', rs: 'Rejected', r: 'Rejected', us: 'UnApprove',
 };
 
 export default function PengajuanCAPage() {
@@ -65,7 +67,7 @@ export default function PengajuanCAPage() {
   const [periodeTo, setPeriodeTo] = useState(new Date().toISOString().slice(0, 10));
   const [keywordDraft, setKeywordDraft] = useState('');
   const [keyword, setKeyword] = useState('');
-  const [statusFilter, setStatusFilter] = useState('unapprove');
+  const [statusFilter, setStatusFilter] = useState('us');
   const [officeFilter, setOfficeFilter] = useState('1');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -139,7 +141,7 @@ export default function PengajuanCAPage() {
     mutate();
   };
   const handleApproveAll = async () => {
-    const targets = rows.filter(r => r.status === 'unapprove');
+    const targets = rows.filter(r => r.approve === 'us');
     if (targets.length === 0) { toast.error('Tidak ada pengajuan Unapprove pada tampilan saat ini.'); return; }
     toast(`Approve ${targets.length} pengajuan CA?`, {
       action: {
@@ -515,14 +517,14 @@ export default function PengajuanCAPage() {
                   <tr key={r.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-1 mb-1.5">
-                        {r.status !== 'approved' && <button title="Approve" onClick={() => handleApprove(r.id)} className="p-1.5 text-slate-400 hover:text-emerald-600 transition-colors"><CheckCircle size={16} /></button>}
-                        {r.status !== 'rejected' && <button title="Reject" onClick={() => handleReject(r.id)} className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors"><XCircle size={16} /></button>}
-                        {r.status !== 'unapprove' && <button title="Set Unapprove" onClick={() => handleSetUnapprove(r.id)} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"><RotateCcw size={16} /></button>}
+                        {r.approve !== 'as' && r.approve !== 'a' && <button title="Approve" onClick={() => handleApprove(r.id)} className="p-1.5 text-slate-400 hover:text-emerald-600 transition-colors"><CheckCircle size={16} /></button>}
+                        {r.approve !== 'rs' && r.approve !== 'r' && <button title="Reject" onClick={() => handleReject(r.id)} className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors"><XCircle size={16} /></button>}
+                        {r.approve !== 'us' && <button title="Set Unapprove" onClick={() => handleSetUnapprove(r.id)} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"><RotateCcw size={16} /></button>}
                         <button title="Ubah Pengajuan" onClick={() => openEdit(r.id_buku)} className="p-1.5 text-slate-400 hover:text-teal-600 transition-colors"><Pencil size={16} /></button>
                         <button title="Hapus" onClick={() => handleDeleteRecord(r.id)} className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors"><Trash2 size={16} /></button>
                       </div>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_BADGE[r.status]}`}>
-                        {STATUS_TEXT[r.status]}
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_BADGE[r.approve]}`}>
+                        {STATUS_TEXT[r.approve]}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm font-normal text-slate-600">{r.tanggal.slice(0, 10)}</td>

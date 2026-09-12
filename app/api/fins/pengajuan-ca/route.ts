@@ -48,9 +48,11 @@ export async function GET(req: Request) {
     const idx = params.length;
     conditions.push(`(LOWER(p.id_buku) LIKE $${idx} OR LOWER(p.nama_akun) LIKE $${idx} OR LOWER(p.keterangan) LIKE $${idx})`);
   }
-  if (status !== 'all') {
+  if (status === 'as') {
+    conditions.push(`p.approve IN ('as','a')`);
+  } else if (status !== 'all') {
     params.push(status);
-    conditions.push(`p.status = $${params.length}`);
+    conditions.push(`p.approve = $${params.length}`);
   }
   if (officeId !== 'all') {
     params.push(Number(officeId));
@@ -59,7 +61,7 @@ export async function GET(req: Request) {
 
   const sql = `
     SELECT p.id, p.id_buku, p.tanggal, p.coa_debet, p.coa_kredit, p.nama_akun, p.keterangan,
-           p.quantity, p.nominal, p.realisasi, p.user_input, p.user_approve, p.status,
+           p.quantity, p.nominal, p.realisasi, p.user_input, p.user_approve, p.approve,
            p.office_id, k.nama AS office_nama, p.sumber_dana, p.department_id
     FROM fins_ca_pengajuan p
     LEFT JOIN fins_kantor k ON k.id = p.office_id
@@ -89,8 +91,8 @@ export async function POST(req: Request) {
     for (const line of lines) {
       await client.query(
         `INSERT INTO fins_ca_pengajuan
-          (id_buku, tanggal, coa_debet, coa_kredit, nama_akun, keterangan, quantity, nominal, realisasi, user_input, user_approve, status, office_id, sumber_dana, department_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0, $9, '', 'unapprove', $10, $11, $12)`,
+          (id_buku, tanggal, coa_debet, coa_kredit, nama_akun, keterangan, quantity, nominal, realisasi, user_input, user_approve, approve, office_id, sumber_dana, department_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0, $9, '', 'us', $10, $11, $12)`,
         [
           generated,
           header.tanggal.slice(0, 10),
