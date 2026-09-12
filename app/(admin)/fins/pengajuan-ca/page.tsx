@@ -207,22 +207,24 @@ export default function PengajuanCAPage() {
       toast.error('Pilih Jenis Transaksi dan isi Nominal terlebih dahulu.');
       return;
     }
-    const jt = (masters?.jenisTransaksi || []).find((j: { coa: string; nama: string }) => j.nama === draftLine.jenisTransaksi);
+    // draftLine.jenisTransaksi holds the COA code (SearchableSelect reports
+    // the selected option's `id`, not its `name`) — look up the name by coa.
+    const jt = (masters?.jenisTransaksi || []).find((j: { coa: string; nama: string }) => j.coa === draftLine.jenisTransaksi);
 
     if (editingLineKey) {
       // Update the existing line in place, keeping its key (and, if it's a
       // persisted line, its `realisasi`/id) so PUT correctly matches it up
       // instead of dropping history via delete-then-recreate.
       setDetailLines(prev => prev.map(l => l.key === editingLineKey
-        ? { ...l, coa: jt?.coa || '', namaAkun: draftLine.jenisTransaksi, nominal: parseNumber(draftLine.nominal), keterangan: draftLine.keterangan }
+        ? { ...l, coa: jt?.coa || draftLine.jenisTransaksi, namaAkun: jt?.nama || draftLine.jenisTransaksi, nominal: parseNumber(draftLine.nominal), keterangan: draftLine.keterangan }
         : l
       ));
       setEditingLineKey(null);
     } else {
       setDetailLines(prev => [...prev, {
         key: `draft-${Date.now()}-${Math.random()}`,
-        coa: jt?.coa || '',
-        namaAkun: draftLine.jenisTransaksi,
+        coa: jt?.coa || draftLine.jenisTransaksi,
+        namaAkun: jt?.nama || draftLine.jenisTransaksi,
         quantity: 1,
         nominal: parseNumber(draftLine.nominal),
         keterangan: draftLine.keterangan,
@@ -233,7 +235,7 @@ export default function PengajuanCAPage() {
   const clearDraftLine = () => { setDraftLine(emptyDraftLine()); setEditingLineKey(null); };
   const startEditLine = (line: DetailLine) => {
     setEditingLineKey(line.key);
-    setDraftLine({ jenisTransaksi: line.namaAkun, nominal: String(line.nominal), keterangan: line.keterangan });
+    setDraftLine({ jenisTransaksi: line.coa, nominal: String(line.nominal), keterangan: line.keterangan });
   };
   const removeDetailLine = (key: string) => {
     setDetailLines(prev => prev.filter(l => l.key !== key));
