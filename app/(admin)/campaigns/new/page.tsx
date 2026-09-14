@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { FileUpload } from '@/components/ui/file-upload';
+import { ImageCropper } from '@/components/ui/image-cropper';
 import { NumberInput } from '@/components/ui/number-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
@@ -31,6 +32,8 @@ export default function NewCampaignPage() {
     has_no_target: false, is_urgent: false, is_verified: true, is_carousel: false, status: 'ACTIVE'
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [cropSourceUrl, setCropSourceUrl] = useState<string | null>(null);
+  const [cropFileName, setCropFileName] = useState('cover.jpg');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,13 +175,29 @@ export default function NewCampaignPage() {
         <div className="space-y-6">
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6">
             <h3 className="text-sm font-normal text-slate-800 tracking-tight text-left">Foto Utama</h3>
-            <FileUpload 
+            <FileUpload
               value={formData.image_url}
               onChange={(url) => setFormData({...formData, image_url: url})}
               deferred
-              onFileSelect={(file) => setImageFile(file)}
+              onFileSelect={(file) => {
+                setCropFileName(file.name);
+                setCropSourceUrl(URL.createObjectURL(file));
+              }}
+              className="aspect-[4/3] w-full max-w-sm"
             />
           </div>
+
+          <ImageCropper
+            isOpen={!!cropSourceUrl}
+            onClose={() => setCropSourceUrl(null)}
+            imageSrc={cropSourceUrl}
+            fileName={cropFileName}
+            onCropComplete={(croppedFile) => {
+              setImageFile(croppedFile);
+              setFormData(prev => ({ ...prev, image_url: URL.createObjectURL(croppedFile) }));
+              setCropSourceUrl(null);
+            }}
+          />
 
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-4">
              <h3 className="text-sm font-normal text-slate-800 tracking-tight text-left">Atribut Kampanye</h3>
