@@ -1689,6 +1689,28 @@ INSERT INTO web_impact_metrics (metric_key, label, value, suffix, display_order,
 
 
 -- ============================================================
+-- TABLE: web_distribution_points
+-- Titik sebaran penyaluran (marker) shown on "Peta Sebaran"
+-- CMS: YES — admin marks locations by clicking the map
+-- ============================================================
+CREATE TABLE web_distribution_points (
+    id              BIGSERIAL PRIMARY KEY,
+    name            VARCHAR(150)    NOT NULL,
+    type            VARCHAR(20)     NOT NULL DEFAULT 'province', -- 'province' | 'country' | 'city'
+    latitude        NUMERIC(10,6)   NOT NULL,
+    longitude       NUMERIC(10,6)   NOT NULL,
+    description     TEXT,
+    display_order   SMALLINT        NOT NULL DEFAULT 0,
+    is_active       BOOLEAN         NOT NULL DEFAULT TRUE,
+    updated_by      BIGINT          REFERENCES admins(id) ON DELETE SET NULL,
+    updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_distribution_points_active ON web_distribution_points (is_active) WHERE is_active = TRUE;
+CREATE INDEX idx_distribution_points_order  ON web_distribution_points (display_order);
+
+
+-- ============================================================
 -- TABLE: web_partners
 -- Partner/institution logos shown in marquee section
 -- CMS: YES — partnership team manages quarterly

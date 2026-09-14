@@ -3,7 +3,7 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import useSWR from 'swr';
-import { X, Users, Heart, Sprout, BookOpen, HandHeart, BriefcaseMedical } from 'lucide-react';
+import { X, Users, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -28,6 +28,8 @@ interface DistributionMapModalProps {
 
 export default function DistributionMapModal({ isOpen, onClose }: DistributionMapModalProps) {
   const { data: metrics } = useSWR(isOpen ? '/api/web-metrics' : null, fetcher);
+  const { data: config } = useSWR(isOpen ? '/api/ngo-config' : null, fetcher);
+  const { data: categories } = useSWR(isOpen ? '/api/web-impact-categories?active_only=true' : null, fetcher);
 
   // Helper function to get metric value safely
   const getMetricValue = (key: string, defaultValue: string = "0") => {
@@ -48,7 +50,7 @@ export default function DistributionMapModal({ isOpen, onClose }: DistributionMa
         <div className="h-16 bg-[#76b541] flex items-center justify-between px-6 shrink-0 z-10 relative">
            <div>
              <h2 className="text-white font-extrabold text-xl tracking-tight">Peta Sebaran</h2>
-             <p className="text-white/80 text-sm font-medium">LAZ Darul Hikam</p>
+             <p className="text-white/80 text-sm font-medium">{config?.ngo_name || 'LAZ Darul Hikam'}</p>
            </div>
            
            <button 
@@ -135,16 +137,18 @@ export default function DistributionMapModal({ isOpen, onClose }: DistributionMa
            {/* Decorative background logo would go here ideally */}
            
            <div className="col-span-2 md:col-span-4 mb-2">
-              <h2 className="text-3xl font-serif font-bold italic tracking-tight">Jejak Kebaikan</h2>
-              <p className="text-white/80 font-medium text-sm">LAZ DARUL HIKAM</p>
+              <h2 className="text-3xl font-serif font-bold italic tracking-tight">{config?.jejak_kebaikan_title || 'Jejak Kebaikan'}</h2>
+              <p className="text-white/80 font-medium text-sm">{(config?.jejak_kebaikan_subtitle || config?.ngo_name || 'LAZ DARUL HIKAM').toUpperCase()}</p>
            </div>
-           
-           <StatItem icon={BookOpen} label="Peduli Pendidikan" value={getMetricValue('map_peduli_pendidikan', '8.983')} />
-           <StatItem icon={Sprout} label="Peduli Lingkungan" value={getMetricValue('map_peduli_lingkungan', '16.014')} />
-           <StatItem icon={HandHeart} label="Peduli Umat" value={getMetricValue('map_peduli_umat', '49.678')} />
-           <StatItem icon={BriefcaseMedical} label="Peduli Kesehatan" value={getMetricValue('map_peduli_kesehatan', '2.941')} />
-           <StatItem icon={Heart} label="Peduli Ekonomi" value={getMetricValue('map_peduli_ekonomi', '9.849')} />
-           <StatItem icon={Heart} label="Program Khusus" value={getMetricValue('map_program_khusus', '147.298')} />
+
+           {Array.isArray(categories) && categories.map((cat: any) => (
+             <StatItem
+               key={cat.id}
+               iconUrl={cat.icon_url}
+               label={cat.label}
+               value={Number(cat.value).toLocaleString('id-ID') + (cat.suffix || '')}
+             />
+           ))}
         </div>
 
       </div>
@@ -159,11 +163,15 @@ export default function DistributionMapModal({ isOpen, onClose }: DistributionMa
   );
 }
 
-function StatItem({ icon: Icon, label, value }: { icon: any, label: string, value: string }) {
+function StatItem({ iconUrl, label, value }: { iconUrl?: string | null, label: string, value: string }) {
   return (
     <div className="flex flex-col">
       <div className="w-10 h-10 mb-2 flex items-center justify-center">
-        <Icon size={28} className="text-white" />
+        {iconUrl ? (
+          <img src={iconUrl} alt={label} className="w-7 h-7 object-contain" />
+        ) : (
+          <Heart size={28} className="text-white" />
+        )}
       </div>
       <div className="font-semibold text-white/90 text-sm leading-tight mb-1">{label}</div>
       <div className="text-2xl font-extrabold tracking-tight">{value}</div>

@@ -149,6 +149,8 @@ const websiteMenus = [
   { group: 'TRANSPARANSI', items: [
     { icon: FileCheck, label: 'Laporan Keuangan', href: '/web-reports' },
     { icon: BarChart2, label: 'Impact Metrics', href: '/web-metrics' },
+    { icon: MapPin, label: 'Titik Sebaran', href: '/web-distribution-points' },
+    { icon: Heart, label: 'Jejak Kebaikan', href: '/web-impact-categories' },
   ]},
   { group: 'ORGANISASI', items: [
     { icon: Info, label: 'Tentang Kami', href: '/web-about' },
@@ -171,6 +173,8 @@ const tutorialMenus = [
     { icon: HeartHandshake, label: 'Program Peduli', href: '/tutorial#web-care-categories' },
     { icon: FileCheck, label: 'Laporan Keuangan', href: '/tutorial#web-reports' },
     { icon: BarChart2, label: 'Impact Metrics', href: '/tutorial#web-metrics' },
+    { icon: MapPin, label: 'Titik Sebaran', href: '/tutorial#web-distribution-points' },
+    { icon: Heart, label: 'Jejak Kebaikan', href: '/tutorial#web-impact-categories' },
     { icon: Info, label: 'Tentang Kami', href: '/tutorial#web-about' },
     { icon: Users, label: 'Tim & Pengurus', href: '/tutorial#web-team' },
     { icon: Shield, label: 'Legalitas', href: '/tutorial#web-legality' },
