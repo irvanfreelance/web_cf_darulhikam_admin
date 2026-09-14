@@ -14,6 +14,7 @@ import { NumberInput } from '@/components/ui/number-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { FileUpload } from '@/components/ui/file-upload';
+import { ImageCropper } from '@/components/ui/image-cropper';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -27,6 +28,8 @@ export default function EditCampaignPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<any>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [cropSourceUrl, setCropSourceUrl] = useState<string | null>(null);
+  const [cropFileName, setCropFileName] = useState('cover.jpg');
 
   const [variants, setVariants] = useState<any[]>([]);
   const [bundles, setBundles] = useState<any[]>([]);
@@ -288,13 +291,29 @@ export default function EditCampaignPage() {
         <div className="space-y-6">
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6">
             <h3 className="text-sm font-normal text-slate-800 tracking-tight text-left">Cover Foto</h3>
-            <FileUpload 
+            <FileUpload
               value={formData.image_url}
               onChange={(url) => setFormData({...formData, image_url: url})}
               deferred
-              onFileSelect={(file) => setImageFile(file)}
+              onFileSelect={(file) => {
+                setCropFileName(file.name);
+                setCropSourceUrl(URL.createObjectURL(file));
+              }}
+              className="aspect-[4/3] w-full max-w-sm"
             />
           </div>
+
+          <ImageCropper
+            isOpen={!!cropSourceUrl}
+            onClose={() => setCropSourceUrl(null)}
+            imageSrc={cropSourceUrl}
+            fileName={cropFileName}
+            onCropComplete={(croppedFile) => {
+              setImageFile(croppedFile);
+              setFormData((prev: any) => ({ ...prev, image_url: URL.createObjectURL(croppedFile) }));
+              setCropSourceUrl(null);
+            }}
+          />
 
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-4">
              <h3 className="text-sm font-normal text-slate-800 tracking-tight text-left">Atribut & Tipe</h3>
