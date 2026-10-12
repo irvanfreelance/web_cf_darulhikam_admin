@@ -58,11 +58,12 @@ const finsMenus: AccordionGroup[] = [
     { icon: Building2, label: 'Entry Aset', href: '/fins/coming-soon?title=Entry+Aset' },
     { icon: FileSpreadsheet, label: 'List Aset', href: '/fins/coming-soon?title=List+Aset' },
   ]},
-  { category: 'Setting Configuration', items: [
+];
+
+const configurationMenus: AccordionGroup[] = [
+  { category: 'Master Setup', items: [
     { icon: Briefcase, label: 'Profile Lembaga', href: '/fins/coming-soon?title=Profile+Lembaga' },
     { icon: Settings, label: 'Program', href: '/fins/coming-soon?title=Program' },
-  ]},
-  { category: 'FINS', items: [
     { icon: Hash, label: 'Kode Bank', href: '/fins/kode-bank' },
     { icon: CreditCard, label: 'Rekening Bank', href: '/fins/rekening-bank' },
     { icon: FileSpreadsheet, label: 'Chart of Accounts', href: '/fins/coa' },
@@ -107,13 +108,14 @@ const documentMenus: AccordionGroup[] = [
   ]},
 ];
 
-type AdminModule = 'crowdfund' | 'website' | 'tutorial' | 'penyaluran' | 'fins' | 'hcm' | 'document';
+type AdminModule = 'crowdfund' | 'website' | 'tutorial' | 'penyaluran' | 'fins' | 'hcm' | 'document' | 'configuration';
 
 const MODULE_ACCENT: Record<string, { bg: string; text: string; border?: string }> = {
   penyaluran: { bg: 'bg-sky-500/10', text: 'text-sky-400' },
   fins: { bg: 'bg-amber-500/10', text: 'text-amber-400' },
   hcm: { bg: 'bg-rose-500/10', text: 'text-rose-400' },
   document: { bg: 'bg-emerald-500/10', text: 'text-emerald-400' },
+  configuration: { bg: 'bg-cyan-500/10', text: 'text-cyan-400' },
 };
 
 // Crowdfunding Module Menus
@@ -206,9 +208,9 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
   const { data: session } = useSession();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [activeModule, setActiveModule] = useState<AdminModule>('crowdfund');
-  const ACCORDION_MODULES = new Set(['penyaluran', 'fins', 'hcm', 'document']);
+  const ACCORDION_MODULES = new Set(['penyaluran', 'fins', 'hcm', 'document', 'configuration']);
   const ACCORDION_GROUPS: Record<string, AccordionGroup[]> = {
-    penyaluran: penyaluranMenus, fins: finsMenus, hcm: hcmMenus, document: documentMenus,
+    penyaluran: penyaluranMenus, fins: finsMenus, hcm: hcmMenus, document: documentMenus, configuration: configurationMenus,
   };
   const [openGroup, setOpenGroup] = useState<Record<string, string | null>>(() => {
     const initial: Record<string, string | null> = {};
@@ -219,7 +221,7 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
   // Load active module from local storage on mount
   useEffect(() => {
     const savedModule = localStorage.getItem('active_admin_module');
-    if (['crowdfund', 'website', 'tutorial', 'penyaluran', 'fins', 'hcm', 'document'].includes(savedModule || '')) {
+    if (['crowdfund', 'website', 'tutorial', 'penyaluran', 'fins', 'hcm', 'document', 'configuration'].includes(savedModule || '')) {
       setActiveModule(savedModule as AdminModule);
     }
   }, []);
@@ -341,6 +343,18 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
             <span className="text-[9px] font-bold tracking-tight">DOCUMENT</span>
           </button>
 
+          <button
+            onClick={() => handleModuleChange('configuration')}
+            title="Configuration"
+            className={cn(
+              "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all",
+              activeModule === 'configuration' ? "bg-cyan-500/20 text-cyan-400" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"
+            )}
+          >
+            <Settings size={22} strokeWidth={activeModule === 'configuration' ? 2.5 : 2} />
+            <span className="text-[9px] font-bold tracking-tight">CONFIG</span>
+          </button>
+
           <div className="w-full h-px bg-slate-800 my-1" />
 
           <Link
@@ -369,7 +383,7 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
            <h2 className="text-slate-200 font-bold tracking-tight">
              {isTutorial ? "Tutorial" : isWebsite ? "Website CMS" : isCrowdfund ? "Crowdfunding"
                : activeModule === 'penyaluran' ? "Penyaluran" : activeModule === 'fins' ? "FINS"
-               : activeModule === 'hcm' ? "HCM" : "Document"}
+               : activeModule === 'hcm' ? "HCM" : activeModule === 'document' ? "Document" : "Configuration"}
            </h2>
         </div>
 
