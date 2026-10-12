@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { invalidateCache } from '@/lib/redis';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
@@ -13,9 +14,9 @@ const articleSchema = z.object({
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   featured_image_url: z.string().optional().nullable().transform(v => v === '' ? null : v),
   is_featured: z.boolean().default(false),
-  seo_title: z.string().optional().nullable(),
-  seo_description: z.string().optional().nullable(),
-  canonical_url: z.string().optional().nullable().transform(v => v === '' ? null : v),
+  seo_title: z.string().optional().nullable().transform(v => (!v || v.trim() === '') ? null : v.trim()),
+  seo_description: z.string().optional().nullable().transform(v => (!v || v.trim() === '') ? null : v.trim()),
+  canonical_url: z.string().optional().nullable().transform(v => (!v || v.trim() === '') ? null : v.trim()),
   robots_directive: z.enum(['index,follow','noindex,follow','index,nofollow','noindex,nofollow']).default('index,follow'),
 });
 
@@ -81,6 +82,13 @@ export async function POST(req: Request) {
         data.seo_title, data.seo_description, data.canonical_url, data.robots_directive
       ]
     );
+
+    try {
+      await invalidateCache(['articles', 'web_articles', 'v_published_articles', 'v_article_seo']);
+    } catch (e) {
+      console.warn('Redis cache invalidation error:', e);
+    }
+
     return NextResponse.json(res.rows[0]);
   } catch (error: any) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: error.issues }, { status: 400 });
@@ -113,6 +121,13 @@ export async function PATCH(req: Request) {
       `UPDATE web_articles SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING *`,
       params
     );
+
+    try {
+      await invalidateCache(['articles', 'web_articles', 'v_published_articles', 'v_article_seo']);
+    } catch (e) {
+      console.warn('Redis cache invalidation error:', e);
+    }
+
     return NextResponse.json(res.rows[0]);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -127,6 +142,13 @@ export async function DELETE(req: Request) {
     
     // Soft delete
     await query(`UPDATE web_articles SET deleted_at = NOW(), status = 'archived' WHERE id = $1`, [id]);
+
+    try {
+      await invalidateCache(['articles', 'web_articles', 'v_published_articles', 'v_article_seo']);
+    } catch (e) {
+      console.warn('Redis cache invalidation error:', e);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
