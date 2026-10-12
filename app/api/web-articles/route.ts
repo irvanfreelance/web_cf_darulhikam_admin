@@ -6,16 +6,16 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 const articleSchema = z.object({
-  title: z.string().min(5),
-  title_long: z.string().optional().nullable(),
-  excerpt: z.string().min(10),
-  body: z.string().min(10),
-  category_id: z.number().int().positive(),
+  title: z.string().min(5, 'Judul artikel minimal 5 karakter').max(255, 'Judul artikel maksimal 255 karakter'),
+  title_long: z.string().max(255, 'Judul panjang maksimal 255 karakter').optional().nullable(),
+  excerpt: z.string().min(10, 'Ringkasan minimal 10 karakter').max(500, 'Ringkasan maksimal 500 karakter'),
+  body: z.string().min(10, 'Isi artikel minimal 10 karakter'),
+  category_id: z.number().int().positive('Kategori artikel wajib dipilih'),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   featured_image_url: z.string().optional().nullable().transform(v => v === '' ? null : v),
   is_featured: z.boolean().default(false),
-  seo_title: z.string().optional().nullable().transform(v => (!v || v.trim() === '') ? null : v.trim()),
-  seo_description: z.string().optional().nullable().transform(v => (!v || v.trim() === '') ? null : v.trim()),
+  seo_title: z.string().max(255, 'SEO Title maksimal 255 karakter').optional().nullable().transform(v => (!v || v.trim() === '') ? null : v.trim()),
+  seo_description: z.string().max(500, 'SEO Description maksimal 500 karakter').optional().nullable().transform(v => (!v || v.trim() === '') ? null : v.trim()),
   canonical_url: z.string().optional().nullable().transform(v => (!v || v.trim() === '') ? null : v.trim()),
   robots_directive: z.enum(['index,follow','noindex,follow','index,nofollow','noindex,nofollow']).default('index,follow'),
 });
@@ -67,7 +67,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const data = articleSchema.parse(body);
     
-    const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now();
+    const rawSlug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '').substring(0, 180);
+    const slug = `${rawSlug}-${Date.now()}`;
     
     const res = await query(
       `INSERT INTO web_articles (
@@ -91,7 +92,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json(res.rows[0]);
   } catch (error: any) {
-    if (error instanceof z.ZodError) return NextResponse.json({ error: error.issues }, { status: 400 });
+    if (error instanceof z.ZodError) {
+      const msg = error.issues[0]?.message || 'Data tidak valid';
+      return NextResponse.json({ error: msg, errors: error.issues }, { status: 400 });
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -130,6 +134,10 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json(res.rows[0]);
   } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      const msg = error.issues[0]?.message || 'Data tidak valid';
+      return NextResponse.json({ error: msg, errors: error.issues }, { status: 400 });
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -39,20 +39,20 @@ export default function ArticleForm({ initialData }: { initialData?: any }) {
       return;
     }
 
-    // 1. Meta Title (Maksimal ~70 karakter)
+    // 1. Meta Title (Maksimal 255 karakter)
     const rawTitle = formData.title.trim();
-    const cleanTitle = rawTitle.length > 70 ? rawTitle.substring(0, 67) + '...' : rawTitle;
+    const cleanTitle = rawTitle.length > 255 ? rawTitle.substring(0, 252) + '...' : rawTitle;
 
-    // 2. Meta Description (Ambil dari excerpt atau plain text body)
+    // 2. Meta Description (Ambil dari excerpt atau plain text body, maksimal 500 karakter)
     let descText = formData.excerpt?.trim() || '';
     if (!descText && formData.body) {
       descText = formData.body.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     }
 
     let cleanDesc = descText;
-    if (cleanDesc.length > 155) {
-      const cutPoint = cleanDesc.lastIndexOf(' ', 152);
-      cleanDesc = (cutPoint > 80 ? cleanDesc.substring(0, cutPoint) : cleanDesc.substring(0, 152)) + '...';
+    if (cleanDesc.length > 500) {
+      const cutPoint = cleanDesc.lastIndexOf(' ', 497);
+      cleanDesc = (cutPoint > 400 ? cleanDesc.substring(0, cutPoint) : cleanDesc.substring(0, 497)) + '...';
     }
 
     // 3. Canonical URL
@@ -60,7 +60,8 @@ export default function ArticleForm({ initialData }: { initialData?: any }) {
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)+/g, '');
+      .replace(/(^-|-$)+/g, '')
+      .substring(0, 180);
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://lazdarulhikam.com';
     const generatedCanonical = `${siteUrl.replace(/\/$/, '')}/kabar-kebaikan/${slug}`;
@@ -150,36 +151,81 @@ export default function ArticleForm({ initialData }: { initialData?: any }) {
         <div className="col-span-2 space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-5">
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-2">Judul Artikel *</label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-xs font-bold text-slate-500">Judul Artikel *</label>
+                <span className={`text-[11px] font-mono ${
+                  formData.title.length > 255 
+                    ? 'text-rose-500 font-bold' 
+                    : formData.title.length > 200 
+                    ? 'text-amber-500 font-medium' 
+                    : 'text-slate-400'
+                }`}>
+                  {formData.title.length} / 255 karakter
+                </span>
+              </div>
               <Input 
                 required 
+                maxLength={255}
                 className="text-slate-900 font-medium"
                 placeholder="Contoh: Penyaluran Bantuan Korban Bencana" 
                 value={formData.title}
                 onChange={e => setFormData({...formData, title: e.target.value})}
               />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Judul utama artikel. Maksimal 255 karakter.
+              </p>
             </div>
             
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-2">Judul Panjang (Opsional)</label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-xs font-bold text-slate-500">Judul Panjang (Opsional)</label>
+                <span className={`text-[11px] font-mono ${
+                  (formData.title_long || '').length > 255 
+                    ? 'text-rose-500 font-bold' 
+                    : (formData.title_long || '').length > 200 
+                    ? 'text-amber-500 font-medium' 
+                    : 'text-slate-400'
+                }`}>
+                  {(formData.title_long || '').length} / 255 karakter
+                </span>
+              </div>
               <Input 
+                maxLength={255}
                 className="text-slate-900"
                 placeholder="Judul lengkap untuk ditampilkan di halaman artikel" 
                 value={formData.title_long}
                 onChange={e => setFormData({...formData, title_long: e.target.value})}
               />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Judul headline lengkap untuk halaman detail artikel. Maksimal 255 karakter.
+              </p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-2">Ringkasan (Excerpt) *</label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-xs font-bold text-slate-500">Ringkasan (Excerpt) *</label>
+                <span className={`text-[11px] font-mono ${
+                  formData.excerpt.length > 500 
+                    ? 'text-rose-500 font-bold' 
+                    : formData.excerpt.length > 400 
+                    ? 'text-amber-500 font-medium' 
+                    : 'text-slate-400'
+                }`}>
+                  {formData.excerpt.length} / 500 karakter
+                </span>
+              </div>
               <textarea 
                 required
+                maxLength={500}
                 rows={3}
                 className="w-full rounded-xl border border-slate-200 p-3 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
-                placeholder="Singkat, padat, dan menarik (maksimal 160 karakter untuk SEO)"
+                placeholder="Singkat, padat, dan informatif (maksimal 500 karakter)"
                 value={formData.excerpt}
                 onChange={e => setFormData({...formData, excerpt: e.target.value})}
               />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Cuplikan ringkas artikel untuk kartu berita dan deskripsi. Maksimal 500 karakter.
+              </p>
             </div>
 
             <div>
@@ -231,23 +277,24 @@ export default function ArticleForm({ initialData }: { initialData?: any }) {
               <div className="flex justify-between items-center mb-2">
                 <label className="text-xs font-bold text-slate-500">Meta Title</label>
                 <span className={`text-[11px] font-mono ${
-                  formData.seo_title.length > 70 
+                  formData.seo_title.length > 255 
                     ? 'text-rose-500 font-bold' 
                     : formData.seo_title.length > 60 
                     ? 'text-amber-500 font-medium' 
                     : 'text-slate-400'
                 }`}>
-                  {formData.seo_title.length} / 60 karakter
+                  {formData.seo_title.length} / 255 karakter {formData.seo_title.length > 60 ? '(optimal ≤ 60)' : ''}
                 </span>
               </div>
               <Input 
+                maxLength={255}
                 className="text-slate-900"
                 placeholder="Biarkan kosong untuk menggunakan Judul Artikel" 
                 value={formData.seo_title}
                 onChange={e => setFormData({...formData, seo_title: e.target.value})}
               />
               <p className="text-[11px] text-slate-400 mt-1">
-                Judul cuplikan di hasil pencarian. Disarankan maksimal 60 karakter agar tidak terpotong.
+                Judul cuplikan di hasil pencarian. Disarankan maksimal 60 karakter agar tidak terpotong di Google SERP.
               </p>
             </div>
 
@@ -256,16 +303,17 @@ export default function ArticleForm({ initialData }: { initialData?: any }) {
               <div className="flex justify-between items-center mb-2">
                 <label className="text-xs font-bold text-slate-500">Meta Description</label>
                 <span className={`text-[11px] font-mono ${
-                  formData.seo_description.length > 160 
+                  formData.seo_description.length > 500 
                     ? 'text-rose-500 font-bold' 
                     : formData.seo_description.length > 155 
                     ? 'text-amber-500 font-medium' 
                     : 'text-slate-400'
                 }`}>
-                  {formData.seo_description.length} / 160 karakter
+                  {formData.seo_description.length} / 500 karakter {formData.seo_description.length > 155 ? '(optimal ≤ 155)' : ''}
                 </span>
               </div>
               <textarea 
+                maxLength={500}
                 rows={2}
                 className="w-full rounded-xl border border-slate-200 p-3 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
                 placeholder="Biarkan kosong untuk menggunakan Ringkasan"
@@ -273,7 +321,7 @@ export default function ArticleForm({ initialData }: { initialData?: any }) {
                 onChange={e => setFormData({...formData, seo_description: e.target.value})}
               />
               <p className="text-[11px] text-slate-400 mt-1">
-                Deskripsi ringkasan untuk mesin pencari. Disarankan antara 120 - 155 karakter.
+                Deskripsi ringkasan untuk mesin pencari. Disarankan antara 120 - 155 karakter agar pas di cuplikan Google.
               </p>
             </div>
 
