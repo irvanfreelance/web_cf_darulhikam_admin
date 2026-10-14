@@ -19,6 +19,19 @@ function cn(...inputs: ClassValue[]) {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+// Full class names so Tailwind can detect them (dynamic colorBg(color) is never generated).
+const COLOR_BG: Record<string, string> = {
+  rose: 'bg-rose-500',
+  blue: 'bg-blue-500',
+  orange: 'bg-orange-500',
+  teal: 'bg-teal-500',
+  emerald: 'bg-emerald-500',
+  amber: 'bg-amber-500',
+  indigo: 'bg-indigo-500',
+  slate: 'bg-slate-500',
+};
+const colorBg = (c?: string | null) => COLOR_BG[c || ''] || 'bg-teal-500';
+
 const emptyForm = { name: '', color_theme: 'teal', is_active: true, icon_url: '', icon_name: '', display_order: 0 };
 
 function CategoryIcon({ item, className }: { item: any; className?: string }) {
@@ -200,7 +213,7 @@ export default function CategoriesPage() {
                       {offset + idx + 1}
                     </td>
                     <td className="px-6 py-5">
-                      <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center p-1.5 overflow-hidden", `bg-${cat.color_theme}-500`)}>
+                      <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center p-1.5 overflow-hidden", colorBg(cat.color_theme))}>
                         <CategoryIcon item={cat} className={cat.icon_url ? "w-full h-full object-contain" : "text-white w-5 h-5"} />
                       </div>
                     </td>
@@ -209,7 +222,7 @@ export default function CategoriesPage() {
                     </td>
                     <td className="px-6 py-5 text-left">
                       <div className="flex items-center gap-2">
-                        <div className={cn("w-4 h-4 rounded-full border border-white shadow-sm", `bg-${cat.color_theme}-500`)}></div>
+                        <div className={cn("w-4 h-4 rounded-full border border-white shadow-sm", colorBg(cat.color_theme))}></div>
                         <span className="text-[10px] font-normal text-slate-400">{cat.color_theme}</span>
                       </div>
                     </td>
@@ -279,7 +292,7 @@ export default function CategoriesPage() {
                       onClick={() => setFormData({ ...formData, icon_url: icon.url, icon_name: icon.label || '' })}
                       className={cn(
                         "aspect-square rounded-xl p-2 flex items-center justify-center transition-all overflow-hidden",
-                        `bg-${formData.color_theme}-500`,
+                        colorBg(formData.color_theme),
                         formData.icon_url === icon.url ? "ring-2 ring-offset-2 ring-slate-800" : "opacity-70 hover:opacity-100"
                       )}
                     >
@@ -311,7 +324,7 @@ export default function CategoriesPage() {
                 <label className="block text-xs font-normal text-slate-500 mb-3">Pilih tema warna</label>
                 <div className="flex flex-wrap gap-3">
                   {['rose', 'blue', 'orange', 'teal', 'emerald', 'amber', 'indigo', 'slate'].map((color) => (
-                    <button key={color} type="button" onClick={() => setFormData({ ...formData, color_theme: color })} className={cn("w-10 h-10 rounded-full border-4 transition-all hover:scale-110", `bg-${color}-500`, formData.color_theme === color ? 'border-teal-100 shadow-xl' : 'border-transparent opacity-60')}></button>
+                    <button key={color} type="button" onClick={() => setFormData({ ...formData, color_theme: color })} className={cn("w-10 h-10 rounded-full border-4 transition-all hover:scale-110", colorBg(color), formData.color_theme === color ? 'border-teal-100 shadow-xl' : 'border-transparent opacity-60')}></button>
                   ))}
                 </div>
               </div>
@@ -349,7 +362,7 @@ export default function CategoriesPage() {
             </div>
             <div className="p-8 space-y-8">
                <div className="flex items-center gap-6">
-                 <div className={cn("w-20 h-20 rounded-3xl flex items-center justify-center border-4 border-white shadow-xl rotate-3 transition-transform hover:rotate-0", `bg-${selectedCategory.color_theme}-500`)}>
+                 <div className={cn("w-20 h-20 rounded-3xl flex items-center justify-center border-4 border-white shadow-xl rotate-3 transition-transform hover:rotate-0", colorBg(selectedCategory.color_theme))}>
                    <CategoryIcon item={selectedCategory} className={selectedCategory.icon_url ? "w-10 h-10 object-contain" : "text-white w-10 h-10"} />
                  </div>
                  <div className="text-left">
@@ -371,7 +384,7 @@ export default function CategoriesPage() {
                   <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-left">
                     <p className="text-[10px] font-normal text-slate-500 mb-2">Tema warna</p>
                     <div className="flex items-center gap-3">
-                       <div className={cn("w-6 h-6 rounded-full", `bg-${selectedCategory.color_theme}-500`)}></div>
+                       <div className={cn("w-6 h-6 rounded-full", colorBg(selectedCategory.color_theme))}></div>
                        <p className="text-lg font-bold text-slate-800">{selectedCategory.color_theme}</p>
                     </div>
                   </div>
