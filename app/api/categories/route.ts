@@ -7,6 +7,9 @@ const categorySchema = z.object({
   name: z.string().min(3),
   color_theme: z.string().optional().nullable(),
   is_active: z.boolean().default(true),
+  icon_url: z.string().optional().nullable().transform(v => v === '' ? null : v),
+  icon_name: z.string().max(50).optional().nullable().transform(v => v === '' ? null : v),
+  display_order: z.number().int().default(0),
 });
 
 export async function GET(req: Request) {
@@ -35,7 +38,7 @@ export async function GET(req: Request) {
 
     sql += `
       GROUP BY c.id
-      ORDER BY c.name ASC
+      ORDER BY c.display_order ASC, c.name ASC
       LIMIT $${params.length + 1} OFFSET $${params.length + 2}
     `;
     params.push(limit, offset);
@@ -54,11 +57,11 @@ export async function POST(req: Request) {
     const validated = categorySchema.parse(body);
     
     const sql = `
-      INSERT INTO categories (name, color_theme, is_active)
-      VALUES ($1, $2, $3)
+      INSERT INTO categories (name, color_theme, is_active, icon_url, icon_name, display_order)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
-    const res = await query(sql, [validated.name, validated.color_theme, validated.is_active]);
+    const res = await query(sql, [validated.name, validated.color_theme, validated.is_active, validated.icon_url, validated.icon_name, validated.display_order]);
     try {
       await invalidateCache(['categories', 'campaigns_list']);
     } catch (re) {

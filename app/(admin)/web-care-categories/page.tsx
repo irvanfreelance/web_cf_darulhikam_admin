@@ -5,7 +5,7 @@ import useSWR from 'swr';
 import { upload } from '@vercel/blob/client';
 import {
   Plus, Search, Edit2, Trash2, Save, Loader2,
-  GraduationCap, HandCoins, Leaf, HeartPulse, Users, MoonStar, Heart,
+  ImageOff,
 } from 'lucide-react';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
@@ -16,18 +16,11 @@ import { cn } from '@/lib/utils';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-// Fallback icons for categories seeded before icon upload existed — shown
-// only until the admin uploads a custom icon_url for that category.
-const FALLBACK_ICONS: Record<string, React.ComponentType<any>> = {
-  GraduationCap, HandCoins, Leaf, HeartPulse, Users, MoonStar, Heart,
-};
-
 function CategoryIcon({ item, className }: { item: any; className?: string }) {
   if (item.icon_url) {
     return <img src={item.icon_url} alt={item.label} className={className} />;
   }
-  const Icon = FALLBACK_ICONS[item.icon_name] || Heart;
-  return <Icon className={className} />;
+  return <ImageOff className={className} />;
 }
 
 export default function CareCategoriesPage() {
