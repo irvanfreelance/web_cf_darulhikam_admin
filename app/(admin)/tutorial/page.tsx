@@ -246,6 +246,8 @@ const entries: Entry[] = [
     fields: [
       { name: 'name', req: 'wajib', note: 'Nama kategori' },
       { name: 'color_theme', req: 'opsional', note: 'Palet tetap: rose, blue, orange, teal, emerald, amber, indigo, slate' },
+      { name: 'icon_url', req: 'opsional', note: 'Ikon dari pustaka ikon (atau upload baru)' },
+      { name: 'display_order', req: 'opsional', note: 'Urutan tampil, angka kecil tampil lebih dulu' },
       { name: 'is_active', req: 'opsional', note: 'Tampil/sembunyi di publik' },
     ],
     actions: ['Tambah', 'Edit', 'Hapus', 'Lihat detail'],

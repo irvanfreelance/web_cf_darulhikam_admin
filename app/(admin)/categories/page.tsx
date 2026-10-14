@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import useSWR, { mutate } from 'swr';
 import { 
   Plus, Search, Edit, Trash2, X, Save, AlertCircle, Loader2,
   Eye, Layers, ArrowUpRight, CheckCircle2, XCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { upload } from '@vercel/blob/client';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -17,6 +18,15 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+const emptyForm = { name: '', color_theme: 'teal', is_active: true, icon_url: '', icon_name: '', display_order: 0 };
+
+function CategoryIcon({ item, className }: { item: any; className?: string }) {
+  if (item.icon_url) {
+    return <img src={item.icon_url} alt={item.name} className={className} />;
+  }
+  return <Layers className={className} />;
+}
 
 export default function CategoriesPage() {
   const [search, setSearch] = useState('');
@@ -32,15 +42,25 @@ export default function CategoriesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [formData, setFormData] = useState({ name: '', color_theme: 'teal', is_active: true });
+  const [formData, setFormData] = useState(emptyForm);
+  const { data: iconLibrary, mutate: mutateIcons } = useSWR('/api/web-icon-library', fetcher);
+  const iconInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleOpenModal = (category: any = null) => {
     setSelectedCategory(category);
     if (category) {
-      setFormData({ name: category.name, color_theme: category.color_theme || 'teal', is_active: category.is_active });
+      setFormData({
+        name: category.name,
+        color_theme: category.color_theme || 'teal',
+        is_active: category.is_active,
+        icon_url: category.icon_url || '',
+        icon_name: category.icon_name || '',
+        display_order: category.display_order ?? 0,
+      });
     } else {
-      setFormData({ name: '', color_theme: 'teal', is_active: true });
+      setFormData(emptyForm);
     }
     setIsModalOpen(true);
   };
@@ -48,6 +68,29 @@ export default function CategoriesPage() {
   const handleOpenDetail = (cat: any) => {
     setSelectedCategory(cat);
     setIsDetailOpen(true);
+  };
+
+  const handleIconFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setIsUploadingIcon(true);
+    try {
+      const blob = await upload(file.name, file, { access: 'public', handleUploadUrl: '/api/upload' });
+      const res = await fetch('/api/web-icon-library', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: blob.url, label: file.name.replace(/\.[^.]+$/, '') }),
+      });
+      if (!res.ok) throw new Error('Gagal menyimpan ikon');
+      const newIcon = await res.json();
+      await mutateIcons();
+      setFormData(prev => ({ ...prev, icon_url: newIcon.url, icon_name: newIcon.label || '' }));
+    } catch (err: any) {
+      toast.error(err.message || 'Gagal mengupload ikon');
+    } finally {
+      setIsUploadingIcon(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,6 +182,7 @@ export default function CategoriesPage() {
             <thead>
               <tr className="bg-slate-50/50 text-slate-400 text-[10px] font-normal">
                 <th className="px-6 py-4 border-b border-slate-100 font-bold w-12 text-center">#</th>
+                <th className="px-6 py-4 border-b border-slate-100 font-bold w-16">Ikon</th>
                 <th className="px-6 py-4 border-b border-slate-100 font-bold">Nama Kategori</th>
                 <th className="px-6 py-4 border-b border-slate-100 font-bold">Tema Warna</th>
                 <th className="px-6 py-4 border-b border-slate-100 font-normal text-right">Total Kampanye</th>
@@ -148,12 +192,17 @@ export default function CategoriesPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
-                [...Array(limit)].map((_, i) => <tr key={i} className="animate-pulse"><td colSpan={6} className="h-16 px-6 py-4"></td></tr>)
+                [...Array(limit)].map((_, i) => <tr key={i} className="animate-pulse"><td colSpan={7} className="h-16 px-6 py-4"></td></tr>)
               ) : categories?.length > 0 ? (
                 categories.map((cat: any, idx: number) => (
                   <tr key={cat.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-6 py-5 text-center text-xs font-normal text-slate-400">
                       {offset + idx + 1}
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center p-1.5 overflow-hidden", `bg-${cat.color_theme}-500`)}>
+                        <CategoryIcon item={cat} className={cat.icon_url ? "w-full h-full object-contain" : "text-white w-5 h-5"} />
+                      </div>
                     </td>
                     <td className="px-6 py-5">
                       <span className="font-semibold text-slate-800 text-sm">{cat.name}</span>
@@ -185,7 +234,7 @@ export default function CategoriesPage() {
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-400 italic">No categories found.</td></tr>
+                <tr><td colSpan={7} className="px-6 py-12 text-center text-slate-400 italic">No categories found.</td></tr>
               )}
             </tbody>
           </table>
@@ -219,6 +268,45 @@ export default function CategoriesPage() {
                 <input required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Cth: Pendidikan, Bencana, dll" className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-normal text-slate-900 focus:outline-none focus:border-teal-500 transition-all font-sans" />
               </div>
               
+              <div className="text-left">
+                <label className="block text-xs font-normal text-slate-500 mb-3">Ikon kategori</label>
+                <div className="grid grid-cols-8 gap-2">
+                  {(Array.isArray(iconLibrary) ? iconLibrary : []).map((icon: any) => (
+                    <button
+                      key={icon.id}
+                      type="button"
+                      title={icon.label || 'Ikon'}
+                      onClick={() => setFormData({ ...formData, icon_url: icon.url, icon_name: icon.label || '' })}
+                      className={cn(
+                        "aspect-square rounded-xl p-2 flex items-center justify-center transition-all overflow-hidden",
+                        `bg-${formData.color_theme}-500`,
+                        formData.icon_url === icon.url ? "ring-2 ring-offset-2 ring-slate-800" : "opacity-70 hover:opacity-100"
+                      )}
+                    >
+                      <img src={icon.url} alt="" className="w-full h-full object-contain" />
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => iconInputRef.current?.click()}
+                    disabled={isUploadingIcon}
+                    title="Upload ikon baru"
+                    className="aspect-square rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400 hover:border-teal-500 hover:text-teal-500 transition-all disabled:opacity-50"
+                  >
+                    {isUploadingIcon ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+                  </button>
+                  <input ref={iconInputRef} type="file" accept="image/*" className="hidden" onChange={handleIconFileChange} />
+                </div>
+                {formData.icon_url && (
+                  <button type="button" onClick={() => setFormData({ ...formData, icon_url: '', icon_name: '' })} className="text-[10px] text-slate-400 hover:text-rose-500 mt-2">Hapus ikon</button>
+                )}
+              </div>
+
+              <div className="text-left">
+                <label className="block text-xs font-normal text-slate-500 mb-2">Urutan tampil</label>
+                <input type="number" min={0} value={formData.display_order} onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })} className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-normal text-slate-900 focus:outline-none focus:border-teal-500 transition-all font-sans" />
+              </div>
+
               <div className="text-left">
                 <label className="block text-xs font-normal text-slate-500 mb-3">Pilih tema warna</label>
                 <div className="flex flex-wrap gap-3">
@@ -262,7 +350,7 @@ export default function CategoriesPage() {
             <div className="p-8 space-y-8">
                <div className="flex items-center gap-6">
                  <div className={cn("w-20 h-20 rounded-3xl flex items-center justify-center border-4 border-white shadow-xl rotate-3 transition-transform hover:rotate-0", `bg-${selectedCategory.color_theme}-500`)}>
-                   <Layers size={40} className="text-white" />
+                   <CategoryIcon item={selectedCategory} className={selectedCategory.icon_url ? "w-10 h-10 object-contain" : "text-white w-10 h-10"} />
                  </div>
                  <div className="text-left">
                    <h3 className="text-3xl font-bold text-slate-800 tracking-tight leading-tight">{selectedCategory.name}</h3>
