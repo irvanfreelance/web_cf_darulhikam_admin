@@ -24,7 +24,7 @@ interface Props {
   mode: 'create' | 'edit';
 }
 
-const VARIABLES = ['{nama}', '{nominal}', '{invoice_code}', '{metode}', '{va_number}', '{bank_name}', '{rekening}', '{instruksi}', '{total_transfer}'];
+const VARIABLES = ['{nama}', '{nominal}', '{invoice_code}', '{metode}', '{tanggal}', '{program}', '{va_number}', '{bank_name}', '{rekening}', '{instruksi}', '{total_transfer}'];
 
 export function NotificationTemplateForm({ initialData, mode }: Props) {
   const router = useRouter();
