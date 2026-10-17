@@ -28,6 +28,33 @@ export async function invalidateCache(keys: string | string[]) {
 }
 
 /**
+ * Invalidate all campaign-related cache keys across both admin and public app.
+ * Pass slug to also invalidate the specific detail page cache.
+ */
+export async function invalidateCampaignCache(slug?: string) {
+  if (!redis) return;
+  try {
+    const keys: string[] = [
+      'campaigns',
+      'campaigns_list',
+      'api:campaigns:all',
+      'api:campaigns:carousel_v1',
+      'api:categories:with_campaigns_v4',
+      'web:footer_programs',
+    ];
+    if (slug) keys.push(`api:campaigns:detail:${slug}`);
+
+    // Invalidate all search result caches by pattern
+    const searchKeys = await redis.keys('api:campaigns:search:*');
+    if (searchKeys.length > 0) keys.push(...searchKeys);
+
+    await redis.del(...keys);
+  } catch (error) {
+    console.warn('Redis Campaign Cache Invalidation Error:', error);
+  }
+}
+
+/**
  * Safely flush all cache.
  */
 export async function safeFlushCache() {

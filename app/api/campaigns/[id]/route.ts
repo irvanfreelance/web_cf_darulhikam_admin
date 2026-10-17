@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query, withTransaction } from '@/lib/db';
-import { invalidateCache } from '@/lib/redis';
+import { invalidateCampaignCache } from '@/lib/redis';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -125,11 +125,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }
     });
 
-    try {
-      await invalidateCache(['campaigns', 'campaigns_list']);
-    } catch (re) {
-      console.warn('Redis flush error in [id] route:', re);
-    }
+    const slugRes = await query('SELECT slug FROM campaigns WHERE id = $1', [id]);
+    await invalidateCampaignCache(slugRes.rows[0]?.slug);
 
     return NextResponse.json({ success: true, message: 'Data berelasi berhasil disimpan.'});
   } catch (error: any) {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query, withTransaction } from '@/lib/db';
-import { invalidateCache } from '@/lib/redis';
+import { invalidateCampaignCache } from '@/lib/redis';
 import { z } from 'zod';
 
 // Validation schema for creating/updating campaigns
@@ -142,11 +142,7 @@ export async function POST(req: Request) {
       return newId;
     });
     
-    try {
-      await invalidateCache(['campaigns', 'campaigns_list', 'api:campaigns:carousel_v1', 'web:footer_programs']);
-    } catch (re) {
-      console.warn('Redis flush error:', re);
-    }
+    await invalidateCampaignCache(validated.slug);
 
     return NextResponse.json({ id: result }, { status: 201 });
   } catch (error: any) {
@@ -177,11 +173,7 @@ export async function PATCH(req: Request) {
     
     if (res.rowCount === 0) return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
 
-    try {
-      await invalidateCache(['campaigns', 'campaigns_list', 'api:campaigns:carousel_v1', 'web:footer_programs']);
-    } catch (re) {
-      console.warn('Redis flush error:', re);
-    }
+    await invalidateCampaignCache(res.rows[0].slug);
 
     return NextResponse.json(res.rows[0]);
   } catch (error: any) {
@@ -197,8 +189,8 @@ export async function DELETE(req: Request) {
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
-    await query('DELETE FROM campaigns WHERE id = $1', [id]);
-    await invalidateCache(['campaigns', 'campaigns_list', 'api:campaigns:carousel_v1', 'web:footer_programs']);
+    const delRes = await query('DELETE FROM campaigns WHERE id = $1 RETURNING slug', [id]);
+    await invalidateCampaignCache(delRes.rows[0]?.slug);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     // Postgres foreign_key_violation — campaign still has related transactions
