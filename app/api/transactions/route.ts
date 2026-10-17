@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query, withTransaction } from '@/lib/db';
 import { safeFlushCache } from '@/lib/redis';
+import { sendEmail, renderTemplate } from '@/lib/email';
 import { z } from 'zod';
 
 // Zod Validation Schemas
@@ -433,6 +434,61 @@ export async function PATCH(req: Request) {
       });
 
       await safeFlushCache();
+
+      // Send email notification if status changed to PAID and donor has email
+      if (validated.status === 'PAID') {
+        const invoiceRes = await query(
+          `SELECT i.invoice_code, i.donor_name_snapshot, i.donor_email, i.total_amount, i.is_email_paid_sent,
+                  pm.name as payment_method_name
+           FROM invoices i
+           JOIN payment_methods pm ON i.payment_method_id = pm.id
+           WHERE i.id = $1 AND i.created_at = $2`,
+          [validated.id, validated.created_at]
+        );
+        const inv = invoiceRes.rows[0];
+
+        if (inv?.donor_email && !inv.is_email_paid_sent) {
+          const templateRes = await query(
+            `SELECT subject, message_content FROM notification_templates
+             WHERE event_trigger = 'payment_paid' AND channel = 'EMAIL' AND is_active = true
+             LIMIT 1`
+          );
+          if (templateRes.rows.length > 0) {
+            const { subject, message_content } = templateRes.rows[0];
+            const vars: Record<string, string> = {
+              nama: inv.donor_name_snapshot || 'Donatur',
+              invoice_code: inv.invoice_code,
+              nominal: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(inv.total_amount),
+              metode: inv.payment_method_name || '',
+            };
+            const renderedSubject = renderTemplate(subject, vars);
+            const renderedHtml = renderTemplate(message_content, vars);
+
+            let emailStatus = 'SUCCESS';
+            let emailError = '';
+            try {
+              await sendEmail({ to: inv.donor_email, subject: renderedSubject, html: renderedHtml });
+            } catch (err: any) {
+              emailStatus = 'FAILED';
+              emailError = err.message;
+            }
+
+            await query(
+              `INSERT INTO notification_logs (invoice_code, channel, recipient, status, request_payload, response_payload, created_at)
+               VALUES ($1, 'EMAIL', $2, $3, $4, $5, NOW())`,
+              [inv.invoice_code, inv.donor_email, emailStatus, JSON.stringify({ event: 'payment_paid', subject: renderedSubject }), JSON.stringify({ error: emailError || null })]
+            );
+
+            if (emailStatus === 'SUCCESS') {
+              await query(
+                `UPDATE invoices SET is_email_paid_sent = true WHERE id = $1 AND created_at = $2`,
+                [validated.id, validated.created_at]
+              );
+            }
+          }
+        }
+      }
+
       return NextResponse.json(updatedInvoice);
     }
 
