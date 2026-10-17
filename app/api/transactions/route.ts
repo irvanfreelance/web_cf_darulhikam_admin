@@ -439,9 +439,13 @@ export async function PATCH(req: Request) {
       if (validated.status === 'PAID') {
         const invoiceRes = await query(
           `SELECT i.invoice_code, i.donor_name_snapshot, i.donor_email, i.total_amount, i.is_email_paid_sent,
-                  pm.name as payment_method_name
+                  i.paid_at,
+                  pm.name as payment_method_name,
+                  COALESCE(c.title, '') as campaign_title
            FROM invoices i
            JOIN payment_methods pm ON i.payment_method_id = pm.id
+           LEFT JOIN transactions t ON t.invoice_id = i.id AND t.invoice_created_at = i.created_at
+           LEFT JOIN campaigns c ON c.id = t.campaign_id
            WHERE i.id = $1 AND i.created_at = $2`,
           [validated.id, validated.created_at]
         );
@@ -455,11 +459,14 @@ export async function PATCH(req: Request) {
           );
           if (templateRes.rows.length > 0) {
             const { subject, message_content } = templateRes.rows[0];
+            const fmtDate = new Intl.DateTimeFormat('id-ID', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Jakarta' });
             const vars: Record<string, string> = {
               nama: inv.donor_name_snapshot || 'Donatur',
               invoice_code: inv.invoice_code,
               nominal: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(inv.total_amount),
               metode: inv.payment_method_name || '',
+              tanggal: fmtDate.format(inv.paid_at ? new Date(inv.paid_at) : new Date()),
+              program: inv.campaign_title || '',
             };
             const renderedSubject = renderTemplate(subject, vars);
             const renderedHtml = renderTemplate(message_content, vars);
@@ -647,9 +654,13 @@ export async function PATCH(req: Request) {
     if (validated.status === 'PAID') {
       const invoiceRes = await query(
         `SELECT i.invoice_code, i.donor_name_snapshot, i.donor_email, i.total_amount, i.is_email_paid_sent,
-                pm.name as payment_method_name
+                i.paid_at,
+                pm.name as payment_method_name,
+                COALESCE(c.title, '') as campaign_title
          FROM invoices i
          JOIN payment_methods pm ON i.payment_method_id = pm.id
+         LEFT JOIN transactions t ON t.invoice_id = i.id AND t.invoice_created_at = i.created_at
+         LEFT JOIN campaigns c ON c.id = t.campaign_id
          WHERE i.id = $1 AND i.created_at = $2`,
         [validated.id, validated.created_at]
       );
@@ -663,11 +674,14 @@ export async function PATCH(req: Request) {
         );
         if (templateRes.rows.length > 0) {
           const { subject, message_content } = templateRes.rows[0];
+          const fmtDate = new Intl.DateTimeFormat('id-ID', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Jakarta' });
           const vars: Record<string, string> = {
             nama: inv.donor_name_snapshot || 'Donatur',
             invoice_code: inv.invoice_code,
             nominal: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(inv.total_amount),
             metode: inv.payment_method_name || '',
+            tanggal: fmtDate.format(inv.paid_at ? new Date(inv.paid_at) : new Date()),
+            program: inv.campaign_title || '',
           };
           const renderedSubject = renderTemplate(subject, vars);
           const renderedHtml = renderTemplate(message_content, vars);
