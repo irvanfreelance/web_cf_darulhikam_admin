@@ -107,7 +107,6 @@ export default function EditCampaignPage() {
       if (!nestedRes.ok) throw new Error('Failed to update related arrays');
 
       toast.success('Kampanye berhasil diperbarui');
-      router.push(`/campaigns/${id}`);
     } catch (err: any) {
       toast.error(err.message);
     } finally {

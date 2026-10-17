@@ -55,6 +55,25 @@ export async function invalidateCampaignCache(slug?: string) {
 }
 
 /**
+ * Trigger Next.js on-demand revalidation on the public app.
+ * Called after any campaign mutation so pages refresh immediately.
+ */
+export async function triggerPublicRevalidate(slug?: string) {
+  const url = process.env.PUBLIC_APP_URL;
+  const secret = process.env.REVALIDATE_SECRET;
+  if (!url || !secret) return;
+  try {
+    await fetch(`${url}/api/revalidate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret, slug }),
+    });
+  } catch {
+    // non-critical — don't fail the main request
+  }
+}
+
+/**
  * Safely flush all cache.
  */
 export async function safeFlushCache() {

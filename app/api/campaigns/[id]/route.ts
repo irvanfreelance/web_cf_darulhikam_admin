@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query, withTransaction } from '@/lib/db';
-import { invalidateCampaignCache } from '@/lib/redis';
+import { invalidateCampaignCache, triggerPublicRevalidate } from '@/lib/redis';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -127,6 +127,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     const slugRes = await query('SELECT slug FROM campaigns WHERE id = $1', [id]);
     await invalidateCampaignCache(slugRes.rows[0]?.slug);
+    triggerPublicRevalidate(slugRes.rows[0]?.slug);
 
     return NextResponse.json({ success: true, message: 'Data berelasi berhasil disimpan.'});
   } catch (error: any) {

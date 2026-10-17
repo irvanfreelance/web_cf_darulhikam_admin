@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query, withTransaction } from '@/lib/db';
-import { invalidateCampaignCache } from '@/lib/redis';
+import { invalidateCampaignCache, triggerPublicRevalidate } from '@/lib/redis';
 import { z } from 'zod';
 
 // Validation schema for creating/updating campaigns
@@ -143,6 +143,7 @@ export async function POST(req: Request) {
     });
     
     await invalidateCampaignCache(validated.slug);
+    triggerPublicRevalidate(validated.slug);
 
     return NextResponse.json({ id: result }, { status: 201 });
   } catch (error: any) {
@@ -174,6 +175,7 @@ export async function PATCH(req: Request) {
     if (res.rowCount === 0) return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
 
     await invalidateCampaignCache(res.rows[0].slug);
+    triggerPublicRevalidate(res.rows[0].slug);
 
     return NextResponse.json(res.rows[0]);
   } catch (error: any) {
@@ -191,6 +193,7 @@ export async function DELETE(req: Request) {
 
     const delRes = await query('DELETE FROM campaigns WHERE id = $1 RETURNING slug', [id]);
     await invalidateCampaignCache(delRes.rows[0]?.slug);
+    triggerPublicRevalidate(delRes.rows[0]?.slug);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     // Postgres foreign_key_violation — campaign still has related transactions
