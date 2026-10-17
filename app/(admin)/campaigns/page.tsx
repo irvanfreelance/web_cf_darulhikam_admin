@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import { 
-  Plus, Search, Edit, Trash2, Eye, GripVertical, X, Save, Loader2, Copy, Image as ImageIcon
+  Plus, Search, Edit, Trash2, Eye, GripVertical, X, Save, Loader2, Copy, Image as ImageIcon, ExternalLink
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -144,6 +144,7 @@ function SortableRow({ camp, idx, offset, formatIDR, router, handleDelete, handl
         <div className="flex justify-center gap-1">
           <button onClick={() => router.push(`/campaigns/${camp.id}`)} className="p-2 text-teal-600 hover:bg-teal-50 rounded-xl transition-all" title="Detail Performa"><Eye size={18} /></button>
           <button onClick={() => router.push(`/campaigns/${camp.id}/edit`)} className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800 rounded-xl transition-all" title="Edit Kampanye"><Edit size={18} /></button>
+          <a href={`https://www.lazdarulhikam.com/donasi/${camp.slug}`} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all inline-flex" title="Buka di website publik"><ExternalLink size={18} /></a>
           <button onClick={() => handleDuplicate(camp)} className="p-2 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 rounded-xl transition-all" title="Duplicate Kampanye"><Copy size={18} /></button>
           <button onClick={() => handleDelete(camp.id)} className="p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all" title="Hapus"><Trash2 size={18} /></button>
         </div>

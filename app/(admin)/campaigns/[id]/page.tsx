@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 import useSWR from 'swr';
 import { useParams, useRouter } from 'next/navigation';
 import { 
-  ChevronLeft, Edit, Share2, Users, Eye, Calendar, 
+  ChevronLeft, Edit, Share2, Users, Eye, Calendar,
   ArrowUpRight, MessageSquare, Wallet, Clock, CheckCircle2,
   Plus, X, Loader2, Image as ImageIcon,
-  Layers, Package, QrCode, Tags
+  Layers, Package, QrCode, Tags, ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { upload } from '@vercel/blob/client';
@@ -131,7 +131,16 @@ export default function CampaignDetailPage() {
           </div>
         </div>
         <div className="flex gap-2 shrink-0">
-          <button 
+          <a
+            href={`https://www.lazdarulhikam.com/donasi/${campaign.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-medium text-blue-600 hover:bg-blue-50 transition-all shadow-sm"
+            title="Buka di website publik"
+          >
+            <ExternalLink size={16} /> Website
+          </a>
+          <button
             onClick={() => router.push(`/campaigns/${id}/edit`)}
             className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
           >

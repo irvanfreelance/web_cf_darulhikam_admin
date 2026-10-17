@@ -5,7 +5,7 @@ import useSWR from 'swr';
 import { useRouter, useParams } from 'next/navigation';
 import { 
   ChevronLeft, Save, Loader2, X, Image as ImageIcon,
-  CheckCircle2, AlertCircle, Plus, Trash2, QrCode, Package, Tags, Download
+  CheckCircle2, AlertCircle, Plus, Trash2, QrCode, Package, Tags, Download, ExternalLink
 } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { toast } from 'sonner';
@@ -140,10 +140,20 @@ export default function EditCampaignPage() {
         >
           <ChevronLeft size={20} />
         </button>
-        <div className="text-left">
+        <div className="text-left flex-1">
           <h1 className="text-2xl font-normal text-slate-800 tracking-tight">Edit Kampanye</h1>
           <p className="text-sm text-slate-400 font-medium mt-1 text-left">Sesuaikan detail program penggalangan dana</p>
         </div>
+        {formData.slug && (
+          <a
+            href={`https://www.lazdarulhikam.com/donasi/${formData.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl transition-all"
+          >
+            <ExternalLink size={13} /> Buka di website
+          </a>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
