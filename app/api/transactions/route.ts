@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query, withTransaction } from '@/lib/db';
 import { safeFlushCache } from '@/lib/redis';
+import { sendPaidEmail } from '@/lib/mailer';
 import { sendEmail, renderTemplate } from '@/lib/email';
 import { z } from 'zod';
 
@@ -435,6 +436,9 @@ export async function PATCH(req: Request) {
 
       await safeFlushCache();
 
+      // Fire-and-forget: send email notification when invoice becomes PAID
+      if (status === 'PAID') {
+        sendPaidEmail(updatedInvoice.id, updatedInvoice.created_at);
       // Send email notification if status changed to PAID and donor has email
       if (validated.status === 'PAID') {
         const invoiceRes = await query(
@@ -642,6 +646,12 @@ export async function PATCH(req: Request) {
     });
 
     await safeFlushCache();
+
+    // Fire-and-forget: send email notification when invoice is edited to PAID
+    if (validated.status === 'PAID') {
+      sendPaidEmail(result.invoice.id, result.invoice.created_at);
+    }
+
     return NextResponse.json(result);
   } catch (error: any) {
     console.error('API Transactions PATCH Error:', error);
