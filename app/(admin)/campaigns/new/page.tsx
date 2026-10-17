@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { FileUpload } from '@/components/ui/file-upload';
 import { ImageCropper } from '@/components/ui/image-cropper';
+import { compressImage } from '@/lib/compressImage';
 import { NumberInput } from '@/components/ui/number-input';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
@@ -41,8 +42,10 @@ export default function NewCampaignPage() {
     try {
       let finalImageUrl = formData.image_url;
       if (imageFile) {
+        toast('Memproses gambar...');
+        const compressed = await compressImage(imageFile);
         toast('Mengupload gambar ke server...');
-        const blob = await upload(imageFile.name, imageFile, {
+        const blob = await upload(compressed.name, compressed, {
           access: 'public',
           handleUploadUrl: '/api/upload',
         });

@@ -15,6 +15,7 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { FileUpload } from '@/components/ui/file-upload';
 import { ImageCropper } from '@/components/ui/image-cropper';
+import { compressImage } from '@/lib/compressImage';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -75,8 +76,10 @@ export default function EditCampaignPage() {
     try {
       let finalImageUrl = formData.image_url;
       if (imageFile) {
+        toast('Memproses gambar...');
+        const compressed = await compressImage(imageFile);
         toast('Mengupload gambar ke server...');
-        const blob = await upload(imageFile.name, imageFile, {
+        const blob = await upload(compressed.name, compressed, {
           access: 'public',
           handleUploadUrl: '/api/upload',
         });
