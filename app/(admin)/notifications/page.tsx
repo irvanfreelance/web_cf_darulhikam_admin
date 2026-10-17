@@ -255,7 +255,13 @@ export default function NotificationsPage() {
                 <div className="relative z-10">
                   <p className="text-[10px] font-normal text-slate-400 mb-4 flex items-center gap-2"><Type size={12} /> Pesan yang dikirim</p>
                   {selectedTemplate.channel === 'EMAIL' ? (
-                    <div className="text-sm text-slate-700 leading-relaxed prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: selectedTemplate.message_content }} />
+                    <iframe
+                      srcDoc={selectedTemplate.message_content}
+                      sandbox="allow-same-origin"
+                      className="w-full border-0 rounded-xl"
+                      style={{ height: '360px' }}
+                      title="Email Preview"
+                    />
                   ) : (
                     <div className="text-lg font-normal text-slate-700 tracking-tight leading-relaxed italic font-serif">
                       "{selectedTemplate.message_content}"

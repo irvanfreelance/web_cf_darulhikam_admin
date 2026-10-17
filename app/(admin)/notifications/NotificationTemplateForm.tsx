@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, Loader2, ArrowLeft, Info, Code, Eye } from 'lucide-react';
+import { Save, Loader2, ArrowLeft, Info, Code, Eye, Monitor } from 'lucide-react';
 import { toast } from 'sonner';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { clsx, type ClassValue } from 'clsx';
@@ -37,7 +37,8 @@ export function NotificationTemplateForm({ initialData, mode }: Props) {
     is_active: initialData?.is_active ?? true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [htmlSourceMode, setHtmlSourceMode] = useState(false);
+  // 'visual' | 'html' | 'preview'
+  const [editorMode, setEditorMode] = useState<'visual' | 'html' | 'preview'>('visual');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,36 +134,69 @@ export function NotificationTemplateForm({ initialData, mode }: Props) {
                 {isEmail ? 'Body email (HTML)' : 'Konten pesan'}
               </label>
               {isEmail && (
-                <button
-                  type="button"
-                  onClick={() => setHtmlSourceMode(!htmlSourceMode)}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all border",
-                    htmlSourceMode
-                      ? "bg-amber-50 text-amber-700 border-amber-200"
-                      : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200"
-                  )}
-                >
-                  {htmlSourceMode ? <Eye size={12} /> : <Code size={12} />}
-                  {htmlSourceMode ? 'Visual editor' : 'HTML source'}
-                </button>
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  {([
+                    { key: 'visual' as const,   icon: <Eye size={11} />,     label: 'Visual' },
+                    { key: 'html' as const,      icon: <Code size={11} />,    label: 'HTML' },
+                    { key: 'preview' as const,   icon: <Monitor size={11} />, label: 'Preview' },
+                  ]).map(({ key, icon, label }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setEditorMode(key)}
+                      className={cn(
+                        "flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all",
+                        editorMode === key
+                          ? "bg-white text-slate-800 shadow-sm"
+                          : "text-slate-400 hover:text-slate-600"
+                      )}
+                    >
+                      {icon}{label}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
 
-            {isEmail && !htmlSourceMode ? (
-              <RichTextEditor
-                value={formData.message_content}
-                onChange={(v) => setFormData({ ...formData, message_content: v })}
-                placeholder="Tulis isi email di sini..."
-              />
+            {isEmail ? (
+              editorMode === 'visual' ? (
+                <RichTextEditor
+                  value={formData.message_content}
+                  onChange={(v) => setFormData({ ...formData, message_content: v })}
+                  placeholder="Tulis isi email di sini..."
+                />
+              ) : editorMode === 'html' ? (
+                <textarea
+                  required
+                  rows={12}
+                  value={formData.message_content}
+                  onChange={(e) => setFormData({ ...formData, message_content: e.target.value })}
+                  className="w-full bg-slate-950 text-green-300 border border-slate-700 rounded-xl py-4 px-4 text-xs font-mono leading-relaxed outline-none focus:border-blue-500 transition-all"
+                  placeholder="<p>Gunakan HTML untuk memformat email...</p>"
+                />
+              ) : (
+                /* Preview mode: render HTML in sandboxed iframe */
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+                  <div className="px-4 py-2 bg-slate-100 border-b border-slate-200 flex items-center gap-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                    <Monitor size={11} /> Tampilan email sebenarnya
+                  </div>
+                  <iframe
+                    srcDoc={formData.message_content || '<p style="font-family:sans-serif;padding:24px;color:#6b7280">Belum ada konten</p>'}
+                    sandbox="allow-same-origin"
+                    className="w-full border-0"
+                    style={{ height: '500px' }}
+                    title="Email Preview"
+                  />
+                </div>
+              )
             ) : (
               <textarea
                 required
-                rows={isEmail ? 12 : 6}
+                rows={6}
                 value={formData.message_content}
                 onChange={(e) => setFormData({ ...formData, message_content: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-4 text-sm font-normal text-slate-900 leading-relaxed outline-none focus:border-blue-500 transition-all font-mono"
-                placeholder={isEmail ? '<p>Gunakan HTML untuk memformat email...</p>' : 'Gunakan variabel seperti {nama}, {nominal}, dll...'}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-4 text-sm font-normal text-slate-900 leading-relaxed outline-none focus:border-blue-500 transition-all font-sans"
+                placeholder="Gunakan variabel seperti {nama}, {nominal}, dll..."
               />
             )}
           </div>
@@ -178,9 +212,9 @@ export function NotificationTemplateForm({ initialData, mode }: Props) {
                     key={v}
                     className="text-[10px] font-mono bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md border border-blue-200 cursor-pointer hover:bg-blue-200 transition-colors"
                     onClick={() => {
-                      if (isEmail && !htmlSourceMode) return;
-                      const field = isEmail ? 'message_content' : 'message_content';
-                      setFormData((prev) => ({ ...prev, [field]: prev[field] + v }));
+                      // Only append in html or non-email mode (visual editor handles its own cursor)
+                      if (isEmail && editorMode === 'visual') return;
+                      setFormData((prev) => ({ ...prev, message_content: prev.message_content + v }));
                     }}
                   >
                     {v}
