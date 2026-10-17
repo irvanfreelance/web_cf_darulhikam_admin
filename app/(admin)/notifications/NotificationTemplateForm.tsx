@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, Loader2, ArrowLeft, Info, Code, Eye, Monitor } from 'lucide-react';
+import { Save, Loader2, ArrowLeft, Info, Code, Eye, Monitor, Bold, Italic, Underline, List, ListOrdered, Table, Heading2, Heading3, Link } from 'lucide-react';
 import { toast } from 'sonner';
-import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -39,6 +38,19 @@ export function NotificationTemplateForm({ initialData, mode }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   // 'visual' | 'html' | 'preview'
   const [editorMode, setEditorMode] = useState<'visual' | 'html' | 'preview'>('visual');
+  // ref for contenteditable visual editor — avoids React re-render conflicts
+  const visualEditorRef = useRef<HTMLDivElement>(null);
+  const colorPickerRef = useRef<HTMLInputElement>(null);
+  // save selection before color picker opens (focus leaves editor)
+  const savedRangeRef = useRef<Range | null>(null);
+
+  // Sync HTML into contenteditable when switching TO visual mode
+  useEffect(() => {
+    if (editorMode === 'visual' && visualEditorRef.current) {
+      visualEditorRef.current.innerHTML = formData.message_content;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editorMode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +68,6 @@ export function NotificationTemplateForm({ initialData, mode }: Props) {
         throw new Error(err.error || 'Failed to save template');
       }
       toast.success(mode === 'edit' ? 'Template diperbarui' : 'Template berhasil dibuat');
-      router.push('/notifications');
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -160,23 +171,200 @@ export function NotificationTemplateForm({ initialData, mode }: Props) {
 
             {isEmail ? (
               editorMode === 'visual' ? (
-                <RichTextEditor
-                  value={formData.message_content}
-                  onChange={(v) => setFormData({ ...formData, message_content: v })}
-                  placeholder="Tulis isi email di sini..."
-                />
+                /* Visual mode: contenteditable renders inline-styled HTML as-is.
+                   User edits text visually; innerHTML (with all styles intact) is saved back. */
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                  {/* Toolbar */}
+                  <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center gap-1">
+                    {[
+                      { icon: <Bold size={13} />, cmd: 'bold', title: 'Bold' },
+                      { icon: <Italic size={13} />, cmd: 'italic', title: 'Italic' },
+                      { icon: <Underline size={13} />, cmd: 'underline', title: 'Underline' },
+                    ].map(({ icon, cmd, title }) => (
+                      <button
+                        key={cmd}
+                        type="button"
+                        title={title}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          document.execCommand(cmd, false);
+                          if (visualEditorRef.current) {
+                            setFormData(prev => ({ ...prev, message_content: visualEditorRef.current!.innerHTML }));
+                          }
+                        }}
+                        className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors"
+                      >
+                        {icon}
+                      </button>
+                    ))}
+                    <div className="w-px h-4 bg-slate-300 mx-1" />
+                    <button
+                      type="button"
+                      title="Heading 2"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        document.execCommand('formatBlock', false, 'h2');
+                        if (visualEditorRef.current) {
+                          setFormData(prev => ({ ...prev, message_content: visualEditorRef.current!.innerHTML }));
+                        }
+                      }}
+                      className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors"
+                    >
+                      <Heading2 size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      title="Heading 3"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        document.execCommand('formatBlock', false, 'h3');
+                        if (visualEditorRef.current) {
+                          setFormData(prev => ({ ...prev, message_content: visualEditorRef.current!.innerHTML }));
+                        }
+                      }}
+                      className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors"
+                    >
+                      <Heading3 size={13} />
+                    </button>
+                    <div className="w-px h-4 bg-slate-300 mx-1" />
+                    <button
+                      type="button"
+                      title="Bullet list"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        document.execCommand('insertUnorderedList', false);
+                        if (visualEditorRef.current) {
+                          setFormData(prev => ({ ...prev, message_content: visualEditorRef.current!.innerHTML }));
+                        }
+                      }}
+                      className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors"
+                    >
+                      <List size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      title="Numbered list"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        document.execCommand('insertOrderedList', false);
+                        if (visualEditorRef.current) {
+                          setFormData(prev => ({ ...prev, message_content: visualEditorRef.current!.innerHTML }));
+                        }
+                      }}
+                      className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors"
+                    >
+                      <ListOrdered size={13} />
+                    </button>
+                    <div className="w-px h-4 bg-slate-300 mx-1" />
+                    <button
+                      type="button"
+                      title="Insert table 3×3"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        const table = `<table style="border-collapse:collapse;width:100%;margin:8px 0"><thead><tr>${Array(3).fill('<th style="border:1px solid #cbd5e1;padding:6px 10px;background:#f8fafc;font-size:12px;text-align:left">Judul</th>').join('')}</tr></thead><tbody>${Array(2).fill(`<tr>${Array(3).fill('<td style="border:1px solid #cbd5e1;padding:6px 10px;font-size:12px">Isi</td>').join('')}</tr>`).join('')}</tbody></table>`;
+                        document.execCommand('insertHTML', false, table);
+                        if (visualEditorRef.current) {
+                          setFormData(prev => ({ ...prev, message_content: visualEditorRef.current!.innerHTML }));
+                        }
+                      }}
+                      className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors"
+                    >
+                      <Table size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      title="Insert link"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        const url = prompt('URL link:');
+                        if (url) {
+                          document.execCommand('createLink', false, url);
+                          if (visualEditorRef.current) {
+                            setFormData(prev => ({ ...prev, message_content: visualEditorRef.current!.innerHTML }));
+                          }
+                        }
+                      }}
+                      className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors"
+                    >
+                      <Link size={13} />
+                    </button>
+                    <div className="w-px h-4 bg-slate-300 mx-1" />
+                    {/* Font color picker */}
+                    <div className="relative" title="Warna teks">
+                      <button
+                        type="button"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          // save current selection before focus leaves editor
+                          const sel = window.getSelection();
+                          if (sel && sel.rangeCount > 0) {
+                            savedRangeRef.current = sel.getRangeAt(0).cloneRange();
+                          }
+                          colorPickerRef.current?.click();
+                        }}
+                        className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors flex flex-col items-center gap-0.5"
+                      >
+                        <span className="text-[11px] font-bold leading-none">A</span>
+                        <span
+                          className="w-3.5 h-1 rounded-full"
+                          style={{ background: colorPickerRef.current?.value || '#000000' }}
+                        />
+                      </button>
+                      <input
+                        ref={colorPickerRef}
+                        type="color"
+                        defaultValue="#000000"
+                        className="absolute opacity-0 w-0 h-0 pointer-events-none"
+                        onChange={(e) => {
+                          const color = e.target.value;
+                          // restore selection then apply color
+                          if (savedRangeRef.current) {
+                            const sel = window.getSelection();
+                            sel?.removeAllRanges();
+                            sel?.addRange(savedRangeRef.current);
+                          }
+                          document.execCommand('foreColor', false, color);
+                          if (visualEditorRef.current) {
+                            setFormData(prev => ({ ...prev, message_content: visualEditorRef.current!.innerHTML }));
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="ml-auto text-[10px] font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                      <Eye size={11} /> Klik teks untuk mengedit
+                    </div>
+                  </div>
+                  {/* Info: warna yang tampil = warna asli email */}
+                  <div className="px-3 py-1.5 bg-amber-50 border-b border-amber-100 flex items-center gap-2 text-[10px] text-amber-700">
+                    <Info size={11} className="shrink-0" />
+                    Warna teks di sini = warna yang diterima di inbox. Teks abu-abu akan tetap abu-abu. Klik <strong>Preview</strong> untuk verifikasi tampilan akhir sebelum simpan.
+                  </div>
+                  <div
+                    ref={visualEditorRef}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onInput={() => {
+                      if (visualEditorRef.current) {
+                        setFormData(prev => ({ ...prev, message_content: visualEditorRef.current!.innerHTML }));
+                      }
+                    }}
+                    className="w-full min-h-[480px] outline-none focus:ring-2 focus:ring-inset focus:ring-blue-200 p-2"
+                    style={{ lineHeight: 'normal' }}
+                  />
+                </div>
               ) : editorMode === 'html' ? (
                 <textarea
                   required
-                  rows={12}
+                  rows={14}
                   value={formData.message_content}
                   onChange={(e) => setFormData({ ...formData, message_content: e.target.value })}
                   className="w-full bg-slate-950 text-green-300 border border-slate-700 rounded-xl py-4 px-4 text-xs font-mono leading-relaxed outline-none focus:border-blue-500 transition-all"
                   placeholder="<p>Gunakan HTML untuk memformat email...</p>"
+                  spellCheck={false}
                 />
               ) : (
-                /* Preview mode: render HTML in sandboxed iframe */
-                <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+                /* Preview mode: render HTML in sandboxed iframe — exact email render */
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
                   <div className="px-4 py-2 bg-slate-100 border-b border-slate-200 flex items-center gap-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
                     <Monitor size={11} /> Tampilan email sebenarnya
                   </div>
@@ -184,7 +372,7 @@ export function NotificationTemplateForm({ initialData, mode }: Props) {
                     srcDoc={formData.message_content || '<p style="font-family:sans-serif;padding:24px;color:#6b7280">Belum ada konten</p>'}
                     sandbox="allow-same-origin"
                     className="w-full border-0"
-                    style={{ height: '500px' }}
+                    style={{ height: '520px' }}
                     title="Email Preview"
                   />
                 </div>
@@ -212,8 +400,23 @@ export function NotificationTemplateForm({ initialData, mode }: Props) {
                     key={v}
                     className="text-[10px] font-mono bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md border border-blue-200 cursor-pointer hover:bg-blue-200 transition-colors"
                     onClick={() => {
-                      // Only append in html or non-email mode (visual editor handles its own cursor)
-                      if (isEmail && editorMode === 'visual') return;
+                      if (isEmail && editorMode === 'visual') {
+                        // Insert at cursor in contenteditable
+                        const sel = window.getSelection();
+                        if (sel && sel.rangeCount > 0) {
+                          const range = sel.getRangeAt(0);
+                          range.deleteContents();
+                          range.insertNode(document.createTextNode(v));
+                          range.collapse(false);
+                          sel.removeAllRanges();
+                          sel.addRange(range);
+                        }
+                        if (visualEditorRef.current) {
+                          setFormData(prev => ({ ...prev, message_content: visualEditorRef.current!.innerHTML }));
+                        }
+                        return;
+                      }
+                      if (isEmail && editorMode === 'preview') return;
                       setFormData((prev) => ({ ...prev, message_content: prev.message_content + v }));
                     }}
                   >
