@@ -471,10 +471,26 @@ export async function PATCH(req: Request) {
             const renderedSubject = renderTemplate(subject, vars);
             const renderedHtml = renderTemplate(message_content, vars);
 
+            // Fetch kwitansi PDF from FE (silently skip on failure)
+            let kwitansiAttachment: { filename: string; content: Buffer; contentType: string } | undefined;
+            try {
+              const feBase = (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+              const pdfRes = await fetch(`${feBase}/api/invoice/${inv.invoice_code}/kwitansi`, { signal: AbortSignal.timeout(10000) });
+              if (pdfRes.ok) {
+                const pdfBuf = Buffer.from(await pdfRes.arrayBuffer());
+                kwitansiAttachment = { filename: `kwitansi-${inv.invoice_code}.pdf`, content: pdfBuf, contentType: 'application/pdf' };
+              }
+            } catch { /* skip */ }
+
             let emailStatus = 'SUCCESS';
             let emailError = '';
             try {
-              await sendEmail({ to: inv.donor_email, subject: renderedSubject, html: renderedHtml });
+              await sendEmail({
+                to: inv.donor_email,
+                subject: renderedSubject,
+                html: renderedHtml,
+                attachments: kwitansiAttachment ? [kwitansiAttachment] : undefined,
+              });
             } catch (err: any) {
               emailStatus = 'FAILED';
               emailError = err.message;
@@ -686,10 +702,26 @@ export async function PATCH(req: Request) {
           const renderedSubject = renderTemplate(subject, vars);
           const renderedHtml = renderTemplate(message_content, vars);
 
+          // Fetch kwitansi PDF from FE (silently skip on failure)
+          let kwitansiAttachment2: { filename: string; content: Buffer; contentType: string } | undefined;
+          try {
+            const feBase = (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+            const pdfRes = await fetch(`${feBase}/api/invoice/${inv.invoice_code}/kwitansi`, { signal: AbortSignal.timeout(10000) });
+            if (pdfRes.ok) {
+              const pdfBuf = Buffer.from(await pdfRes.arrayBuffer());
+              kwitansiAttachment2 = { filename: `kwitansi-${inv.invoice_code}.pdf`, content: pdfBuf, contentType: 'application/pdf' };
+            }
+          } catch { /* skip */ }
+
           let emailStatus = 'SUCCESS';
           let emailError = '';
           try {
-            await sendEmail({ to: inv.donor_email, subject: renderedSubject, html: renderedHtml });
+            await sendEmail({
+              to: inv.donor_email,
+              subject: renderedSubject,
+              html: renderedHtml,
+              attachments: kwitansiAttachment2 ? [kwitansiAttachment2] : undefined,
+            });
           } catch (err: any) {
             emailStatus = 'FAILED';
             emailError = err.message;

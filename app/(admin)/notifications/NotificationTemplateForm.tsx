@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, Loader2, ArrowLeft, Info, Code, Eye, Monitor, Bold, Italic, Underline, List, ListOrdered, Table, Heading2, Heading3, Link } from 'lucide-react';
+import { Save, Loader2, ArrowLeft, Info, Code, Eye, Monitor, Bold, Italic, Underline, List, ListOrdered, Table, Heading2, Heading3, Link, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -388,6 +388,20 @@ export function NotificationTemplateForm({ initialData, mode }: Props) {
               />
             )}
           </div>
+
+          {/* Kwitansi PDF info — only for payment_paid + EMAIL */}
+          {formData.event_trigger === 'payment_paid' && formData.channel === 'EMAIL' && (
+            <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4 shadow-sm">
+              <FileText size={16} className="shrink-0 mt-0.5 text-emerald-600" />
+              <div>
+                <p className="text-[10px] font-semibold text-emerald-700 mb-1 uppercase tracking-widest">Kwitansi PDF otomatis dilampirkan</p>
+                <p className="text-xs text-emerald-700">
+                  Setiap email <strong>payment_paid</strong> akan menyertakan file PDF kwitansi resmi LAZ Darul Hikam (<em>Bukti Setoran Infak/Sedekah</em>) sebagai lampiran.
+                  Donor dapat mengunduhnya langsung dari email. Preview kwitansi tersedia di <code className="bg-emerald-100 px-1 rounded text-[10px]">/invoice/&#123;invoice_code&#125;/kwitansi</code> di website.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Variable hints */}
           <div className="flex items-start gap-2 text-blue-600 bg-blue-50 p-4 rounded-xl border border-blue-100 shadow-sm">
