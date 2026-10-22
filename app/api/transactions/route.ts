@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query, withTransaction } from '@/lib/db';
 import { safeFlushCache } from '@/lib/redis';
-import { sendEmail, renderTemplate } from '@/lib/email';
+import { sendEmail, renderTemplate, buildPaidEmailHtml } from '@/lib/email';
 import { z } from 'zod';
 
 // Zod Validation Schemas
@@ -457,57 +457,66 @@ export async function PATCH(req: Request) {
              WHERE event_trigger = 'payment_paid' AND channel = 'EMAIL' AND is_active = true
              LIMIT 1`
           );
+          const fmtDate = new Intl.DateTimeFormat('id-ID', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Jakarta' });
+          const baseVars = {
+            nama: inv.donor_name_snapshot || 'Donatur',
+            invoice_code: inv.invoice_code,
+            nominal: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(inv.total_amount),
+            metode: inv.payment_method_name || '',
+            tanggal: fmtDate.format(inv.paid_at ? new Date(inv.paid_at) : new Date()),
+            program: inv.campaign_title || '',
+          };
+
+          let emailSubject: string;
+          let emailHtml: string;
+
           if (templateRes.rows.length > 0) {
             const { subject, message_content } = templateRes.rows[0];
-            const fmtDate = new Intl.DateTimeFormat('id-ID', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Jakarta' });
-            const vars: Record<string, string> = {
-              nama: inv.donor_name_snapshot || 'Donatur',
-              invoice_code: inv.invoice_code,
-              nominal: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(inv.total_amount),
-              metode: inv.payment_method_name || '',
-              tanggal: fmtDate.format(inv.paid_at ? new Date(inv.paid_at) : new Date()),
-              program: inv.campaign_title || '',
-            };
-            const renderedSubject = renderTemplate(subject, vars);
-            const renderedHtml = renderTemplate(message_content, vars);
+            emailSubject = renderTemplate(subject, baseVars);
+            emailHtml = renderTemplate(message_content, baseVars);
+          } else {
+            // Fallback: hardcoded template when no DB template exists
+            const fallback = buildPaidEmailHtml(baseVars);
+            emailSubject = fallback.subject;
+            emailHtml = fallback.html;
+          }
 
-            // Fetch kwitansi PDF from FE (silently skip on failure)
-            let kwitansiAttachment: { filename: string; content: Buffer; contentType: string } | undefined;
-            try {
-              const feBase = (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
-              const pdfRes = await fetch(`${feBase}/api/invoice/${inv.invoice_code}/kwitansi`, { signal: AbortSignal.timeout(10000) });
-              if (pdfRes.ok) {
-                const pdfBuf = Buffer.from(await pdfRes.arrayBuffer());
-                kwitansiAttachment = { filename: `kwitansi-${inv.invoice_code}.pdf`, content: pdfBuf, contentType: 'application/pdf' };
-              }
-            } catch { /* skip */ }
-
-            let emailStatus = 'SUCCESS';
-            let emailError = '';
-            try {
-              await sendEmail({
-                to: inv.donor_email,
-                subject: renderedSubject,
-                html: renderedHtml,
-                attachments: kwitansiAttachment ? [kwitansiAttachment] : undefined,
-              });
-            } catch (err: any) {
-              emailStatus = 'FAILED';
-              emailError = err.message;
+          // Fetch kwitansi PDF from FE (silently skip on failure)
+          let kwitansiAttachment: { filename: string; content: Buffer; contentType: string } | undefined;
+          try {
+            const feBase = (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+            const pdfRes = await fetch(`${feBase}/api/invoice/${inv.invoice_code}/kwitansi`, { signal: AbortSignal.timeout(10000) });
+            if (pdfRes.ok) {
+              const pdfBuf = Buffer.from(await pdfRes.arrayBuffer());
+              kwitansiAttachment = { filename: `kwitansi-${inv.invoice_code}.pdf`, content: pdfBuf, contentType: 'application/pdf' };
             }
+          } catch { /* skip */ }
 
+          let emailStatus = 'SUCCESS';
+          let emailError = '';
+          try {
+            await sendEmail({
+              to: inv.donor_email,
+              subject: emailSubject,
+              html: emailHtml,
+              attachments: kwitansiAttachment ? [kwitansiAttachment] : undefined,
+            });
+          } catch (err: any) {
+            emailStatus = 'FAILED';
+            emailError = err.message;
+          }
+
+          await query(
+            `INSERT INTO notification_logs (invoice_code, channel, recipient, status, request_payload, response_payload, created_at)
+             VALUES ($1, 'EMAIL', $2, $3, $4, $5, NOW())`,
+            [inv.invoice_code, inv.donor_email, emailStatus, JSON.stringify({ event: 'payment_paid', subject: emailSubject }), JSON.stringify({ error: emailError || null })]
+          );
+
+          if (emailStatus === 'SUCCESS') {
             await query(
-              `INSERT INTO notification_logs (invoice_code, channel, recipient, status, request_payload, response_payload, created_at)
-               VALUES ($1, 'EMAIL', $2, $3, $4, $5, NOW())`,
-              [inv.invoice_code, inv.donor_email, emailStatus, JSON.stringify({ event: 'payment_paid', subject: renderedSubject }), JSON.stringify({ error: emailError || null })]
+              `UPDATE invoices SET is_email_paid_sent = true WHERE id = $1 AND created_at = $2`,
+              [validated.id, validated.created_at]
             );
-
-            if (emailStatus === 'SUCCESS') {
-              await query(
-                `UPDATE invoices SET is_email_paid_sent = true WHERE id = $1 AND created_at = $2`,
-                [validated.id, validated.created_at]
-              );
-            }
           }
         }
       }
@@ -688,57 +697,66 @@ export async function PATCH(req: Request) {
            WHERE event_trigger = 'payment_paid' AND channel = 'EMAIL' AND is_active = true
            LIMIT 1`
         );
+        const fmtDate2 = new Intl.DateTimeFormat('id-ID', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Jakarta' });
+        const baseVars2 = {
+          nama: inv.donor_name_snapshot || 'Donatur',
+          invoice_code: inv.invoice_code,
+          nominal: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(inv.total_amount),
+          metode: inv.payment_method_name || '',
+          tanggal: fmtDate2.format(inv.paid_at ? new Date(inv.paid_at) : new Date()),
+          program: inv.campaign_title || '',
+        };
+
+        let emailSubject2: string;
+        let emailHtml2: string;
+
         if (templateRes.rows.length > 0) {
           const { subject, message_content } = templateRes.rows[0];
-          const fmtDate = new Intl.DateTimeFormat('id-ID', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Jakarta' });
-          const vars: Record<string, string> = {
-            nama: inv.donor_name_snapshot || 'Donatur',
-            invoice_code: inv.invoice_code,
-            nominal: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(inv.total_amount),
-            metode: inv.payment_method_name || '',
-            tanggal: fmtDate.format(inv.paid_at ? new Date(inv.paid_at) : new Date()),
-            program: inv.campaign_title || '',
-          };
-          const renderedSubject = renderTemplate(subject, vars);
-          const renderedHtml = renderTemplate(message_content, vars);
+          emailSubject2 = renderTemplate(subject, baseVars2);
+          emailHtml2 = renderTemplate(message_content, baseVars2);
+        } else {
+          // Fallback: hardcoded template when no DB template exists
+          const fallback2 = buildPaidEmailHtml(baseVars2);
+          emailSubject2 = fallback2.subject;
+          emailHtml2 = fallback2.html;
+        }
 
-          // Fetch kwitansi PDF from FE (silently skip on failure)
-          let kwitansiAttachment2: { filename: string; content: Buffer; contentType: string } | undefined;
-          try {
-            const feBase = (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
-            const pdfRes = await fetch(`${feBase}/api/invoice/${inv.invoice_code}/kwitansi`, { signal: AbortSignal.timeout(10000) });
-            if (pdfRes.ok) {
-              const pdfBuf = Buffer.from(await pdfRes.arrayBuffer());
-              kwitansiAttachment2 = { filename: `kwitansi-${inv.invoice_code}.pdf`, content: pdfBuf, contentType: 'application/pdf' };
-            }
-          } catch { /* skip */ }
-
-          let emailStatus = 'SUCCESS';
-          let emailError = '';
-          try {
-            await sendEmail({
-              to: inv.donor_email,
-              subject: renderedSubject,
-              html: renderedHtml,
-              attachments: kwitansiAttachment2 ? [kwitansiAttachment2] : undefined,
-            });
-          } catch (err: any) {
-            emailStatus = 'FAILED';
-            emailError = err.message;
+        // Fetch kwitansi PDF from FE (silently skip on failure)
+        let kwitansiAttachment2: { filename: string; content: Buffer; contentType: string } | undefined;
+        try {
+          const feBase = (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+          const pdfRes = await fetch(`${feBase}/api/invoice/${inv.invoice_code}/kwitansi`, { signal: AbortSignal.timeout(10000) });
+          if (pdfRes.ok) {
+            const pdfBuf = Buffer.from(await pdfRes.arrayBuffer());
+            kwitansiAttachment2 = { filename: `kwitansi-${inv.invoice_code}.pdf`, content: pdfBuf, contentType: 'application/pdf' };
           }
+        } catch { /* skip */ }
 
+        let emailStatus = 'SUCCESS';
+        let emailError = '';
+        try {
+          await sendEmail({
+            to: inv.donor_email,
+            subject: emailSubject2,
+            html: emailHtml2,
+            attachments: kwitansiAttachment2 ? [kwitansiAttachment2] : undefined,
+          });
+        } catch (err: any) {
+          emailStatus = 'FAILED';
+          emailError = err.message;
+        }
+
+        await query(
+          `INSERT INTO notification_logs (invoice_code, channel, recipient, status, request_payload, response_payload, created_at)
+           VALUES ($1, 'EMAIL', $2, $3, $4, $5, NOW())`,
+          [inv.invoice_code, inv.donor_email, emailStatus, JSON.stringify({ event: 'payment_paid', subject: emailSubject2 }), JSON.stringify({ error: emailError || null })]
+        );
+
+        if (emailStatus === 'SUCCESS') {
           await query(
-            `INSERT INTO notification_logs (invoice_code, channel, recipient, status, request_payload, response_payload, created_at)
-             VALUES ($1, 'EMAIL', $2, $3, $4, $5, NOW())`,
-            [inv.invoice_code, inv.donor_email, emailStatus, JSON.stringify({ event: 'payment_paid', subject: renderedSubject }), JSON.stringify({ error: emailError || null })]
+            `UPDATE invoices SET is_email_paid_sent = true WHERE id = $1 AND created_at = $2`,
+            [validated.id, validated.created_at]
           );
-
-          if (emailStatus === 'SUCCESS') {
-            await query(
-              `UPDATE invoices SET is_email_paid_sent = true WHERE id = $1 AND created_at = $2`,
-              [validated.id, validated.created_at]
-            );
-          }
         }
       }
     }
