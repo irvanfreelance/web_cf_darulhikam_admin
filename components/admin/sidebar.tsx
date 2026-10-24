@@ -40,14 +40,14 @@ const finsMenus: AccordionGroup[] = [
     { icon: ClipboardCheck, label: 'Pertanggungjawaban CA', href: '/fins/pertanggungjawaban' },
     { icon: Receipt, label: 'Pengeluaran', href: '/fins/coming-soon?title=Pengeluaran' },
     { icon: Wallet, label: 'Penerimaan', href: '/fins/coming-soon?title=Penerimaan' },
-    { icon: BookOpen, label: 'Buku Harian', href: '/fins/coming-soon?title=Buku+Harian' },
+    { icon: BookOpen, label: 'Buku Harian', href: '/fins/buku-harian' },
     { icon: Lock, label: 'Penutupan', href: '/fins/coming-soon?title=Penutupan' },
     { icon: FileBarChart, label: 'Resume Dana Pengelola', href: '/fins/coming-soon?title=Resume+Dana+Pengelola' },
   ]},
   { category: 'Akuntansi', items: [
     { icon: Landmark, label: 'Saldo Awal', href: '/fins/coming-soon?title=Saldo+Awal' },
-    { icon: BookText, label: 'Rekap Jurnal', href: '/fins/coming-soon?title=Rekap+Jurnal' },
-    { icon: Book, label: 'Buku Besar', href: '/fins/coming-soon?title=Buku+Besar' },
+    { icon: BookText, label: 'Rekap Jurnal', href: '/fins/jurnal' },
+    { icon: Book, label: 'Buku Besar', href: '/fins/buku-besar' },
     { icon: Scale, label: 'Trial Balance', href: '/fins/coming-soon?title=Trial+Balance' },
   ]},
   { category: 'Laporan', items: [
