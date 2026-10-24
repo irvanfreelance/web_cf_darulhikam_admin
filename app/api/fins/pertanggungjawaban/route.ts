@@ -88,7 +88,7 @@ export async function PATCH(req: Request) {
   const session  = await getServerSession(authOptions);
   const userName = session?.user?.name || 'Unknown';
   const body     = await req.json();
-  const { ids, action, id } = body;
+  const { ids, action, id, realisasi } = body;
 
   const newStatus =
     action === 'submit'    ? 'aj'  :
@@ -109,11 +109,19 @@ export async function PATCH(req: Request) {
 
   await withTransaction(async (client) => {
     const placeholders = targetIds.map((_: any, i: number) => `$${i + 3}`).join(',');
-    await client.query(
-      `UPDATE fins_ca_pengajuan SET approve = $1, user_approve = $2, updated_at = NOW()
-       WHERE id IN (${placeholders}) AND approve IN ('a','aj','asj')`,
-      [newStatus, userName, ...targetIds]
-    );
+    if (action === 'submit' && realisasi != null && targetIds.length === 1) {
+      await client.query(
+        `UPDATE fins_ca_pengajuan SET approve = $1, user_approve = $2, realisasi = $3, updated_at = NOW()
+         WHERE id IN (${placeholders}) AND approve IN ('a','aj','asj')`,
+        [newStatus, userName, realisasi, ...targetIds]
+      );
+    } else {
+      await client.query(
+        `UPDATE fins_ca_pengajuan SET approve = $1, user_approve = $2, updated_at = NOW()
+         WHERE id IN (${placeholders}) AND approve IN ('a','aj','asj')`,
+        [newStatus, userName, ...targetIds]
+      );
+    }
 
     // When approving, create RCA + Beban entries in fins_trans + fins_jurnal
     if (action === 'approve') {
@@ -134,12 +142,11 @@ export async function PATCH(req: Request) {
         const uangMukaCoa = ca.coa_debet || '';
         const idViaBayar  = ca.via_bayar === 'bank' ? 1 : 3;
 
-        // Get beban COA from fins_pertanggungjawaban, fallback to coa_debet
+        // Get all beban breakdown rows from fins_pertanggungjawaban
         const ptjRes = await client.query(
-          `SELECT coa_debet FROM fins_pertanggungjawaban WHERE id_buku = $1 LIMIT 1`,
+          `SELECT * FROM fins_pertanggungjawaban WHERE id_buku = $1 ORDER BY created_at`,
           [ca.id_buku]
         );
-        const bebanCoa = ptjRes.rows[0]?.coa_debet || uangMukaCoa;
 
         // RCA: Dr Bank / Cr Uang Muka (full nominal)
         const idTransRca = generateIdTrans();
@@ -166,8 +173,11 @@ export async function PATCH(req: Request) {
           ]
         );
 
-        // Beban: Dr Beban / Cr Bank (realisasi amount)
-        if (realisasi > 0) {
+        // Beban: one fins_trans per breakdown row in fins_pertanggungjawaban
+        for (const ptj of ptjRes.rows) {
+          const bebanNominal = Number(ptj.nominal) || 0;
+          if (bebanNominal <= 0) continue;
+          const bebanCoa = ptj.coa_debet || uangMukaCoa;
           const idTransBeban = generateIdTrans();
           await client.query(
             `INSERT INTO fins_trans
@@ -176,6 +186,33 @@ export async function PATCH(req: Request) {
              VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'e',$10,$11,'asj',1,$6)`,
             [
               idTransBeban, ca.id_buku, uangMukaCoa, bebanCoa, bankCoa,
+              bebanNominal, `Beban: ${ptj.keterangan || ptj.nama_akun || ca.nama_akun}`,
+              userName, tglExre, ca.office_id || 1, idViaBayar,
+            ]
+          );
+          await client.query(
+            `INSERT INTO fins_jurnal (id_jurnal, id_exre, coa, debet, kredit, keterangan, nik_input, tgl_exre, id_kantor, id_via_bayar, jenis)
+             VALUES ($1,$2,$3,$4,0,$5,$6,$7,$8,$9,'e'),
+                    ($10,$2,$11,0,$4,$5,$6,$7,$8,$9,'e')`,
+            [
+              idTransBeban + '1', ca.id_buku, bebanCoa, bebanNominal,
+              `Beban: ${ptj.keterangan || ptj.nama_akun || ca.nama_akun}`, userName, tglExre,
+              ca.office_id || 1, idViaBayar,
+              idTransBeban + '2', bankCoa,
+            ]
+          );
+        }
+
+        // Fallback: if no breakdown rows, use realisasi from fins_ca_pengajuan
+        if (ptjRes.rows.length === 0 && realisasi > 0) {
+          const idTransBeban = generateIdTrans();
+          await client.query(
+            `INSERT INTO fins_trans
+               (id_trans, id_exre, coa_ca, coa_debet, coa_kredit, nominal, keterangan,
+                nik_input, tgl_exre, jenis, id_kantor, id_via_bayar, approve, quantity, total)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'e',$10,$11,'asj',1,$6)`,
+            [
+              idTransBeban, ca.id_buku, uangMukaCoa, uangMukaCoa, bankCoa,
               realisasi, `Beban: ${ca.keterangan || ca.nama_akun}`,
               userName, tglExre, ca.office_id || 1, idViaBayar,
             ]
@@ -185,7 +222,7 @@ export async function PATCH(req: Request) {
              VALUES ($1,$2,$3,$4,0,$5,$6,$7,$8,$9,'e'),
                     ($10,$2,$11,0,$4,$5,$6,$7,$8,$9,'e')`,
             [
-              idTransBeban + '1', ca.id_buku, bebanCoa, realisasi,
+              idTransBeban + '1', ca.id_buku, uangMukaCoa, realisasi,
               `Beban: ${ca.keterangan || ca.nama_akun}`, userName, tglExre,
               ca.office_id || 1, idViaBayar,
               idTransBeban + '2', bankCoa,
