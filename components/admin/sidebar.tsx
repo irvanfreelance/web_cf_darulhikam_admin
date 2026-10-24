@@ -37,7 +37,7 @@ const finsMenus: AccordionGroup[] = [
     { icon: LayoutDashboard, label: 'Dashboard Cash Bank', href: '/fins/coming-soon?title=Dashboard+Cash+Bank' },
     { icon: FileText, label: 'Pengajuan CA', href: '/fins/pengajuan-ca' },
     { icon: Send, label: 'Pencairan', href: '/fins/pencairan' },
-    { icon: ClipboardCheck, label: 'Pertanggungjawaban CA', href: '/fins/coming-soon?title=Pertanggungjawaban+CA' },
+    { icon: ClipboardCheck, label: 'Pertanggungjawaban CA', href: '/fins/pertanggungjawaban' },
     { icon: Receipt, label: 'Pengeluaran', href: '/fins/coming-soon?title=Pengeluaran' },
     { icon: Wallet, label: 'Penerimaan', href: '/fins/coming-soon?title=Penerimaan' },
     { icon: BookOpen, label: 'Buku Harian', href: '/fins/coming-soon?title=Buku+Harian' },
