@@ -124,7 +124,7 @@ function DetailModal({
           namaAkun: formNamaAkun,
           keterangan: formKet,
           quantity: 1,
-          nominal: Number(formNominal.replace(/\./g, '').replace(',', '.')),
+          nominal: Number(formNominal.replace(/\./g, '')),
           officeId: caRow.office_id,
           coaDebet: formCoa,
           coaKredit: ca?.bank_rek_coa || caRow.coa_kredit || '',
@@ -277,10 +277,14 @@ function DetailModal({
                     </div>
                     <div className="col-span-3">
                       <input
-                        type="number"
+                        type="text"
                         value={formNominal}
-                        onChange={(e) => setFormNominal(e.target.value)}
-                        placeholder="Realisasi"
+                        onChange={(e) => {
+                          // Strip non-digits, reformat with thousand separators
+                          const raw = e.target.value.replace(/\D/g, '');
+                          setFormNominal(raw ? Number(raw).toLocaleString('id-ID') : '');
+                        }}
+                        placeholder="Realisasi (e.g. 9.000.000)"
                         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
                     </div>
                     <div className="col-span-4">
