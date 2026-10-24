@@ -132,7 +132,7 @@ export default function PertanggungjawabanPage() {
   const offices: { id: number; nama: string }[] = masters?.offices || [];
   const coaAccounts: { coa: string; nama: string }[] = masters?.coaAccounts || [];
 
-  const coaOptions = coaAccounts.map((c: any) => ({ value: c.coa, label: `${c.coa} — ${c.nama}` }));
+  const coaOptions = coaAccounts.map((c: any) => ({ id: c.coa, name: `${c.coa} — ${c.nama}` }));
 
   /* ── Open form for new ── */
   const openNew = () => {
