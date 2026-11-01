@@ -13,7 +13,7 @@ import {
   Landmark, Lock, FileBarChart, IdCard, Folder, Mail,
   Hash, FileSpreadsheet, Building2, BadgeCheck, Calculator,
   Briefcase, Calendar, Book, BookText, Scale, CalendarCheck, ListChecks,
-  ChevronDown, ChevronRight
+  ChevronDown, ChevronRight, Contact, ClipboardList, List
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -76,18 +76,48 @@ const configurationMenus: AccordionGroup[] = [
 
 const penyaluranMenus: AccordionGroup[] = [
   { category: 'Operasional', items: [
-    { icon: MapPin, label: 'Peta Penyaluran', href: '/fins/coming-soon?title=Peta+Penyaluran' },
-    { icon: Send, label: 'Pengajuan Penyaluran', href: '/fins/coming-soon?title=Pengajuan+Penyaluran' },
-    { icon: Users, label: 'Penerima Manfaat', href: '/fins/coming-soon?title=Penerima+Manfaat' },
-    { icon: Repeat, label: 'Distribusi Massal', href: '/fins/coming-soon?title=Distribusi+Massal' },
+    { icon: LayoutDashboard, label: 'Dashboard', href: '/penyaluran/coming-soon?title=Dashboard+Penyaluran' },
+    { icon: MapPin, label: 'Peta Penyaluran', href: '/penyaluran/coming-soon?title=Peta+Penyaluran' },
+    { icon: Send, label: 'Pengajuan Penyaluran', href: '/penyaluran/coming-soon?title=Pengajuan+Penyaluran' },
+    { icon: ClipboardList, label: 'Entry Penyaluran', href: '/penyaluran/coming-soon?title=Entry+Penyaluran' },
+    { icon: List, label: 'List Penyaluran', href: '/penyaluran/coming-soon?title=List+Penyaluran' },
+    { icon: Users, label: 'Penerima Manfaat', href: '/penyaluran/penerima-manfaat' },
+    { icon: Repeat, label: 'Distribusi Massal', href: '/penyaluran/coming-soon?title=Distribusi+Massal' },
   ]},
   { category: 'Pertanggungjawaban', items: [
-    { icon: ClipboardCheck, label: 'Pertanggungjawaban', href: '/fins/coming-soon?title=Pertanggungjawaban' },
+    { icon: ClipboardCheck, label: 'Pertanggungjawaban', href: '/penyaluran/coming-soon?title=Pertanggungjawaban' },
   ]},
   { category: 'Laporan', items: [
-    { icon: BarChart2, label: 'Laporan Penyaluran', href: '/fins/coming-soon?title=Laporan+Penyaluran' },
+    { icon: BarChart2, label: 'Laporan Penyaluran', href: '/penyaluran/coming-soon?title=Laporan+Penyaluran' },
   ]},
 ];
+
+const crmMenus: AccordionGroup[] = [
+  { category: 'Donatur', items: [
+    { icon: Users, label: 'Data Donatur', href: '/crm/donors' },
+    { icon: BadgeCheck, label: 'Verifikasi Donatur', href: '/crm/coming-soon?title=Verifikasi+Donatur' },
+  ]},
+  { category: 'Transaksi', items: [
+    { icon: Receipt, label: 'List Transaksi', href: '/transactions' },
+    { icon: FileCheck, label: 'Bukti Setor', href: '/crm/coming-soon?title=Bukti+Setor' },
+    { icon: Heart, label: 'List Transaksi Qurban', href: '/crm/coming-soon?title=List+Transaksi+Qurban' },
+  ]},
+  { category: 'Report Management', items: [
+    { icon: PieChart, label: 'Analisa Donatur', href: '/crm/coming-soon?title=Analisa+Donatur' },
+    { icon: BarChart2, label: 'Analisa Transaksi', href: '/crm/coming-soon?title=Analisa+Transaksi' },
+    { icon: Activity, label: 'Transaksi Funnel', href: '/crm/coming-soon?title=Transaksi+Funnel' },
+    { icon: Truck, label: 'Analisis Salur', href: '/crm/coming-soon?title=Analisis+Salur' },
+    { icon: Users2, label: 'Analisis PM', href: '/crm/coming-soon?title=Analisis+PM' },
+    { icon: Scale, label: 'Himpun vs Salur', href: '/crm/coming-soon?title=Himpun+vs+Salur' },
+    { icon: LayoutDashboard, label: 'Dashboard Penghimpunan', href: '/crm/coming-soon?title=Dashboard+Penghimpunan' },
+  ]},
+];
+
+function itemIsActive(pathname: string, href: string) {
+  const path = href.split('?')[0];
+  if (path.endsWith('/coming-soon')) return false;
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
 
 const hcmMenus: AccordionGroup[] = [
   { category: 'Kepegawaian', items: [
@@ -108,10 +138,23 @@ const documentMenus: AccordionGroup[] = [
   ]},
 ];
 
-type AdminModule = 'crowdfund' | 'website' | 'tutorial' | 'penyaluran' | 'fins' | 'hcm' | 'document' | 'configuration';
+type AdminModule = 'crowdfund' | 'website' | 'tutorial' | 'penyaluran' | 'crm' | 'fins' | 'hcm' | 'document' | 'configuration';
+
+const MODULE_LABEL: Record<AdminModule, string> = {
+  crowdfund: 'Crowdfunding',
+  website: 'Website CMS',
+  tutorial: 'Tutorial',
+  penyaluran: 'Penyaluran',
+  crm: 'CRM',
+  fins: 'FINS',
+  hcm: 'HCM',
+  document: 'Document',
+  configuration: 'Configuration',
+};
 
 const MODULE_ACCENT: Record<string, { bg: string; text: string; border?: string }> = {
   penyaluran: { bg: 'bg-sky-500/10', text: 'text-sky-400' },
+  crm: { bg: 'bg-fuchsia-500/10', text: 'text-fuchsia-400' },
   fins: { bg: 'bg-amber-500/10', text: 'text-amber-400' },
   hcm: { bg: 'bg-rose-500/10', text: 'text-rose-400' },
   document: { bg: 'bg-emerald-500/10', text: 'text-emerald-400' },
@@ -208,9 +251,9 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
   const { data: session } = useSession();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [activeModule, setActiveModule] = useState<AdminModule>('crowdfund');
-  const ACCORDION_MODULES = new Set(['penyaluran', 'fins', 'hcm', 'document', 'configuration']);
+  const ACCORDION_MODULES = new Set(['penyaluran', 'crm', 'fins', 'hcm', 'document', 'configuration']);
   const ACCORDION_GROUPS: Record<string, AccordionGroup[]> = {
-    penyaluran: penyaluranMenus, fins: finsMenus, hcm: hcmMenus, document: documentMenus, configuration: configurationMenus,
+    penyaluran: penyaluranMenus, crm: crmMenus, fins: finsMenus, hcm: hcmMenus, document: documentMenus, configuration: configurationMenus,
   };
   const [openGroup, setOpenGroup] = useState<Record<string, string | null>>(() => {
     const initial: Record<string, string | null> = {};
@@ -221,17 +264,21 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
   // Load active module from local storage on mount
   useEffect(() => {
     const savedModule = localStorage.getItem('active_admin_module');
-    if (['crowdfund', 'website', 'tutorial', 'penyaluran', 'fins', 'hcm', 'document', 'configuration'].includes(savedModule || '')) {
+    if (['crowdfund', 'website', 'tutorial', 'penyaluran', 'crm', 'fins', 'hcm', 'document', 'configuration'].includes(savedModule || '')) {
       setActiveModule(savedModule as AdminModule);
     }
   }, []);
 
-  // Visiting /tutorial directly (bookmark, refresh, browser back) forces the Tutorial rail + nav on
-  // arrival, but only then — it must not keep overriding manual Crowdfund/Website clicks afterwards,
-  // since those buttons don't navigate away from /tutorial (they just swap which menu list shows).
+  // Open the rail that owns the current URL. Manual rail clicks still stick until the path changes.
   useEffect(() => {
-    if (pathname === '/tutorial') setActiveModule('tutorial');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let mod: AdminModule | null = null;
+    if (pathname.startsWith('/crm')) mod = 'crm';
+    else if (pathname.startsWith('/penyaluran')) mod = 'penyaluran';
+    else if (pathname === '/tutorial') mod = 'tutorial';
+    if (mod) {
+      setActiveModule(mod);
+      localStorage.setItem('active_admin_module', mod);
+    }
   }, [pathname]);
 
   const handleModuleChange = (mod: AdminModule) => {
@@ -268,7 +315,7 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col gap-4 w-full px-2">
+        <div className="flex-1 flex flex-col gap-2 w-full px-2 overflow-y-auto">
           <button 
             onClick={() => handleModuleChange('crowdfund')}
             title="Crowdfunding"
@@ -305,6 +352,18 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
           >
             <Truck size={22} strokeWidth={activeModule === 'penyaluran' ? 2.5 : 2} />
             <span className="text-[9px] font-bold tracking-tight">PENYALURAN</span>
+          </button>
+
+          <button
+            onClick={() => handleModuleChange('crm')}
+            title="CRM"
+            className={cn(
+              "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all",
+              activeModule === 'crm' ? "bg-fuchsia-500/20 text-fuchsia-400" : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"
+            )}
+          >
+            <Contact size={22} strokeWidth={activeModule === 'crm' ? 2.5 : 2} />
+            <span className="text-[9px] font-bold tracking-tight">CRM</span>
           </button>
 
           <button
@@ -380,11 +439,7 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
         )}
       >
         <div className="h-16 flex items-center px-6 border-b border-slate-800/80 shrink-0">
-           <h2 className="text-slate-200 font-bold tracking-tight">
-             {isTutorial ? "Tutorial" : isWebsite ? "Website CMS" : isCrowdfund ? "Crowdfunding"
-               : activeModule === 'penyaluran' ? "Penyaluran" : activeModule === 'fins' ? "FINS"
-               : activeModule === 'hcm' ? "HCM" : activeModule === 'document' ? "Document" : "Configuration"}
-           </h2>
+           <h2 className="text-slate-200 font-bold tracking-tight">{MODULE_LABEL[activeModule]}</h2>
         </div>
 
         <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-4 custom-scrollbar">
@@ -406,7 +461,7 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
                     {isGroupOpen && (
                       <div className="space-y-1 mb-2">
                         {group.items.map(item => {
-                          const isActive = pathname.startsWith('/fins/pengajuan-ca') && item.href === '/fins/pengajuan-ca';
+                          const isActive = itemIsActive(pathname, item.href);
                           return (
                             <Link
                               key={item.href}

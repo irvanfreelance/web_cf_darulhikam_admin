@@ -48,6 +48,7 @@ export default function DonorDetailPage() {
           </button>
           <div className="flex items-center gap-3">
              <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Detail Profil Donatur</h1>
+             <button onClick={() => router.push(`/crm/donors/${donor.id}`)} className="text-xs font-medium text-teal-700 bg-teal-50 px-3 py-1.5 rounded-xl">Edit di CRM</button>
           </div>
         </div>
       </div>
@@ -72,6 +73,20 @@ export default function DonorDetailPage() {
                      <Calendar size={16} className="text-slate-400" /> Terdaftar {donor.created_at ? new Date(donor.created_at).getFullYear() : '-'}
                   </div>
                </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-left space-y-3">
+               <h3 className="text-sm font-semibold text-slate-800">Profil CRM</h3>
+               <dl className="space-y-2 text-sm">
+                  <div className="flex justify-between gap-3"><dt className="text-slate-400">Jenis</dt><dd className="text-slate-700 capitalize">{donor.jenis || '—'}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="text-slate-400">Gender</dt><dd className="text-slate-700">{donor.jenis_kelamin || '—'}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="text-slate-400">NIK</dt><dd className="text-slate-700">{donor.nik || '—'}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="text-slate-400">Status</dt><dd className="text-slate-700">{donor.status_aktif === false ? 'Nonaktif' : donor.status_aktif ? 'Aktif' : '—'}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="text-slate-400">Kantor</dt><dd className="text-slate-700">{donor.kantor_id || '—'}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="text-slate-400">Tim CRM</dt><dd className="text-slate-700">{donor.tim_crm_id || '—'}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="text-slate-400">Minat</dt><dd className="text-slate-700 text-right">{donor.minat_program || '—'}</dd></div>
+                  <div><dt className="text-slate-400">Alamat</dt><dd className="text-slate-700 mt-1">{donor.alamat || '—'}</dd></div>
+               </dl>
             </div>
             
             <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-6 rounded-2xl shadow-md text-white text-center">

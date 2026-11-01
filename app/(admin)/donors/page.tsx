@@ -195,7 +195,8 @@ export default function DonorsPage() {
                     </div>
                   </div>
                   <div className="flex gap-1 transition-opacity">
-                    <button onClick={() => router.push(`/donors/${donor.id}`)} className="p-2 text-slate-400 hover:text-teal-600"><Eye size={16} /></button>
+                    <button onClick={() => router.push(`/donors/${donor.id}`)} className="p-2 text-slate-400 hover:text-teal-600" title="Detail"><Eye size={16} /></button>
+                    <button onClick={() => router.push(`/crm/donors/${donor.id}`)} className="p-2 text-slate-400 hover:text-fuchsia-600" title="Profil CRM"><ArrowUpRight size={16} /></button>
                     <button onClick={() => handleOpenModal(donor)} className="p-2 text-slate-400 hover:text-slate-800"><Edit size={16} /></button>
                   </div>
                 </div>
@@ -279,7 +280,8 @@ export default function DonorsPage() {
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex justify-center gap-1 transition-opacity">
-                          <button onClick={() => router.push(`/donors/${donor.id}`)} className="p-2 text-slate-400 hover:text-teal-600"><Eye size={18} /></button>
+                          <button onClick={() => router.push(`/donors/${donor.id}`)} className="p-2 text-slate-400 hover:text-teal-600" title="Detail"><Eye size={18} /></button>
+                          <button onClick={() => router.push(`/crm/donors/${donor.id}`)} className="p-2 text-slate-400 hover:text-fuchsia-600" title="Profil CRM"><ArrowUpRight size={18} /></button>
                           <button onClick={() => handleOpenModal(donor)} className="p-2 text-slate-400 hover:text-slate-800"><Edit size={18} /></button>
                           <button onClick={() => handleDelete(donor.id)} className="p-2 text-slate-400 hover:text-rose-600"><Trash2 size={18} /></button>
                         </div>
