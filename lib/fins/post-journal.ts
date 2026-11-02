@@ -1,3 +1,5 @@
+import { formatWibDate } from '@/lib/wib-date';
+
 export class JournalError extends Error {
   status: number;
   constructor(message: string, status = 409) {
@@ -37,7 +39,7 @@ export async function assertPeriodOpen(client: SqlClient, tanggal: string) {
      FROM accounting_periods
      WHERE periode_tahun = EXTRACT(YEAR FROM $1::date)::int
        AND periode_bulan = EXTRACT(MONTH FROM $1::date)::int`,
-    [tanggal.slice(0, 10)]
+    [formatWibDate(tanggal)]
   );
   if ((found.rowCount ?? 0) === 0) return null;
   const period = found.rows[0];
@@ -52,7 +54,8 @@ export async function postBalancedEntry(client: SqlClient, input: BalancedEntryI
   if (!input.coaDebet || !input.coaKredit) throw new JournalError('COA debet dan kredit wajib diisi', 400);
   if (input.coaDebet === input.coaKredit) throw new JournalError('COA debet dan kredit tidak boleh sama', 400);
 
-  const tanggal = input.tanggal.slice(0, 10);
+  const tanggal = formatWibDate(input.tanggal);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(tanggal)) throw new JournalError('Tanggal jurnal tidak valid', 400);
   const periodId = await assertPeriodOpen(client, tanggal);
   const keterangan = input.keterangan.slice(0, 500);
   const jurnalText = keterangan.slice(0, 200);

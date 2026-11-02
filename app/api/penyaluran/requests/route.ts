@@ -11,7 +11,8 @@ const LIST_SQL = `
   r.jumlah_disetujui, r.tgl_pengajuan, r.campaign_id, r.beneficiary_id, r.coa_debet, r.coa_kredit,
   r.nik_pengaju, r.nik_approver, r.catatan_approver, r.deskripsi, r.created_at,
   r.fins_trans_id, r.fins_reversal_trans_id,
-  c.title AS campaign_title, b.nama_lengkap AS beneficiary_nama, b.kode_beneficiary
+  c.title AS campaign_title, b.nama_lengkap AS beneficiary_nama, b.kode_beneficiary,
+  ft.id_trans AS jurnal_nomor, rev.id_trans AS jurnal_balik_nomor
 `;
 
 async function nextNomor(client: { query: (sql: string, params?: unknown[]) => Promise<{ rows: { nomor_pengajuan: string }[] }> }) {
@@ -54,6 +55,8 @@ export async function GET(req: Request) {
          FROM disbursement_requests r
          LEFT JOIN campaigns c ON c.id = r.campaign_id
          LEFT JOIN beneficiaries b ON b.id = r.beneficiary_id
+         LEFT JOIN fins_trans ft ON ft.id = r.fins_trans_id
+         LEFT JOIN fins_trans rev ON rev.id = r.fins_reversal_trans_id
          WHERE ${clause}
          ORDER BY r.tgl_pengajuan DESC, r.id DESC
          LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,

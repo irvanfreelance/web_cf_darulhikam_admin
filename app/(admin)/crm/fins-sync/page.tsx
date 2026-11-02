@@ -21,7 +21,7 @@ export default function FinsSyncPage() {
       toast.success(`${response.posted} invoice dijurnal`);
       mutate();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err?.message || 'Gagal menyinkronkan invoice');
     } finally {
       setBusy(false);
     }

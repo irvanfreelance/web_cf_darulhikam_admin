@@ -7,6 +7,7 @@ import { invalidateCache } from '@/lib/redis';
 import { dbErrorResponse, parseQuery } from '@/lib/http';
 import { actorCode } from '@/lib/penyaluran/request-schema';
 import { JournalError, postBalancedEntry } from '@/lib/fins/post-journal';
+import { formatWibDate } from '@/lib/wib-date';
 
 const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).optional().default(50),
@@ -106,7 +107,7 @@ export async function POST(req: Request) {
           const linked = existing.rows[0]
             ? { id: Number(existing.rows[0].id) }
             : await postBalancedEntry(client, {
-              tanggal: String(row.tgl).slice(0, 10),
+              tanggal: formatWibDate(row.tgl),
               nominal,
               coaDebet: row.fins_coa_debet,
               coaKredit: row.coa_receipt,

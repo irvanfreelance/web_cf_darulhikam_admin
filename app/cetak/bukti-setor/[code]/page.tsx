@@ -1,6 +1,7 @@
 import { query } from '@/lib/db';
 import { PrintButton } from '@/components/shared/print-button';
 import { formatIDR } from '@/lib/format';
+import { formatWibDateTime } from '@/lib/wib-date';
 
 export default async function CetakBuktiPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
@@ -35,7 +36,7 @@ export default async function CetakBuktiPage({ params }: { params: Promise<{ cod
       </div>
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <div><dt className="text-slate-500">Nomor</dt><dd className="font-medium">{invoice.invoice_code}</dd></div>
-        <div><dt className="text-slate-500">Tanggal lunas</dt><dd>{invoice.paid_at ? new Date(invoice.paid_at).toLocaleString('id-ID') : '-'}</dd></div>
+        <div><dt className="text-slate-500">Tanggal lunas</dt><dd>{formatWibDateTime(invoice.paid_at, '-')}</dd></div>
         <div><dt className="text-slate-500">Donatur</dt><dd>{invoice.donor_name_snapshot}</dd></div>
         <div><dt className="text-slate-500">Email</dt><dd>{invoice.donor_email || '-'}</dd></div>
         <div className="col-span-2"><dt className="text-slate-500">Program</dt><dd>{invoice.campaign_title}</dd></div>

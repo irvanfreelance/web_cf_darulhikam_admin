@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/page-header';
 import { jsonFetcher, sendJson } from '@/lib/json-client';
 import { formatIDR } from '@/lib/format';
+import { formatWibDate } from '@/lib/wib-date';
 
 type Routine = { id: number; donor_name: string; nominal: string | number; cadence: string; next_due: string | null; due_state: string };
 
@@ -17,7 +18,7 @@ export default function LpsPage() {
       toast.success('Jatuh tempo digeser satu periode');
       mutate();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err?.message || 'Gagal menggeser jatuh tempo');
     }
   };
 
@@ -33,7 +34,7 @@ export default function LpsPage() {
               <tr key={row.id} className="border-t border-slate-50">
                 <td className="px-4 py-3 font-medium">{row.donor_name || '—'}</td>
                 <td className="px-4 py-3">{row.cadence}</td>
-                <td className={`px-4 py-3 ${row.due_state === 'overdue' ? 'text-rose-600' : 'text-amber-700'}`}>{row.next_due ? String(row.next_due).slice(0, 10) : '—'} · {row.due_state === 'overdue' ? 'terlambat' : 'jatuh tempo'}</td>
+                <td className={`px-4 py-3 ${row.due_state === 'overdue' ? 'text-rose-600' : 'text-amber-700'}`}>{formatWibDate(row.next_due) || '—'} · {row.due_state === 'overdue' ? 'terlambat' : 'jatuh tempo'}</td>
                 <td className="px-4 py-3 text-right">{formatIDR(Number(row.nominal || 0))}</td>
                 <td className="px-4 py-3"><button type="button" className="text-teal-700" onClick={() => advance(row.id)}>Tandai periode ini</button></td>
               </tr>

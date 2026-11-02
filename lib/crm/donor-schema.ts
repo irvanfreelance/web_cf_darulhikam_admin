@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { formatWibDate } from '@/lib/wib-date';
 import { DONOR_GENDER, DONOR_JENIS } from '@/types/crm';
 
 function blankToNull(value: unknown) {
@@ -141,7 +142,7 @@ export function mapSheetRow(raw: Record<string, unknown>, rowIndex: number) {
     if (value == null) {
       fields[key] = '';
     } else if (value instanceof Date) {
-      fields[key] = value.toISOString();
+      fields[key] = formatWibDate(value);
     } else {
       fields[key] = String(value).trim();
     }

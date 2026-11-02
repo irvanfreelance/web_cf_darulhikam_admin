@@ -21,11 +21,26 @@ export default function DetailPengajuanPage() {
       setCatatan('');
       mutate();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err?.message || 'Gagal memperbarui status');
     } finally {
       setBusy(false);
     }
   };
+
+  const journal = async (action: 'post' | 'reverse') => {
+    setBusy(true);
+    try {
+      const result = await sendJson(`/api/penyaluran/requests/${params.id}/jurnal`, 'POST', { action });
+      toast.success(result.already ? 'Jurnal sudah ada, tidak diposting ulang' : action === 'post' ? 'Jurnal pencairan tersimpan' : 'Jurnal balik tersimpan');
+      mutate();
+    } catch (err: any) {
+      toast.error(err?.message || 'Gagal menjurnal');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const posted = data?.fins_trans_id != null && String(data.fins_trans_id) !== '';
 
   if (isLoading) return <div className="h-40 animate-pulse rounded-2xl bg-slate-100" />;
   if (error || !data) return <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4 text-sm text-rose-600">{error?.message || 'Pengajuan tidak ditemukan'}</div>;
@@ -47,6 +62,7 @@ export default function DetailPengajuanPage() {
           <div><dt className="text-slate-400">Pengaju / penentu</dt><dd>{data.nik_pengaju}{data.nik_approver ? ` / ${data.nik_approver}` : ''}</dd></div>
           <div className="md:col-span-2"><dt className="text-slate-400">Deskripsi</dt><dd>{data.deskripsi || '—'}</dd></div>
           <div className="md:col-span-2"><dt className="text-slate-400">Catatan keputusan</dt><dd>{data.catatan_approver || '—'}</dd></div>
+          <div className="md:col-span-2"><dt className="text-slate-400">Jurnal</dt><dd>{posted ? (data.jurnal_nomor || data.fins_trans_id) : 'Belum dijurnal'}{data.jurnal_balik_nomor ? ` · balik ${data.jurnal_balik_nomor}` : ''}</dd></div>
         </dl>
         <div className="mt-6 space-y-3">
           <textarea aria-label="Catatan keputusan" rows={3} value={catatan} onChange={(e) => setCatatan(e.target.value)} placeholder="Catatan, wajib bila menolak" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
@@ -54,6 +70,8 @@ export default function DetailPengajuanPage() {
             {['submitted', 'reviewed'].includes(data.status) && <button type="button" disabled={busy} onClick={() => act('approve')} className="rounded-xl bg-emerald-600 px-4 py-2 text-sm text-white">Setujui</button>}
             {['draft', 'submitted', 'reviewed'].includes(data.status) && <button type="button" disabled={busy} onClick={() => act('reject')} className="rounded-xl bg-rose-600 px-4 py-2 text-sm text-white">Tolak</button>}
             {['draft', 'rejected'].includes(data.status) && <button type="button" disabled={busy} onClick={() => act('submit')} className="rounded-xl border border-slate-200 px-4 py-2 text-sm">Ajukan</button>}
+            {['approved', 'disbursed'].includes(data.status) && !posted && <button type="button" disabled={busy} onClick={() => journal('post')} className="rounded-xl bg-slate-800 px-4 py-2 text-sm text-white">Cairkan</button>}
+            {posted && !data.fins_reversal_trans_id && <button type="button" disabled={busy} onClick={() => journal('reverse')} className="rounded-xl border border-rose-200 px-4 py-2 text-sm text-rose-700">Jurnal balik</button>}
           </div>
         </div>
       </div>
