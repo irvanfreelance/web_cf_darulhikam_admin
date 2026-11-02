@@ -16,6 +16,7 @@ type Referensi = {
   beneficiaries: { id: number; kode_beneficiary: string; nama_lengkap: string; status_verifikasi: string }[];
   programs: { id: number; kode: string; nama: string; campaign_id: number | null; dp_percent: string | number | null }[];
   coa: { coa: string; nama_coa: string }[];
+  campaignCoa?: { campaign_id: number; coa_expense: string | null; coa_fund: string | null; coa_receipt: string | null }[];
 };
 
 export default function PengajuanPenyaluranPage() {
@@ -36,12 +37,21 @@ export default function PengajuanPenyaluranPage() {
 
   const set = (patch: Partial<typeof form>) => setForm((current) => ({ ...current, ...patch }));
 
-  const onProgram = (programId: string) => {
-    const program = data?.programs.find((item) => String(item.id) === programId);
+  const coaFor = (campaignId: string) => data?.campaignCoa?.find((row) => String(row.campaign_id) === campaignId);
+
+  const applyCampaign = (campaignId: string, programId = form.program_id) => {
+    const mapping = coaFor(campaignId);
     set({
       program_id: programId,
-      campaign_id: program?.campaign_id ? String(program.campaign_id) : form.campaign_id,
+      campaign_id: campaignId,
+      ...(mapping?.coa_expense ? { coa_debet: mapping.coa_expense } : {}),
+      ...(mapping?.coa_fund ? { coa_kredit: mapping.coa_fund } : {}),
     });
+  };
+
+  const onProgram = (programId: string) => {
+    const program = data?.programs.find((item) => String(item.id) === programId);
+    applyCampaign(program?.campaign_id ? String(program.campaign_id) : form.campaign_id, programId);
   };
 
   const submit = async (ajukan: boolean) => {
@@ -85,7 +95,7 @@ export default function PengajuanPenyaluranPage() {
         </label>
         <label className="block text-sm">
           <span className="mb-2 block text-[10px] font-semibold text-slate-500">Kampanye</span>
-          <select required className={inputClass} value={form.campaign_id} onChange={(e) => set({ campaign_id: e.target.value })}>
+          <select required className={inputClass} value={form.campaign_id} onChange={(e) => applyCampaign(e.target.value)}>
             <option value="">Pilih kampanye</option>
             {(data?.campaigns ?? []).map((campaign) => (
               <option key={campaign.id} value={campaign.id}>{campaign.title}</option>
@@ -111,10 +121,14 @@ export default function PengajuanPenyaluranPage() {
           <span className="mb-2 block text-[10px] font-semibold text-slate-500">Jumlah diajukan</span>
           <input required inputMode="numeric" className={inputClass} value={form.jumlah_diajukan} onChange={(e) => set({ jumlah_diajukan: e.target.value })} />
         </label>
+        <p className="md:col-span-2 text-xs text-slate-400">COA terisi dari pemetaan kampanye bila ada: debet = COA penyaluran, kredit = COA dana. Keduanya tetap bisa diubah.</p>
         <label className="block text-sm">
           <span className="mb-2 block text-[10px] font-semibold text-slate-500">COA debet</span>
           <select className={inputClass} value={form.coa_debet} onChange={(e) => set({ coa_debet: e.target.value })}>
             <option value="">Pilih COA</option>
+            {form.coa_debet && !(data?.coa ?? []).some((row) => row.coa === form.coa_debet) && (
+              <option value={form.coa_debet}>{form.coa_debet} — dari kampanye</option>
+            )}
             {(data?.coa ?? []).map((row) => <option key={row.coa} value={row.coa}>{row.coa} — {row.nama_coa}</option>)}
           </select>
           {(data?.coa ?? []).length === 0 && (
@@ -125,6 +139,9 @@ export default function PengajuanPenyaluranPage() {
           <span className="mb-2 block text-[10px] font-semibold text-slate-500">COA kredit</span>
           <select className={inputClass} value={form.coa_kredit} onChange={(e) => set({ coa_kredit: e.target.value })}>
             <option value="">Pilih COA</option>
+            {form.coa_kredit && !(data?.coa ?? []).some((row) => row.coa === form.coa_kredit) && (
+              <option value={form.coa_kredit}>{form.coa_kredit} — dari kampanye</option>
+            )}
             {(data?.coa ?? []).map((row) => <option key={`k-${row.coa}`} value={row.coa}>{row.coa} — {row.nama_coa}</option>)}
           </select>
           {(data?.coa ?? []).length === 0 && (

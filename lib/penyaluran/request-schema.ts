@@ -66,3 +66,25 @@ export function actorCode(name?: string | null) {
   const raw = (name || 'admin').replace(/\s+/g, ' ').trim();
   return raw.slice(0, 20) || 'admin';
 }
+
+export const BUKTI_JENIS = ['foto', 'video', 'tanda_terima', 'berita_acara', 'kwitansi', 'lainnya'] as const;
+
+export const realisasiSchema = z.object({
+  jumlah_realisasi: z.coerce.number().int().positive('Jumlah realisasi harus lebih dari 0'),
+  tgl_kegiatan: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Tanggal harus YYYY-MM-DD'),
+  narasi: z.string().trim().min(3, 'Narasi LPJ minimal 3 karakter').max(8000),
+  judul: optionalText(300),
+  penerima: z.array(z.object({
+    beneficiary_id: z.preprocess(
+      (value) => (value === '' || value == null ? null : value),
+      z.coerce.number().int().positive().nullable()
+    ),
+    nama_penerima: z.string().trim().min(1, 'Nama penerima wajib').max(200),
+    jumlah_diterima: z.coerce.number().int().positive('Jumlah diterima harus lebih dari 0'),
+  })).min(1, 'Minimal satu penerima').max(100),
+  bukti: z.array(z.object({
+    file_url: z.string().trim().min(1).max(2000),
+    jenis_dokumen: z.enum(BUKTI_JENIS).optional().default('lainnya'),
+    caption: optionalText(300),
+  })).max(10).optional().default([]),
+});

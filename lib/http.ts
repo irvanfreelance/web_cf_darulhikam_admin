@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-const MIGRATION_FILE = 'markdown_darul_hikam/24_bot_s01_additive.sql dan 25_bot_s02_additive.sql';
+const MIGRATION_FILE = 'markdown_darul_hikam/24, 25, dan 26';
 
 export function zodErrorResponse(error: z.ZodError) {
   return NextResponse.json({ errors: error.issues }, { status: 400 });

@@ -76,10 +76,10 @@ const configurationMenus: AccordionGroup[] = [
 
 const penyaluranMenus: AccordionGroup[] = [
   { category: 'Operasional', items: [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/penyaluran/coming-soon?title=Dashboard+Penyaluran' },
+    { icon: LayoutDashboard, label: 'Dashboard', href: '/penyaluran/dashboard' },
     { icon: MapPin, label: 'Peta Penyaluran', href: '/penyaluran/coming-soon?title=Peta+Penyaluran' },
     { icon: Send, label: 'Pengajuan Penyaluran', href: '/penyaluran/pengajuan' },
-    { icon: ClipboardList, label: 'Entry Penyaluran', href: '/penyaluran/coming-soon?title=Entry+Penyaluran' },
+    { icon: ClipboardList, label: 'Entry Penyaluran', href: '/penyaluran/entry' },
     { icon: List, label: 'List Penyaluran', href: '/penyaluran/daftar' },
     { icon: BadgeCheck, label: 'Verifikasi PM', href: '/penyaluran/verifikasi' },
     { icon: Users, label: 'Penerima Manfaat', href: '/penyaluran/penerima-manfaat' },
@@ -111,7 +111,7 @@ const crmMenus: AccordionGroup[] = [
     { icon: Truck, label: 'Analisis Salur', href: '/crm/coming-soon?title=Analisis+Salur' },
     { icon: Users2, label: 'Analisis PM', href: '/crm/coming-soon?title=Analisis+PM' },
     { icon: Scale, label: 'Himpun vs Salur', href: '/crm/coming-soon?title=Himpun+vs+Salur' },
-    { icon: LayoutDashboard, label: 'Dashboard Penghimpunan', href: '/crm/coming-soon?title=Dashboard+Penghimpunan' },
+    { icon: LayoutDashboard, label: 'Dashboard Penghimpunan', href: '/crm/dashboard' },
   ]},
 ];
 
