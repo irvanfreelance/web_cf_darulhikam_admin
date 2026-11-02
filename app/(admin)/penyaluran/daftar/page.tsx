@@ -21,6 +21,8 @@ type Row = {
   campaign_title: string | null;
   beneficiary_nama: string | null;
   kode_beneficiary: string | null;
+  fins_trans_id: number | null;
+  fins_reversal_trans_id: number | null;
 };
 
 export default function DaftarPenyaluranPage() {
@@ -35,6 +37,19 @@ export default function DaftarPenyaluranPage() {
   const offset = (page - 1) * limit;
   const params = new URLSearchParams({ search, status, limit: String(limit), offset: String(offset) });
   const { data, error, isLoading, mutate } = useSWR<{ rows: Row[]; total: number }>(`/api/penyaluran/requests?${params.toString()}`, jsonFetcher);
+
+  const journal = async (id: number, action: 'post' | 'reverse') => {
+    setBusyId(id);
+    try {
+      const result = await sendJson(`/api/penyaluran/requests/${id}/jurnal`, 'POST', { action });
+      toast.success(result.already ? 'Jurnal sudah ada' : action === 'post' ? 'Jurnal pencairan tersimpan' : 'Jurnal balik tersimpan');
+      mutate();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const act = async (id: number, action: 'approve' | 'reject' | 'submit', note?: string) => {
     setBusyId(id);
@@ -114,6 +129,13 @@ export default function DaftarPenyaluranPage() {
                         {row.status === 'approved' && (
                           <a href={`/penyaluran/entry?request=${row.id}`} className="rounded-lg border border-teal-200 px-2 py-1 text-xs text-teal-700">Catat penyaluran</a>
                         )}
+                        {['approved', 'disbursed'].includes(row.status) && !row.fins_trans_id && (
+                          <button type="button" disabled={busyId === row.id} onClick={() => journal(row.id, 'post')} className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-white disabled:opacity-60">Cairkan</button>
+                        )}
+                        {row.fins_trans_id && !row.fins_reversal_trans_id && (
+                          <button type="button" disabled={busyId === row.id} onClick={() => journal(row.id, 'reverse')} className="rounded-lg border border-rose-200 px-2 py-1 text-xs text-rose-700 disabled:opacity-60">Jurnal balik</button>
+                        )}
+                        {row.fins_reversal_trans_id && <span className="text-xs text-slate-400">Sudah dibalik</span>}
                         {['draft', 'submitted', 'reviewed'].includes(row.status) && (
                           <button type="button" onClick={() => { setRejectId(row.id); setCatatan(''); }} className="rounded-lg bg-rose-600 px-2 py-1 text-xs text-white">Tolak</button>
                         )}
