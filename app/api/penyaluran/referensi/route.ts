@@ -22,7 +22,7 @@ export async function GET(req: Request) {
   if (!parsed.ok) return parsed.response;
 
   try {
-    const [campaigns, beneficiaries, programs, coa] = await Promise.all([
+    const [campaigns, beneficiaries, programs, coa, campaignCoa] = await Promise.all([
       query(`SELECT id, title FROM campaigns ORDER BY title ASC LIMIT 500`),
       query(
         `SELECT id, kode_beneficiary, nama_lengkap, status_verifikasi
@@ -40,6 +40,11 @@ export async function GET(req: Request) {
       optionalRows(
         `SELECT coa, nama_coa FROM fins_coa WHERE active = 'y' ORDER BY coa ASC LIMIT 400`
       ),
+      optionalRows(
+        `SELECT DISTINCT ON (campaign_id) campaign_id, coa_expense, coa_fund, coa_receipt
+         FROM fins_campaign_coa
+         ORDER BY campaign_id, is_primary DESC, id ASC`
+      ),
     ]);
 
     return NextResponse.json({
@@ -47,6 +52,7 @@ export async function GET(req: Request) {
       beneficiaries: beneficiaries.rows,
       programs,
       coa,
+      campaignCoa,
     });
   } catch (error: any) {
     return dbErrorResponse(error);

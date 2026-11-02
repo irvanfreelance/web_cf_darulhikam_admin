@@ -31,6 +31,7 @@ export default function DaftarPenyaluranPage() {
   const [busyId, setBusyId] = useState<number | null>(null);
   const [rejectId, setRejectId] = useState<number | null>(null);
   const [catatan, setCatatan] = useState('');
+  const [approveNote, setApproveNote] = useState<Record<number, string>>({});
   const offset = (page - 1) * limit;
   const params = new URLSearchParams({ search, status, limit: String(limit), offset: String(offset) });
   const { data, error, isLoading, mutate } = useSWR<{ rows: Row[]; total: number }>(`/api/penyaluran/requests?${params.toString()}`, jsonFetcher);
@@ -99,7 +100,19 @@ export default function DaftarPenyaluranPage() {
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">
                         {['submitted', 'reviewed'].includes(row.status) && (
-                          <button type="button" disabled={busyId === row.id} onClick={() => act(row.id, 'approve')} className="rounded-lg bg-emerald-600 px-2 py-1 text-xs text-white disabled:opacity-60">Setujui</button>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <input
+                              aria-label={`Catatan persetujuan ${row.nomor_pengajuan}`}
+                              value={approveNote[row.id] ?? ''}
+                              onChange={(e) => setApproveNote((current) => ({ ...current, [row.id]: e.target.value }))}
+                              placeholder="Catatan opsional"
+                              className="w-36 rounded-lg border border-slate-200 px-2 py-1 text-xs"
+                            />
+                            <button type="button" disabled={busyId === row.id} onClick={() => act(row.id, 'approve', approveNote[row.id])} className="rounded-lg bg-emerald-600 px-2 py-1 text-xs text-white disabled:opacity-60">Setujui</button>
+                          </div>
+                        )}
+                        {row.status === 'approved' && (
+                          <a href={`/penyaluran/entry?request=${row.id}`} className="rounded-lg border border-teal-200 px-2 py-1 text-xs text-teal-700">Catat penyaluran</a>
                         )}
                         {['draft', 'submitted', 'reviewed'].includes(row.status) && (
                           <button type="button" onClick={() => { setRejectId(row.id); setCatatan(''); }} className="rounded-lg bg-rose-600 px-2 py-1 text-xs text-white">Tolak</button>
