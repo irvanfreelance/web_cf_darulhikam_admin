@@ -7,6 +7,7 @@ import { invalidateCache } from '@/lib/redis';
 import { parseBody } from '@/lib/http';
 import { actorCode } from '@/lib/penyaluran/request-schema';
 import { JournalError, postBalancedEntry } from '@/lib/fins/post-journal';
+import { formatWibDate, todayWib } from '@/lib/wib-date';
 
 const idSchema = z.object({ id: z.coerce.number().int().positive() });
 const bodySchema = z.object({ action: z.enum(['post', 'reverse']) });
@@ -56,7 +57,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           return { already: true, fins_trans_id: Number(row.fins_trans_id), id_trans: null };
         }
         const nominal = Number(row.jumlah_realisasi || row.jumlah_disetujui || row.jumlah_diajukan);
-        const tanggal = String(row.tgl_realisasi || row.tgl_pengajuan || new Date().toISOString()).slice(0, 10);
+        const tanggal = formatWibDate(row.tgl_realisasi || row.tgl_pengajuan || new Date());
         const posted = await postBalancedEntry(client, {
           tanggal,
           nominal,
@@ -94,7 +95,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       );
       if (original.rowCount === 0) throw new JournalError('Transaksi asal tidak ditemukan', 404);
       const source = original.rows[0];
-      const today = new Date().toISOString().slice(0, 10);
+      const today = todayWib();
       const reversed = await postBalancedEntry(client, {
         tanggal: today,
         nominal: Number(source.nominal),

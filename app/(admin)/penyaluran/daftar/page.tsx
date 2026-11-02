@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
 import { jsonFetcher, sendJson } from '@/lib/json-client';
 import { formatIDR } from '@/lib/format';
+import { formatWibDate } from '@/lib/wib-date';
 
 type Row = {
   id: number;
@@ -21,9 +22,15 @@ type Row = {
   campaign_title: string | null;
   beneficiary_nama: string | null;
   kode_beneficiary: string | null;
-  fins_trans_id: number | null;
-  fins_reversal_trans_id: number | null;
+  fins_trans_id: number | string | null;
+  fins_reversal_trans_id: number | string | null;
+  jurnal_nomor: string | null;
+  jurnal_balik_nomor: string | null;
 };
+
+function hasJournal(row: { fins_trans_id: number | string | null }) {
+  return row.fins_trans_id != null && String(row.fins_trans_id) !== '';
+}
 
 export default function DaftarPenyaluranPage() {
   const [search, setSearch] = useState('');
@@ -42,10 +49,10 @@ export default function DaftarPenyaluranPage() {
     setBusyId(id);
     try {
       const result = await sendJson(`/api/penyaluran/requests/${id}/jurnal`, 'POST', { action });
-      toast.success(result.already ? 'Jurnal sudah ada' : action === 'post' ? 'Jurnal pencairan tersimpan' : 'Jurnal balik tersimpan');
+      toast.success(result.already ? 'Jurnal sudah ada, tidak diposting ulang' : action === 'post' ? 'Jurnal pencairan tersimpan' : 'Jurnal balik tersimpan');
       mutate();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err?.message || 'Gagal menjurnal');
     } finally {
       setBusyId(null);
     }
@@ -60,7 +67,7 @@ export default function DaftarPenyaluranPage() {
       setCatatan('');
       mutate();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err?.message || 'Gagal memperbarui status');
     } finally {
       setBusyId(null);
     }
@@ -105,7 +112,7 @@ export default function DaftarPenyaluranPage() {
                   <tr key={row.id} className="border-t border-slate-50 align-top">
                     <td className="px-4 py-3">
                       <a href={`/penyaluran/daftar/${row.id}`} className="font-medium text-teal-700 hover:underline">{row.nomor_pengajuan}</a>
-                      <div className="text-xs text-slate-400">{String(row.tgl_pengajuan).slice(0, 10)}</div>
+                      <div className="text-xs text-slate-400">{formatWibDate(row.tgl_pengajuan) || '—'}</div>
                     </td>
                     <td className="px-4 py-3 text-slate-800">{row.judul}</td>
                     <td className="px-4 py-3 text-slate-600">{row.beneficiary_nama || '—'}</td>
@@ -129,10 +136,13 @@ export default function DaftarPenyaluranPage() {
                         {row.status === 'approved' && (
                           <a href={`/penyaluran/entry?request=${row.id}`} className="rounded-lg border border-teal-200 px-2 py-1 text-xs text-teal-700">Catat penyaluran</a>
                         )}
-                        {['approved', 'disbursed'].includes(row.status) && !row.fins_trans_id && (
+                        {['approved', 'disbursed'].includes(row.status) && !hasJournal(row) && (
                           <button type="button" disabled={busyId === row.id} onClick={() => journal(row.id, 'post')} className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-white disabled:opacity-60">Cairkan</button>
                         )}
-                        {row.fins_trans_id && !row.fins_reversal_trans_id && (
+                        {hasJournal(row) && (
+                          <a href={`/penyaluran/daftar/${row.id}`} className="text-xs font-medium text-teal-700 hover:underline">Jurnal {row.jurnal_nomor || row.fins_trans_id}</a>
+                        )}
+                        {hasJournal(row) && !row.fins_reversal_trans_id && (
                           <button type="button" disabled={busyId === row.id} onClick={() => journal(row.id, 'reverse')} className="rounded-lg border border-rose-200 px-2 py-1 text-xs text-rose-700 disabled:opacity-60">Jurnal balik</button>
                         )}
                         {row.fins_reversal_trans_id && <span className="text-xs text-slate-400">Sudah dibalik</span>}

@@ -16,7 +16,7 @@ function messageFromBody(body: { error?: string; errors?: { path?: (string | num
 export async function jsonFetcher(url: string) {
   const res = await fetch(url);
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(messageFromBody(body) || 'Gagal memuat data');
+  if (!res.ok) throw new Error(messageFromBody(body) || `Gagal memuat data (${res.status})`);
   return body;
 }
 
@@ -27,6 +27,6 @@ export async function sendJson(url: string, method: 'POST' | 'PATCH', data: unkn
     body: JSON.stringify(data),
   });
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(messageFromBody(body) || 'Permintaan gagal');
+  if (!res.ok) throw new Error(messageFromBody(body) || `Permintaan gagal (${res.status})`);
   return body;
 }

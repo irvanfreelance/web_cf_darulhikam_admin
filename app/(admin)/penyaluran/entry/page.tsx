@@ -8,6 +8,7 @@ import { FileUpload } from '@/components/ui/file-upload';
 import { jsonFetcher, sendJson } from '@/lib/json-client';
 import { BUKTI_JENIS } from '@/lib/penyaluran/request-schema';
 import { formatIDR } from '@/lib/format';
+import { formatWibDate, todayWib } from '@/lib/wib-date';
 
 const inputClass = 'w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-teal-500 focus:outline-none';
 
@@ -29,7 +30,7 @@ export default function EntryPenyaluranPage() {
   const { data: approved } = useSWR<{ rows: RequestRow[] }>('/api/penyaluran/requests?status=approved&limit=100', jsonFetcher);
   const { data: referensi } = useSWR<{ beneficiaries: { id: number; kode_beneficiary: string; nama_lengkap: string }[] }>('/api/penyaluran/referensi', jsonFetcher);
   const [requestId, setRequestId] = useState('');
-  const [tgl, setTgl] = useState(() => new Date().toISOString().slice(0, 10));
+  const [tgl, setTgl] = useState(() => todayWib());
   const [jumlah, setJumlah] = useState('');
   const [narasi, setNarasi] = useState('');
   const [penerima, setPenerima] = useState<Penerima[]>([{ beneficiary_id: '', nama_penerima: '', jumlah_diterima: '' }]);
@@ -83,7 +84,7 @@ export default function EntryPenyaluranPage() {
       toast.success('Realisasi dan LPJ tersimpan. Belum masuk jurnal.');
       mutate();
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error?.message || 'Gagal menyimpan realisasi');
     } finally {
       setSaving(false);
     }
@@ -104,7 +105,7 @@ export default function EntryPenyaluranPage() {
 
       {saved?.lpj && (
         <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800">
-          Realisasi sudah tercatat: {formatIDR(Number(saved.lpj.jumlah_realisasi || 0))} pada {String(saved.lpj.tgl_kegiatan).slice(0, 10)}. {saved.bukti?.length || 0} bukti.
+          Realisasi sudah tercatat: {formatIDR(Number(saved.lpj.jumlah_realisasi || 0))} pada {formatWibDate(saved.lpj.tgl_kegiatan) || '—'}. {saved.bukti?.length || 0} bukti.
         </div>
       )}
 

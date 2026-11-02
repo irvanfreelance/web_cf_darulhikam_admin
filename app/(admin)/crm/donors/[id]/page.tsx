@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import CrmDonorForm from '@/components/admin/crm-donor-form';
 import { jsonFetcher } from '@/lib/json-client';
 import { formatIDR } from '@/lib/format';
+import { formatWibDateTime } from '@/lib/wib-date';
 import type { CrmDonor, CrmDonorInvoice } from '@/types/crm';
 
 type Detail = CrmDonor & {
@@ -58,7 +59,7 @@ export default function CrmDonorDetailPage() {
                     <Link href={`/transactions/${invoice.invoice_code}`} className="font-medium text-teal-700">{invoice.invoice_code}</Link>
                   </td>
                   <td className="px-4 py-3 text-slate-600">{invoice.campaign_title || '—'}</td>
-                  <td className="px-4 py-3 text-slate-500">{new Date(invoice.created_at).toLocaleString('id-ID')}</td>
+                  <td className="px-4 py-3 text-slate-500">{formatWibDateTime(invoice.created_at)}</td>
                   <td className="px-4 py-3 text-right">{formatIDR(Number(invoice.total_amount || 0))}</td>
                   <td className="px-4 py-3">{invoice.status}</td>
                 </tr>

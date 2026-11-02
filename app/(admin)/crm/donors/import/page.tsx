@@ -147,7 +147,7 @@ export default function ImportDonorsPage() {
       }));
       toast.success(`${response.inserted} donatur baru ditambahkan`);
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error?.message || 'Gagal mengimpor donatur');
     } finally {
       importingRef.current = false;
       setIsImporting(false);

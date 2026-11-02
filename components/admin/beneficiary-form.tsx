@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, Save } from 'lucide-react';
 import { jsonFetcher, sendJson } from '@/lib/json-client';
+import { formatWibDate, formatWibDateTime } from '@/lib/wib-date';
 import {
   BENEFICIARY_ASNAF,
   BENEFICIARY_EKONOMI,
@@ -42,9 +43,8 @@ function num(value: string | number | null | undefined) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function day(value: string | null | undefined) {
-  if (!value) return '';
-  return String(value).slice(0, 10);
+function day(value: unknown) {
+  return formatWibDate(value);
 }
 
 function text(value: string | number | null | undefined) {
@@ -272,7 +272,7 @@ export default function BeneficiaryForm({ initial }: { initial?: Beneficiary }) 
         </div>
         {initial?.verified_at && (
           <p className="md:col-span-2 text-xs text-slate-500">
-            Diverifikasi {new Date(initial.verified_at).toLocaleString('id-ID')} oleh {initial.verified_by || '—'}
+            Diverifikasi {formatWibDateTime(initial.verified_at)} oleh {initial.verified_by || '—'}
           </p>
         )}
         <Field label="URL foto KTP"><input className={inputClass} value={form.foto_ktp_url} onChange={(e) => set({ foto_ktp_url: e.target.value })} /></Field>

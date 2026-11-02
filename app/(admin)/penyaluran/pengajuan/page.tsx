@@ -67,7 +67,7 @@ export default function PengajuanPenyaluranPage() {
       toast.success(ajukan ? 'Pengajuan dikirim' : 'Draf tersimpan');
       router.push(`/penyaluran/daftar/${created.id}`);
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error?.message || 'Gagal menyimpan pengajuan');
     } finally {
       setSaving(false);
     }

@@ -6,25 +6,35 @@ import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/page-header';
 import { jsonFetcher, sendJson } from '@/lib/json-client';
 import { formatIDR } from '@/lib/format';
+import { formatWibDate } from '@/lib/wib-date';
 
-type Routine = { id: number; donor_name: string; nominal: string | number; cadence: string; next_due: string | null; aktif: boolean; due_state: string };
+type Routine = { id: number; donor_name: string; nominal: string | number; cadence: string; next_due: string | null; aktif: boolean; due_state: string; catatan: string | null };
 type Donor = { id: number; name: string };
 
 export default function RoutinesPage() {
   const { data, error, mutate } = useSWR<Routine[]>('/api/crm/routines', jsonFetcher);
   const [donorSearch, setDonorSearch] = useState('');
-  const { data: donors } = useSWR<{ rows: Donor[] }>(donorSearch.length >= 2 ? `/api/crm/donors?search=${encodeURIComponent(donorSearch)}&limit=8` : null, jsonFetcher);
+  const donorUrl = donorSearch
+    ? `/api/crm/donors?search=${encodeURIComponent(donorSearch)}&limit=20`
+    : '/api/crm/donors?limit=20';
+  const { data: donors } = useSWR<{ rows: Donor[] }>(donorUrl, jsonFetcher);
   const [form, setForm] = useState({ donor_id: '', nominal: '', cadence: 'monthly', next_due: '', catatan: '' });
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
     try {
-      await sendJson('/api/crm/routines', 'POST', { ...form, donor_id: Number(form.donor_id), nominal: Number(form.nominal), next_due: form.next_due || undefined });
-      toast.success('Jadwal tersimpan');
+      await sendJson('/api/crm/routines', 'POST', {
+        ...form,
+        donor_id: Number(form.donor_id),
+        nominal: Number(form.nominal),
+        next_due: form.next_due || undefined,
+        catatan: form.catatan || null,
+      });
+      toast.success('Jadwal rutin tersimpan');
       setForm({ donor_id: '', nominal: '', cadence: 'monthly', next_due: '', catatan: '' });
-      mutate();
+      await mutate();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err?.message || 'Gagal menyimpan jadwal');
     }
   };
 
@@ -45,6 +55,7 @@ export default function RoutinesPage() {
           <option value="yearly">Tahunan</option>
         </select>
         <input aria-label="Jatuh tempo" type="date" value={form.next_due} onChange={(e) => setForm({ ...form, next_due: e.target.value })} className="rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+        <input aria-label="Catatan" value={form.catatan} onChange={(e) => setForm({ ...form, catatan: e.target.value })} placeholder="Catatan" className="rounded-xl border border-slate-200 px-3 py-2 text-sm md:col-span-2" />
         <button className="rounded-xl bg-teal-600 px-4 py-2 text-sm text-white">Simpan jadwal</button>
       </form>
       <ul className="divide-y rounded-2xl border border-slate-100 bg-white">
@@ -52,7 +63,8 @@ export default function RoutinesPage() {
           <li key={row.id} className="flex items-center justify-between px-4 py-3 text-sm">
             <div>
               <div className="font-medium">{row.donor_name || 'Donatur'}</div>
-              <div className="text-slate-500">{row.cadence} · {formatIDR(Number(row.nominal || 0))} · jatuh tempo {row.next_due ? String(row.next_due).slice(0, 10) : '—'}</div>
+              <div className="text-slate-500">{row.cadence} · {formatIDR(Number(row.nominal || 0))} · jatuh tempo {formatWibDate(row.next_due) || '—'}</div>
+              {row.catatan && <div className="text-xs text-slate-400">{row.catatan}</div>}
             </div>
             <span className={row.due_state === 'overdue' ? 'text-rose-600' : 'text-slate-400'}>{row.due_state}</span>
           </li>

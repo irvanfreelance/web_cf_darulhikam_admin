@@ -5,6 +5,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { query } from '@/lib/db';
 import { invalidateCache } from '@/lib/redis';
 import { dbErrorResponse, parseBody, parseQuery } from '@/lib/http';
+import { todayWib } from '@/lib/wib-date';
 
 const cadence = z.enum(['weekly', 'monthly', 'yearly']);
 const dateText = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
   try {
     const donor = await query('SELECT id FROM donors WHERE id = $1', [parsed.data.donor_id]);
     if (donor.rowCount === 0) return NextResponse.json({ error: 'Donatur tidak ditemukan' }, { status: 404 });
-    const mulai = parsed.data.mulai || new Date().toISOString().slice(0, 10);
+    const mulai = parsed.data.mulai || todayWib();
     const nextDue = parsed.data.next_due || mulai;
     const res = await query(
       `INSERT INTO donor_routines (donor_id, nominal, cadence, aktif, mulai, next_due, catatan)

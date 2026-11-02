@@ -10,10 +10,13 @@ import { actorCode, requestDecisionSchema } from '@/lib/penyaluran/request-schem
 const idSchema = z.object({ id: z.coerce.number().int().positive() });
 
 const DETAIL_SQL = `
-  SELECT r.*, c.title AS campaign_title, b.nama_lengkap AS beneficiary_nama, b.kode_beneficiary
+  SELECT r.*, c.title AS campaign_title, b.nama_lengkap AS beneficiary_nama, b.kode_beneficiary,
+         ft.id_trans AS jurnal_nomor, rev.id_trans AS jurnal_balik_nomor
   FROM disbursement_requests r
   LEFT JOIN campaigns c ON c.id = r.campaign_id
   LEFT JOIN beneficiaries b ON b.id = r.beneficiary_id
+  LEFT JOIN fins_trans ft ON ft.id = r.fins_trans_id
+  LEFT JOIN fins_trans rev ON rev.id = r.fins_reversal_trans_id
   WHERE r.id = $1
 `;
 

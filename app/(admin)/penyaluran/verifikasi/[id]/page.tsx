@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { jsonFetcher, sendJson } from '@/lib/json-client';
 import { BENEFICIARY_KEPUTUSAN, BENEFICIARY_VERIFIKASI, type Beneficiary } from '@/types/penyaluran';
+import { formatWibDateTime } from '@/lib/wib-date';
 
 const inputClass = 'w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-teal-500 focus:outline-none';
 
@@ -55,7 +56,7 @@ export default function VerifikasiDetailPage() {
       setForm(null);
       mutate();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err?.message || 'Gagal menyimpan verifikasi');
     } finally {
       setSaving(false);
     }
@@ -69,7 +70,7 @@ export default function VerifikasiDetailPage() {
       <a href="/penyaluran/verifikasi" className="text-sm text-slate-500 hover:text-teal-700">Kembali ke antrean</a>
       <div>
         <h1 className="text-2xl font-semibold text-slate-800">{data.nama_lengkap}</h1>
-        <p className="text-sm text-slate-400">{data.kode_beneficiary} · {data.verified_at ? `Terakhir ${new Date(data.verified_at).toLocaleString('id-ID')} oleh ${data.verified_by || '—'}` : 'Belum diperiksa'}</p>
+        <p className="text-sm text-slate-400">{data.kode_beneficiary} · {data.verified_at ? `Terakhir ${formatWibDateTime(data.verified_at)} oleh ${data.verified_by || '—'}` : 'Belum diperiksa'}</p>
       </div>
       <form onSubmit={save} className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm md:grid-cols-2">
         <label className="block text-sm">
