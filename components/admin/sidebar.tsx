@@ -77,7 +77,7 @@ const configurationMenus: AccordionGroup[] = [
 const penyaluranMenus: AccordionGroup[] = [
   { category: 'Operasional', items: [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/penyaluran/dashboard' },
-    { icon: MapPin, label: 'Peta Penyaluran', href: '/penyaluran/coming-soon?title=Peta+Penyaluran' },
+    { icon: MapPin, label: 'Peta Penyaluran', href: '/penyaluran/peta' },
     { icon: Send, label: 'Pengajuan Penyaluran', href: '/penyaluran/pengajuan' },
     { icon: ClipboardList, label: 'Entry Penyaluran', href: '/penyaluran/entry' },
     { icon: List, label: 'List Penyaluran', href: '/penyaluran/daftar' },
@@ -97,11 +97,14 @@ const penyaluranMenus: AccordionGroup[] = [
 const crmMenus: AccordionGroup[] = [
   { category: 'Donatur', items: [
     { icon: Users, label: 'Data Donatur', href: '/crm/donors' },
+    { icon: Calendar, label: 'Jadwal Rutin', href: '/crm/routines' },
     { icon: BadgeCheck, label: 'Verifikasi Donatur', href: '/crm/coming-soon?title=Verifikasi+Donatur' },
   ]},
   { category: 'Transaksi', items: [
     { icon: Receipt, label: 'List Transaksi', href: '/transactions' },
-    { icon: FileCheck, label: 'Bukti Setor', href: '/crm/coming-soon?title=Bukti+Setor' },
+    { icon: FileCheck, label: 'Bukti Setor', href: '/crm/bukti-setor' },
+    { icon: Repeat, label: 'LPS Rutin', href: '/crm/lps' },
+    { icon: Landmark, label: 'FINS Sync', href: '/crm/fins-sync' },
     { icon: Heart, label: 'List Transaksi Qurban', href: '/penyaluran/qurban' },
   ]},
   { category: 'Report Management', items: [

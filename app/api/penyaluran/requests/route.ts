@@ -10,6 +10,7 @@ const LIST_SQL = `
   r.id, r.nomor_pengajuan, r.judul, r.status, r.jenis_penyaluran, r.jumlah_diajukan,
   r.jumlah_disetujui, r.tgl_pengajuan, r.campaign_id, r.beneficiary_id, r.coa_debet, r.coa_kredit,
   r.nik_pengaju, r.nik_approver, r.catatan_approver, r.deskripsi, r.created_at,
+  r.fins_trans_id, r.fins_reversal_trans_id,
   c.title AS campaign_title, b.nama_lengkap AS beneficiary_nama, b.kode_beneficiary
 `;
 
