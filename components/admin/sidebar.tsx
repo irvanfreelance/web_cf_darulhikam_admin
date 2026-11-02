@@ -78,10 +78,12 @@ const penyaluranMenus: AccordionGroup[] = [
   { category: 'Operasional', items: [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/penyaluran/coming-soon?title=Dashboard+Penyaluran' },
     { icon: MapPin, label: 'Peta Penyaluran', href: '/penyaluran/coming-soon?title=Peta+Penyaluran' },
-    { icon: Send, label: 'Pengajuan Penyaluran', href: '/penyaluran/coming-soon?title=Pengajuan+Penyaluran' },
+    { icon: Send, label: 'Pengajuan Penyaluran', href: '/penyaluran/pengajuan' },
     { icon: ClipboardList, label: 'Entry Penyaluran', href: '/penyaluran/coming-soon?title=Entry+Penyaluran' },
-    { icon: List, label: 'List Penyaluran', href: '/penyaluran/coming-soon?title=List+Penyaluran' },
+    { icon: List, label: 'List Penyaluran', href: '/penyaluran/daftar' },
+    { icon: BadgeCheck, label: 'Verifikasi PM', href: '/penyaluran/verifikasi' },
     { icon: Users, label: 'Penerima Manfaat', href: '/penyaluran/penerima-manfaat' },
+    { icon: Heart, label: 'List Qurban', href: '/penyaluran/qurban' },
     { icon: Repeat, label: 'Distribusi Massal', href: '/penyaluran/coming-soon?title=Distribusi+Massal' },
   ]},
   { category: 'Pertanggungjawaban', items: [
@@ -100,7 +102,7 @@ const crmMenus: AccordionGroup[] = [
   { category: 'Transaksi', items: [
     { icon: Receipt, label: 'List Transaksi', href: '/transactions' },
     { icon: FileCheck, label: 'Bukti Setor', href: '/crm/coming-soon?title=Bukti+Setor' },
-    { icon: Heart, label: 'List Transaksi Qurban', href: '/crm/coming-soon?title=List+Transaksi+Qurban' },
+    { icon: Heart, label: 'List Transaksi Qurban', href: '/penyaluran/qurban' },
   ]},
   { category: 'Report Management', items: [
     { icon: PieChart, label: 'Analisa Donatur', href: '/crm/coming-soon?title=Analisa+Donatur' },

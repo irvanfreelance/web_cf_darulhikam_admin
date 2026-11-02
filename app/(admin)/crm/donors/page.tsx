@@ -119,7 +119,9 @@ export default function CrmDonorsPage() {
               ) : data?.rows?.length ? data.rows.map((donor) => (
                 <tr key={donor.id} className="border-t border-slate-50">
                   <td className="px-4 py-3">
-                    <div className="font-medium text-slate-800">{donor.name}</div>
+                    <a href={`/crm/donors/${donor.id}`} className="font-medium text-slate-800 underline-offset-2 hover:text-teal-700 hover:underline">
+                      {donor.name}
+                    </a>
                     <div className="text-xs text-slate-400">{donor.nik || `ID ${donor.id}`}</div>
                   </td>
                   <td className="px-4 py-3 capitalize text-slate-600">{donor.jenis}{donor.jenis_kelamin ? ` · ${donor.jenis_kelamin}` : ''}</td>
@@ -135,9 +137,9 @@ export default function CrmDonorsPage() {
                   <td className="px-4 py-3 text-slate-600">{donor.tim_crm_nama || '—'}</td>
                   <td className="px-4 py-3 text-right text-slate-800">{formatIDR(Number(donor.total_donated || 0))}</td>
                   <td className="px-4 py-3 text-center">
-                    <Link href={`/crm/donors/${donor.id}`} className="inline-flex p-2 text-slate-400 hover:text-teal-600" aria-label={`Detail ${donor.name}`}>
+                    <a href={`/crm/donors/${donor.id}`} className="inline-flex rounded-lg p-2 text-slate-400 hover:bg-teal-50 hover:text-teal-700" aria-label={`Detail ${donor.name}`}>
                       <Eye size={16} />
-                    </Link>
+                    </a>
                   </td>
                 </tr>
               )) : (

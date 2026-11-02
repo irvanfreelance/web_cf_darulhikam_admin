@@ -6,6 +6,7 @@ import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility
 import 'leaflet-defaulticon-compatibility';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from '@/lib/osm-tiles';
 
 // leaflet-defaulticon-compatibility (imported above) already patches
 // L.Icon.Default._getIconUrl to read the marker image from CSS — do NOT
@@ -61,10 +62,7 @@ export default function MapPointPicker({ lat, lng, onChange, className }: MapPoi
           scrollWheelZoom={true}
           className="w-full h-full"
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url={`https://api.maptiler.com/maps/topo-v4/{z}/{x}/{y}.png?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`}
-          />
+          <TileLayer attribution={OSM_TILE_ATTRIBUTION} url={OSM_TILE_URL} maxZoom={19} />
           <ClickHandler onChange={onChange} />
           <Marker
             position={position}

@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import 'leaflet-defaulticon-compatibility';
 import { cn } from '@/lib/utils';
+import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from '@/lib/osm-tiles';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -32,10 +33,7 @@ export default function DistributionMap({ className }: DistributionMapProps) {
         className="w-full h-full bg-[#f4f7f6]"
         minZoom={2}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url={`https://api.maptiler.com/maps/topo-v4/{z}/{x}/{y}.png?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`}
-        />
+        <TileLayer attribution={OSM_TILE_ATTRIBUTION} url={OSM_TILE_URL} maxZoom={19} />
 
         {Array.isArray(points) && points.map((loc: any) => (
           <CircleMarker
