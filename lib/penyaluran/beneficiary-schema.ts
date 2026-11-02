@@ -175,3 +175,27 @@ export function roundCoord(value: number | null) {
 export function likeTerm(term: string) {
   return `%${term.replace(/[\\%_]/g, (char) => `\\${char}`)}%`;
 }
+
+export const verifikasiSchema = z
+  .object({
+    status_verifikasi: z.enum(BENEFICIARY_VERIFIKASI),
+    catatan_verifikasi: optionalText(4000),
+    verifikasi_tempat_tinggal: optionalText(4000),
+    verifikasi_penghasilan: optionalMoney,
+    verifikasi_tanggungan: optionalInt(50),
+    verifikasi_aset: optionalText(4000),
+    verifikasi_dokumen: optionalText(4000),
+    verifikasi_keputusan: z.preprocess(
+      (value) => (value == null || value === '' ? null : value),
+      z.enum(BENEFICIARY_KEPUTUSAN).nullable()
+    ),
+  })
+  .superRefine((data, ctx) => {
+    if (data.status_verifikasi === 'rejected' && !data.catatan_verifikasi) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['catatan_verifikasi'],
+        message: 'Catatan wajib diisi saat status ditolak',
+      });
+    }
+  });
