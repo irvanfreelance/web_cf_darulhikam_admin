@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { Eye, Plus, Search, Upload } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { toast } from 'sonner';
+import { Download, Eye, Loader2, Plus, Search, Upload } from 'lucide-react';
 import { PageHeader } from '@/components/shared/page-header';
 import { Pagination } from '@/components/shared/pagination';
 import KPICard from '@/components/shared/kpi-card';
@@ -23,6 +25,7 @@ export default function CrmDonorsPage() {
   const [timId, setTimId] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [isExporting, setIsExporting] = useState(false);
   const offset = (page - 1) * limit;
 
   const params = new URLSearchParams({
@@ -38,13 +41,82 @@ export default function CrmDonorsPage() {
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      toast.loading('Mempersiapkan data export...');
+      const exportParams = new URLSearchParams({
+        search,
+        jenis,
+        status,
+        gender,
+        limit: '10000',
+        offset: '0',
+      });
+      if (kantorId) exportParams.set('kantor_id', kantorId);
+      if (timId) exportParams.set('tim_crm_id', timId);
+
+      const res = await fetch(`/api/crm/donors?${exportParams.toString()}`);
+      if (!res.ok) throw new Error('Gagal mengambil data export');
+      const json: ListResponse = await res.json();
+      const exportRows = json?.rows || [];
+
+      if (exportRows.length === 0) {
+        toast.dismiss();
+        toast.error('Tidak ada data untuk diexport');
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(
+        exportRows.map((donor, idx) => ({
+          'No': idx + 1,
+          'ID': donor.id,
+          'NIK': donor.nik || '-',
+          'Nama Donatur': donor.name,
+          'Jenis': donor.jenis || '-',
+          'Jenis Kelamin': donor.jenis_kelamin || '-',
+          'No. HP/Telepon': donor.phone || '-',
+          'Email': donor.email || '-',
+          'Alamat': donor.alamat || '-',
+          'Status': donor.status_aktif ? 'Aktif' : 'Nonaktif',
+          'Tim CRM': donor.tim_crm_nama || '-',
+          'Total Donasi': Number(donor.total_donated || 0),
+          'Jumlah Donasi': Number(donor.donation_count || 0),
+          'Minat Program': donor.minat_program || '-',
+          'Tanggal Terdaftar': donor.created_at ? new Date(donor.created_at).toLocaleDateString('id-ID') : '-',
+        }))
+      );
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Donatur');
+      XLSX.writeFile(workbook, `Data_Donatur_CRM_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+      toast.dismiss();
+      toast.success('Data donatur berhasil diexport');
+    } catch (err: any) {
+      toast.dismiss();
+      toast.error(err.message || 'Gagal export data');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6 text-left">
       <PageHeader title="Data Donatur" description="Profil CRM, filter, dan impor baris baru">
-        <Link href="/crm/donors/import" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+        <button
+          type="button"
+          onClick={handleExport}
+          disabled={isExporting}
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+        >
+          {isExporting ? <Loader2 size={16} className="animate-spin text-teal-600" /> : <Download size={16} className="text-teal-600" />}
+          Export Excel
+        </button>
+        <Link href="/crm/donors/import" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
           <Upload size={16} /> Impor
         </Link>
-        <Link href="/crm/donors/new" className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-sm font-medium text-white">
+        <Link href="/crm/donors/new" className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-sm font-medium text-white hover:bg-teal-700 transition-colors">
           <Plus size={16} /> Tambah
         </Link>
       </PageHeader>
@@ -102,6 +174,7 @@ export default function CrmDonorsPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 text-xs text-slate-400">
               <tr>
+                <th className="w-12 px-4 py-3 font-medium text-center">No</th>
                 <th className="px-4 py-3 font-medium">Donatur</th>
                 <th className="px-4 py-3 font-medium">Jenis</th>
                 <th className="px-4 py-3 font-medium">Kontak</th>
@@ -113,11 +186,14 @@ export default function CrmDonorsPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-400">Memuat data...</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-slate-400">Memuat data...</td></tr>
               ) : error ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-400">Daftar tidak dapat dimuat.</td></tr>
-              ) : data?.rows?.length ? data.rows.map((donor) => (
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-slate-400">Daftar tidak dapat dimuat.</td></tr>
+              ) : data?.rows?.length ? data.rows.map((donor, idx) => (
                 <tr key={donor.id} className="border-t border-slate-50">
+                  <td className="px-4 py-3 text-center text-xs text-slate-500 font-medium">
+                    {offset + idx + 1}
+                  </td>
                   <td className="px-4 py-3">
                     <a href={`/crm/donors/${donor.id}`} className="font-medium text-slate-800 underline-offset-2 hover:text-teal-700 hover:underline">
                       {donor.name}
@@ -143,7 +219,7 @@ export default function CrmDonorsPage() {
                   </td>
                 </tr>
               )) : (
-                <tr><td colSpan={7} className="px-4 py-10 text-center text-slate-400">Belum ada donatur pada filter ini.</td></tr>
+                <tr><td colSpan={8} className="px-4 py-10 text-center text-slate-400">Belum ada donatur pada filter ini.</td></tr>
               )}
             </tbody>
           </table>

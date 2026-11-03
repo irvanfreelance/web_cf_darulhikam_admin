@@ -49,8 +49,38 @@ export async function GET(req: Request) {
       ),
     ]);
 
+    // Ambil mapping nama COA untuk semua kode COA yang tercantum di coa_expend dan coa_receipt
+    const allReferencedCoas = new Set<string>();
+    for (const r of dataRes.rows) {
+      if (r.coa_expend) {
+        r.coa_expend.split(',').forEach((c: string) => {
+          const trimmed = c.trim();
+          if (trimmed) allReferencedCoas.add(trimmed);
+        });
+      }
+      if (r.coa_receipt) {
+        r.coa_receipt.split(',').forEach((c: string) => {
+          const trimmed = c.trim();
+          if (trimmed) allReferencedCoas.add(trimmed);
+        });
+      }
+    }
+
+    let coaNameMap: Record<string, string> = {};
+    if (allReferencedCoas.size > 0) {
+      const coaList = Array.from(allReferencedCoas);
+      const coaLookupRes = await query(
+        `SELECT coa, nama_coa FROM fins_coa WHERE coa = ANY($1::varchar[])`,
+        [coaList]
+      );
+      for (const item of coaLookupRes.rows) {
+        coaNameMap[item.coa] = item.nama_coa;
+      }
+    }
+
     return NextResponse.json({
       rows: dataRes.rows,
+      coaNameMap,
       totalCount: parseInt(countRes.rows[0].count, 10),
     });
   } catch (error: any) {

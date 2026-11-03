@@ -14,15 +14,26 @@
   --font-mono: var(--font-source-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-source-sans), sans-serif;
+}
+
+/* Global input, select, textarea & placeholder contrast enhancement */
+input,
+select,
+textarea {
+  color: #0f172a !important; /* slate-900 */
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b !important; /* slate-500, clear & high contrast against light bg */
+  opacity: 1 !important;
+}
+
+select option {
+  color: #0f172a;
+  background-color: #ffffff;
 }

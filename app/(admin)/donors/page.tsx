@@ -322,11 +322,11 @@ export default function DonorsPage() {
               </div>
               <div className="text-left text-slate-800">
                   <label className="block text-[10px] font-semibold text-slate-500 mb-2">Email</label>
-                <input value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-normal text-slate-900 placeholder:text-slate-300 focus:outline-none focus:border-teal-500 transition-all font-sans" placeholder="Email donatur..." />
+                <input value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-normal text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-teal-500 transition-all font-sans" placeholder="Email donatur..." />
               </div>
               <div className="text-left text-slate-800">
                 <label className="block text-[10px] font-semibold text-slate-500 mb-2">Nomor WhatsApp/HP</label>
-                <input value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-normal text-slate-900 placeholder:text-slate-300 focus:outline-none focus:border-teal-500 transition-all font-sans" placeholder="Cth: 0812..." />
+                <input value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-normal text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-teal-500 transition-all font-sans" placeholder="Cth: 0812..." />
               </div>
               <div className="pt-4 flex gap-3">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 px-6 rounded-2xl text-sm font-normal text-slate-400 hover:bg-slate-50 transition-all font-sans">Batal</button>

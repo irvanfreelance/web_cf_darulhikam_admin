@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { query, withTransaction } from '@/lib/db';
+import { invalidateCache } from '@/lib/redis';
+import { caPengajuanSchema } from '@/lib/fins/schemas/ca';
+import { z } from 'zod';
 
-// Generates an id_buku in the "CA00<yy><mm><dd><seq>0001" scheme used by the
-// prototype, scanning today's existing rows so sequences stay unique per day.
+// Generates an id_buku in the "CA00<yy><mm><dd><seq>0001" scheme
 async function generateIdBuku(client: any) {
   const now = new Date();
   const yy = String(now.getFullYear()).slice(2);
@@ -25,6 +27,11 @@ async function generateIdBuku(client: any) {
 }
 
 export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(req.url);
   const periodeFrom = searchParams.get('periodeFrom') || '';
   const periodeTo = searchParams.get('periodeTo') || '';
@@ -62,7 +69,8 @@ export async function GET(req: Request) {
   const sql = `
     SELECT p.id, p.id_buku, p.tanggal, p.coa_debet, p.coa_kredit, p.nama_akun, p.keterangan,
            p.quantity, p.nominal, p.realisasi, p.user_input, p.user_approve, p.approve,
-           p.office_id, k.nama AS office_nama, p.sumber_dana, p.department_id
+           p.office_id, k.nama AS office_nama, p.sumber_dana, p.department_id,
+           p.via_bayar, p.bank_rek_id
     FROM fins_ca_pengajuan p
     LEFT JOIN fins_kantor k ON k.id = p.office_id
     WHERE ${conditions.join(' AND ')}
@@ -74,43 +82,56 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  const userName = session?.user?.name || 'Unknown';
-
-  const body = await req.json();
-  const { header, lines } = body as {
-    header: { officeId: number; sumberDana: string; departmentId: number | null; tanggal: string; viaBayar: string; bankAccount: string };
-    lines: Array<{ coa: string; namaAkun: string; quantity: number; nominal: number; keterangan: string }>;
-  };
-
-  if (!lines || lines.length === 0) {
-    return NextResponse.json({ error: 'Detail pengajuan minimal 1 baris' }, { status: 400 });
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const userName = session.user?.name || 'Unknown';
 
-  const idBuku = await withTransaction(async (client) => {
-    const generated = await generateIdBuku(client);
-    for (const line of lines) {
-      await client.query(
-        `INSERT INTO fins_ca_pengajuan
-          (id_buku, tanggal, coa_debet, coa_kredit, nama_akun, keterangan, quantity, nominal, realisasi, user_input, user_approve, approve, office_id, sumber_dana, department_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0, $9, '', 'us', $10, $11, $12)`,
-        [
-          generated,
-          header.tanggal.slice(0, 10),
-          line.coa,
-          header.bankAccount,
-          line.namaAkun,
-          line.keterangan || '',
-          line.quantity || 1,
-          line.nominal,
-          userName,
-          header.officeId,
-          header.sumberDana,
-          header.departmentId,
-        ]
-      );
+  try {
+    const rawBody = await req.json();
+    const validated = caPengajuanSchema.parse(rawBody);
+    const { header, lines } = validated;
+
+    const idBuku = await withTransaction(async (client) => {
+      const generated = await generateIdBuku(client);
+      for (const line of lines) {
+        await client.query(
+          `INSERT INTO fins_ca_pengajuan
+            (id_buku, tanggal, coa_debet, coa_kredit, nama_akun, keterangan, quantity, nominal, realisasi,
+             user_input, user_approve, approve, office_id, sumber_dana, department_id, via_bayar, bank_rek_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0, $9, '', 'us', $10, $11, $12, $13, $14)`,
+          [
+            generated,
+            header.tanggal.slice(0, 10),
+            line.coa,
+            header.bankAccount || '',
+            line.namaAkun,
+            line.keterangan || '',
+            line.quantity || 1,
+            line.nominal,
+            userName,
+            header.officeId,
+            header.sumberDana,
+            header.departmentId || null,
+            header.viaBayar || '',
+            header.bankRekId || null,
+          ]
+        );
+      }
+      return generated;
+    });
+
+    try {
+      await invalidateCache(['fins:ca:list', 'fins:pencairan:list', 'fins:dashboard-cash']);
+    } catch (e) {
+      console.warn('Redis flush error in pengajuan-ca:', e);
     }
-    return generated;
-  });
 
-  return NextResponse.json({ idBuku }, { status: 201 });
+    return NextResponse.json({ idBuku }, { status: 201 });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ errors: error.issues }, { status: 400 });
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

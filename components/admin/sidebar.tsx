@@ -34,88 +34,100 @@ type AccordionGroup = { category: string; items: AccordionItem[] };
 
 const finsMenus: AccordionGroup[] = [
   { category: 'Home', items: [
-    { icon: LayoutDashboard, label: 'Dashboard Cash Bank', href: '/fins/coming-soon?title=Dashboard+Cash+Bank' },
+    { icon: LayoutDashboard, label: 'Dashboard Cash Bank', href: '/fins/dashboard-cash-bank' },
     { icon: FileText, label: 'Pengajuan CA', href: '/fins/pengajuan-ca' },
     { icon: Send, label: 'Pencairan', href: '/fins/pencairan' },
-    { icon: ClipboardCheck, label: 'Pertanggungjawaban CA', href: '/fins/coming-soon?title=Pertanggungjawaban+CA' },
-    { icon: Receipt, label: 'Pengeluaran', href: '/fins/coming-soon?title=Pengeluaran' },
-    { icon: Wallet, label: 'Penerimaan', href: '/fins/coming-soon?title=Penerimaan' },
-    { icon: BookOpen, label: 'Buku Harian', href: '/fins/coming-soon?title=Buku+Harian' },
-    { icon: Lock, label: 'Penutupan', href: '/fins/coming-soon?title=Penutupan' },
-    { icon: FileBarChart, label: 'Resume Dana Pengelola', href: '/fins/coming-soon?title=Resume+Dana+Pengelola' },
+    { icon: ClipboardCheck, label: 'Pertanggungjawaban CA', href: '/fins/pertanggungjawaban-ca' },
+    { icon: Receipt, label: 'Pengeluaran', href: '/fins/pengeluaran' },
+    { icon: Wallet, label: 'Penerimaan', href: '/fins/penerimaan' },
+    { icon: BookOpen, label: 'Buku Harian', href: '/fins/buku-harian' },
+    { icon: Lock, label: 'Penutupan', href: '/fins/penutupan' },
+    { icon: FileBarChart, label: 'Resume Dana Pengelola', href: '/fins/resume-dana-pengelola' },
   ]},
   { category: 'Akuntansi', items: [
-    { icon: Landmark, label: 'Saldo Awal', href: '/fins/coming-soon?title=Saldo+Awal' },
-    { icon: BookText, label: 'Rekap Jurnal', href: '/fins/coming-soon?title=Rekap+Jurnal' },
-    { icon: Book, label: 'Buku Besar', href: '/fins/coming-soon?title=Buku+Besar' },
-    { icon: Scale, label: 'Trial Balance', href: '/fins/coming-soon?title=Trial+Balance' },
+    { icon: Landmark, label: 'Saldo Awal', href: '/fins/saldo-awal' },
+    { icon: BookText, label: 'Rekap Jurnal', href: '/fins/rekap-jurnal' },
+    { icon: Book, label: 'Buku Besar', href: '/fins/buku-besar' },
+    { icon: Scale, label: 'Trial Balance', href: '/fins/trial-balance' },
   ]},
   { category: 'Laporan', items: [
-    { icon: BarChart2, label: 'Laporan Keuangan', href: '/fins/coming-soon?title=Laporan+Keuangan' },
-    { icon: Calendar, label: 'Laporan Bulanan', href: '/fins/coming-soon?title=Laporan+Bulanan' },
+    { icon: BarChart2, label: 'Laporan Keuangan', href: '/fins/laporan-keuangan' },
+    { icon: Calendar, label: 'Laporan Bulanan', href: '/fins/laporan-bulanan' },
   ]},
   { category: 'Aset', items: [
-    { icon: Building2, label: 'Entry Aset', href: '/fins/coming-soon?title=Entry+Aset' },
-    { icon: FileSpreadsheet, label: 'List Aset', href: '/fins/coming-soon?title=List+Aset' },
+    { icon: Building2, label: 'Entry Aset', href: '/fins/aset/baru' },
+    { icon: FileSpreadsheet, label: 'List Aset', href: '/fins/aset' },
   ]},
 ];
 
 const configurationMenus: AccordionGroup[] = [
   { category: 'Master Setup', items: [
-    { icon: Briefcase, label: 'Profile Lembaga', href: '/fins/coming-soon?title=Profile+Lembaga' },
-    { icon: Settings, label: 'Program', href: '/fins/coming-soon?title=Program' },
+    { icon: Briefcase, label: 'Profile Lembaga', href: '/fins/profile-lembaga' },
+    { icon: Settings, label: 'Program', href: '/fins/program' },
     { icon: Hash, label: 'Kode Bank', href: '/fins/kode-bank' },
     { icon: CreditCard, label: 'Rekening Bank', href: '/fins/rekening-bank' },
     { icon: FileSpreadsheet, label: 'Chart of Accounts', href: '/fins/coa' },
     { icon: Building2, label: 'COA Kantor', href: '/fins/coa-kantor' },
     { icon: Wallet, label: 'Saldo Dana', href: '/fins/saldo-dana' },
     { icon: BadgeCheck, label: 'Level Approve', href: '/fins/level-approve' },
-    { icon: Calculator, label: 'Rumus Report', href: '/fins/coming-soon?title=Rumus+Report' },
+    { icon: Calculator, label: 'Rumus Report', href: '/fins/rumus-report' },
   ]},
 ];
 
 const penyaluranMenus: AccordionGroup[] = [
-  { category: 'Operasional', items: [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/penyaluran/dashboard' },
-    { icon: MapPin, label: 'Peta Penyaluran', href: '/penyaluran/peta' },
-    { icon: Send, label: 'Pengajuan Penyaluran', href: '/penyaluran/pengajuan' },
-    { icon: ClipboardList, label: 'Entry Penyaluran', href: '/penyaluran/entry' },
-    { icon: List, label: 'List Penyaluran', href: '/penyaluran/daftar' },
-    { icon: BadgeCheck, label: 'Verifikasi PM', href: '/penyaluran/verifikasi' },
-    { icon: Users, label: 'Penerima Manfaat', href: '/penyaluran/penerima-manfaat' },
-    { icon: Heart, label: 'List Qurban', href: '/penyaluran/qurban' },
-    { icon: Repeat, label: 'Distribusi Massal', href: '/penyaluran/coming-soon?title=Distribusi+Massal' },
-  ]},
-  { category: 'Pertanggungjawaban', items: [
-    { icon: ClipboardCheck, label: 'Pertanggungjawaban', href: '/penyaluran/coming-soon?title=Pertanggungjawaban' },
-  ]},
-  { category: 'Laporan', items: [
-    { icon: BarChart2, label: 'Laporan Penyaluran', href: '/penyaluran/coming-soon?title=Laporan+Penyaluran' },
-  ]},
+  {
+    category: 'Operasional', items: [
+      { icon: LayoutDashboard, label: 'Dashboard', href: '/penyaluran/dashboard' },
+      { icon: MapPin, label: 'Peta Penyaluran', href: '/penyaluran/peta' },
+      { icon: Send, label: 'Pengajuan Penyaluran', href: '/penyaluran/pengajuan' },
+      { icon: ClipboardList, label: 'Entry Penyaluran', href: '/penyaluran/entry' },
+      { icon: List, label: 'List Penyaluran', href: '/penyaluran/daftar' },
+      { icon: BadgeCheck, label: 'Verifikasi PM', href: '/penyaluran/verifikasi' },
+      { icon: Users, label: 'Penerima Manfaat', href: '/penyaluran/penerima-manfaat' },
+      { icon: Heart, label: 'List Qurban', href: '/penyaluran/qurban' },
+      { icon: Repeat, label: 'Distribusi Massal', href: '/penyaluran/coming-soon?title=Distribusi+Massal' },
+    ]
+  },
+  {
+    category: 'Pertanggungjawaban', items: [
+      { icon: ClipboardCheck, label: 'Pertanggungjawaban', href: '/penyaluran/coming-soon?title=Pertanggungjawaban' },
+    ]
+  },
+  {
+    category: 'Laporan', items: [
+      { icon: BarChart2, label: 'Laporan Penyaluran', href: '/penyaluran/coming-soon?title=Laporan+Penyaluran' },
+    ]
+  },
 ];
 
 const crmMenus: AccordionGroup[] = [
-  { category: 'Donatur', items: [
-    { icon: Users, label: 'Data Donatur', href: '/crm/donors' },
-    { icon: Calendar, label: 'Jadwal Rutin', href: '/crm/routines' },
-    { icon: BadgeCheck, label: 'Verifikasi Donatur', href: '/crm/coming-soon?title=Verifikasi+Donatur' },
-  ]},
-  { category: 'Transaksi', items: [
-    { icon: Receipt, label: 'List Transaksi', href: '/transactions' },
-    { icon: FileCheck, label: 'Bukti Setor', href: '/crm/bukti-setor' },
-    { icon: Repeat, label: 'LPS Rutin', href: '/crm/lps' },
-    { icon: Landmark, label: 'FINS Sync', href: '/crm/fins-sync' },
-    { icon: Heart, label: 'List Transaksi Qurban', href: '/penyaluran/qurban' },
-  ]},
-  { category: 'Report Management', items: [
-    { icon: PieChart, label: 'Analisa Donatur', href: '/crm/coming-soon?title=Analisa+Donatur' },
-    { icon: BarChart2, label: 'Analisa Transaksi', href: '/crm/coming-soon?title=Analisa+Transaksi' },
-    { icon: Activity, label: 'Transaksi Funnel', href: '/crm/coming-soon?title=Transaksi+Funnel' },
-    { icon: Truck, label: 'Analisis Salur', href: '/crm/coming-soon?title=Analisis+Salur' },
-    { icon: Users2, label: 'Analisis PM', href: '/crm/coming-soon?title=Analisis+PM' },
-    { icon: Scale, label: 'Himpun vs Salur', href: '/crm/coming-soon?title=Himpun+vs+Salur' },
-    { icon: LayoutDashboard, label: 'Dashboard Penghimpunan', href: '/crm/dashboard' },
-  ]},
+  {
+    category: 'Donatur', items: [
+      { icon: Users, label: 'Data Donatur', href: '/crm/donors' },
+      { icon: Calendar, label: 'Jadwal Rutin', href: '/crm/routines' },
+      { icon: BadgeCheck, label: 'Verifikasi Donatur', href: '/crm/coming-soon?title=Verifikasi+Donatur' },
+    ]
+  },
+  {
+    category: 'Transaksi', items: [
+      { icon: Receipt, label: 'List Transaksi', href: '/transactions' },
+      { icon: FileCheck, label: 'Bukti Setor', href: '/crm/bukti-setor' },
+      { icon: Repeat, label: 'LPS Rutin', href: '/crm/lps' },
+      { icon: Landmark, label: 'FINS Sync', href: '/crm/fins-sync' },
+      { icon: Heart, label: 'List Transaksi Qurban', href: '/penyaluran/qurban' },
+    ]
+  },
+  {
+    category: 'Report Management', items: [
+      { icon: PieChart, label: 'Analisa Donatur', href: '/crm/coming-soon?title=Analisa+Donatur' },
+      { icon: BarChart2, label: 'Analisa Transaksi', href: '/crm/coming-soon?title=Analisa+Transaksi' },
+      { icon: Activity, label: 'Transaksi Funnel', href: '/crm/coming-soon?title=Transaksi+Funnel' },
+      { icon: Truck, label: 'Analisis Salur', href: '/crm/coming-soon?title=Analisis+Salur' },
+      { icon: Users2, label: 'Analisis PM', href: '/crm/coming-soon?title=Analisis+PM' },
+      { icon: Scale, label: 'Himpun vs Salur', href: '/crm/coming-soon?title=Himpun+vs+Salur' },
+      { icon: LayoutDashboard, label: 'Dashboard Penghimpunan', href: '/crm/dashboard' },
+    ]
+  },
 ];
 
 function itemIsActive(pathname: string, href: string) {
@@ -125,22 +137,30 @@ function itemIsActive(pathname: string, href: string) {
 }
 
 const hcmMenus: AccordionGroup[] = [
-  { category: 'Kepegawaian', items: [
-    { icon: Users, label: 'Data Karyawan', href: '/fins/coming-soon?title=Data+Karyawan' },
-  ]},
-  { category: 'Presensi', items: [
-    { icon: CalendarCheck, label: 'Kehadiran Karyawan', href: '/fins/coming-soon?title=Kehadiran+Karyawan' },
-  ]},
-  { category: 'Produktivitas', items: [
-    { icon: ListChecks, label: 'Aktivitas Harian', href: '/fins/coming-soon?title=Aktivitas+Harian' },
-  ]},
+  {
+    category: 'Kepegawaian', items: [
+      { icon: Users, label: 'Data Karyawan', href: '/fins/coming-soon?title=Data+Karyawan' },
+    ]
+  },
+  {
+    category: 'Presensi', items: [
+      { icon: CalendarCheck, label: 'Kehadiran Karyawan', href: '/fins/coming-soon?title=Kehadiran+Karyawan' },
+    ]
+  },
+  {
+    category: 'Produktivitas', items: [
+      { icon: ListChecks, label: 'Aktivitas Harian', href: '/fins/coming-soon?title=Aktivitas+Harian' },
+    ]
+  },
 ];
 
 const documentMenus: AccordionGroup[] = [
-  { category: 'Kearsipan', items: [
-    { icon: FileText, label: 'Daftar Dokumen', href: '/fins/coming-soon?title=Daftar+Dokumen' },
-    { icon: Mail, label: 'Surat Menyurat', href: '/fins/coming-soon?title=Surat+Menyurat' },
-  ]},
+  {
+    category: 'Kearsipan', items: [
+      { icon: FileText, label: 'Daftar Dokumen', href: '/fins/coming-soon?title=Daftar+Dokumen' },
+      { icon: Mail, label: 'Surat Menyurat', href: '/fins/coming-soon?title=Surat+Menyurat' },
+    ]
+  },
 ];
 
 type AdminModule = 'crowdfund' | 'website' | 'tutorial' | 'penyaluran' | 'crm' | 'fins' | 'hcm' | 'document' | 'configuration';
@@ -169,83 +189,99 @@ const MODULE_ACCENT: Record<string, { bg: string; text: string; border?: string 
 // Crowdfunding Module Menus
 const crowdfundMenus = [
   { group: null, items: [{ icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' }] },
-  { group: 'MANAJEMEN', items: [
-    { icon: Megaphone, label: 'Kampanye', href: '/campaigns' },
-    { icon: MessageSquare, label: 'Kabar Penyaluran', href: '/campaign-updates' },
-    { icon: Tags, label: 'Kategori', href: '/categories' },
-    { icon: Receipt, label: 'Transaksi', href: '/transactions' },
-    { icon: Users, label: 'Donatur', href: '/donors' },
-    { icon: Heart, label: 'Afiliasi', href: '/affiliates' },
-    { icon: Wallet, label: 'Penarikan', href: '/withdrawals' },
-  ]},
-  { group: 'SISTEM', items: [
-    { icon: BellRing, label: 'Notifikasi', href: '/notifications' },
-    { icon: ShieldCheck, label: 'Admin', href: '/admins' },
-    { icon: CreditCard, label: 'Payment Channels', href: '/payment-channels' },
-    { icon: History, label: 'Log Sistem', href: '/logs' },
-    { icon: Settings, label: 'Pengaturan', href: '/settings' },
-  ]}
+  {
+    group: 'MANAJEMEN', items: [
+      { icon: Megaphone, label: 'Kampanye', href: '/campaigns' },
+      { icon: MessageSquare, label: 'Kabar Penyaluran', href: '/campaign-updates' },
+      { icon: Tags, label: 'Kategori', href: '/categories' },
+      { icon: Receipt, label: 'Transaksi', href: '/transactions' },
+      { icon: Users, label: 'Donatur', href: '/donors' },
+      { icon: Heart, label: 'Afiliasi', href: '/affiliates' },
+      { icon: Wallet, label: 'Penarikan', href: '/withdrawals' },
+    ]
+  },
+  {
+    group: 'SISTEM', items: [
+      { icon: BellRing, label: 'Notifikasi', href: '/notifications' },
+      { icon: ShieldCheck, label: 'Admin', href: '/admins' },
+      { icon: CreditCard, label: 'Payment Channels', href: '/payment-channels' },
+      { icon: History, label: 'Log Sistem', href: '/logs' },
+      { icon: Settings, label: 'Pengaturan', href: '/settings' },
+    ]
+  }
 ];
 
 // Website (CMS) Module Menus
 const websiteMenus = [
-  { group: 'KONTEN', items: [
-    { icon: FileText, label: 'Artikel', href: '/web-articles' },
-    { icon: Tags, label: 'Kategori Artikel', href: '/web-article-categories' },
-    { icon: MessageSquare, label: 'Testimoni', href: '/web-testimonials' },
-    { icon: Users2, label: 'Mitra', href: '/web-partners' },
-    { icon: HeartHandshake, label: 'Program Peduli', href: '/web-care-categories' },
-  ]},
-  { group: 'TRANSPARANSI', items: [
-    { icon: FileCheck, label: 'Laporan Keuangan', href: '/web-reports' },
-    { icon: BarChart2, label: 'Impact Metrics', href: '/web-metrics' },
-    { icon: MapPin, label: 'Titik Sebaran', href: '/web-distribution-points' },
-    { icon: Heart, label: 'Jejak Kebaikan', href: '/web-impact-categories' },
-  ]},
-  { group: 'ORGANISASI', items: [
-    { icon: Info, label: 'Tentang Kami', href: '/web-about' },
-    { icon: Users, label: 'Tim & Pengurus', href: '/web-team' },
-    { icon: Shield, label: 'Legalitas', href: '/web-legality' },
-    { icon: Building, label: 'Rekening Resmi', href: '/web-banks' },
-  ]},
-  { group: 'LAYANAN', items: [
-    { icon: HelpCircle, label: 'FAQ', href: '/web-faqs' },
-  ]}
+  {
+    group: 'KONTEN', items: [
+      { icon: FileText, label: 'Artikel', href: '/web-articles' },
+      { icon: Tags, label: 'Kategori Artikel', href: '/web-article-categories' },
+      { icon: MessageSquare, label: 'Testimoni', href: '/web-testimonials' },
+      { icon: Users2, label: 'Mitra', href: '/web-partners' },
+      { icon: HeartHandshake, label: 'Program Peduli', href: '/web-care-categories' },
+    ]
+  },
+  {
+    group: 'TRANSPARANSI', items: [
+      { icon: FileCheck, label: 'Laporan Keuangan', href: '/web-reports' },
+      { icon: BarChart2, label: 'Impact Metrics', href: '/web-metrics' },
+      { icon: MapPin, label: 'Titik Sebaran', href: '/web-distribution-points' },
+      { icon: Heart, label: 'Jejak Kebaikan', href: '/web-impact-categories' },
+    ]
+  },
+  {
+    group: 'ORGANISASI', items: [
+      { icon: Info, label: 'Tentang Kami', href: '/web-about' },
+      { icon: Users, label: 'Tim & Pengurus', href: '/web-team' },
+      { icon: Shield, label: 'Legalitas', href: '/web-legality' },
+      { icon: Building, label: 'Rekening Resmi', href: '/web-banks' },
+    ]
+  },
+  {
+    group: 'LAYANAN', items: [
+      { icon: HelpCircle, label: 'FAQ', href: '/web-faqs' },
+    ]
+  }
 ];
 
 // Tutorial Menus — jump links into /tutorial, grouped the same way as the two modules
 const tutorialMenus = [
-  { group: 'WEBSITE CMS', items: [
-    { icon: FileText, label: 'Artikel', href: '/tutorial#web-articles' },
-    { icon: Tags, label: 'Kategori Artikel', href: '/tutorial#web-article-categories' },
-    { icon: MessageSquare, label: 'Testimoni', href: '/tutorial#web-testimonials' },
-    { icon: Users2, label: 'Mitra', href: '/tutorial#web-partners' },
-    { icon: HeartHandshake, label: 'Program Peduli', href: '/tutorial#web-care-categories' },
-    { icon: FileCheck, label: 'Laporan Keuangan', href: '/tutorial#web-reports' },
-    { icon: BarChart2, label: 'Impact Metrics', href: '/tutorial#web-metrics' },
-    { icon: MapPin, label: 'Titik Sebaran', href: '/tutorial#web-distribution-points' },
-    { icon: Heart, label: 'Jejak Kebaikan', href: '/tutorial#web-impact-categories' },
-    { icon: Info, label: 'Tentang Kami', href: '/tutorial#web-about' },
-    { icon: Users, label: 'Tim & Pengurus', href: '/tutorial#web-team' },
-    { icon: Shield, label: 'Legalitas', href: '/tutorial#web-legality' },
-    { icon: Building, label: 'Rekening Resmi', href: '/tutorial#web-banks' },
-    { icon: HelpCircle, label: 'FAQ', href: '/tutorial#web-faqs' },
-  ]},
-  { group: 'CROWDFUNDING', items: [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/tutorial#dashboard' },
-    { icon: Megaphone, label: 'Kampanye', href: '/tutorial#campaigns' },
-    { icon: MessageSquare, label: 'Kabar Penyaluran', href: '/tutorial#campaign-updates' },
-    { icon: Tags, label: 'Kategori', href: '/tutorial#categories' },
-    { icon: Receipt, label: 'Transaksi', href: '/tutorial#transactions' },
-    { icon: Users, label: 'Donatur', href: '/tutorial#donors' },
-    { icon: Heart, label: 'Afiliasi', href: '/tutorial#affiliates' },
-    { icon: Wallet, label: 'Penarikan', href: '/tutorial#withdrawals' },
-    { icon: BellRing, label: 'Notifikasi', href: '/tutorial#notifications' },
-    { icon: ShieldCheck, label: 'Admin', href: '/tutorial#admins' },
-    { icon: CreditCard, label: 'Payment Channels', href: '/tutorial#payment-channels' },
-    { icon: History, label: 'Log Sistem', href: '/tutorial#logs' },
-    { icon: Settings, label: 'Pengaturan', href: '/tutorial#settings' },
-  ]},
+  {
+    group: 'WEBSITE CMS', items: [
+      { icon: FileText, label: 'Artikel', href: '/tutorial#web-articles' },
+      { icon: Tags, label: 'Kategori Artikel', href: '/tutorial#web-article-categories' },
+      { icon: MessageSquare, label: 'Testimoni', href: '/tutorial#web-testimonials' },
+      { icon: Users2, label: 'Mitra', href: '/tutorial#web-partners' },
+      { icon: HeartHandshake, label: 'Program Peduli', href: '/tutorial#web-care-categories' },
+      { icon: FileCheck, label: 'Laporan Keuangan', href: '/tutorial#web-reports' },
+      { icon: BarChart2, label: 'Impact Metrics', href: '/tutorial#web-metrics' },
+      { icon: MapPin, label: 'Titik Sebaran', href: '/tutorial#web-distribution-points' },
+      { icon: Heart, label: 'Jejak Kebaikan', href: '/tutorial#web-impact-categories' },
+      { icon: Info, label: 'Tentang Kami', href: '/tutorial#web-about' },
+      { icon: Users, label: 'Tim & Pengurus', href: '/tutorial#web-team' },
+      { icon: Shield, label: 'Legalitas', href: '/tutorial#web-legality' },
+      { icon: Building, label: 'Rekening Resmi', href: '/tutorial#web-banks' },
+      { icon: HelpCircle, label: 'FAQ', href: '/tutorial#web-faqs' },
+    ]
+  },
+  {
+    group: 'CROWDFUNDING', items: [
+      { icon: LayoutDashboard, label: 'Dashboard', href: '/tutorial#dashboard' },
+      { icon: Megaphone, label: 'Kampanye', href: '/tutorial#campaigns' },
+      { icon: MessageSquare, label: 'Kabar Penyaluran', href: '/tutorial#campaign-updates' },
+      { icon: Tags, label: 'Kategori', href: '/tutorial#categories' },
+      { icon: Receipt, label: 'Transaksi', href: '/tutorial#transactions' },
+      { icon: Users, label: 'Donatur', href: '/tutorial#donors' },
+      { icon: Heart, label: 'Afiliasi', href: '/tutorial#affiliates' },
+      { icon: Wallet, label: 'Penarikan', href: '/tutorial#withdrawals' },
+      { icon: BellRing, label: 'Notifikasi', href: '/tutorial#notifications' },
+      { icon: ShieldCheck, label: 'Admin', href: '/tutorial#admins' },
+      { icon: CreditCard, label: 'Payment Channels', href: '/tutorial#payment-channels' },
+      { icon: History, label: 'Log Sistem', href: '/tutorial#logs' },
+      { icon: Settings, label: 'Pengaturan', href: '/tutorial#settings' },
+    ]
+  },
 ];
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -279,6 +315,8 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
     let mod: AdminModule | null = null;
     if (pathname.startsWith('/crm')) mod = 'crm';
     else if (pathname.startsWith('/penyaluran')) mod = 'penyaluran';
+    else if (pathname.startsWith('/fins/profile-lembaga') || pathname.startsWith('/fins/program') || pathname.startsWith('/fins/rumus-report')) mod = 'configuration';
+    else if (pathname.startsWith('/fins')) mod = 'fins';
     else if (pathname === '/tutorial') mod = 'tutorial';
     if (mod) {
       setActiveModule(mod);
@@ -311,17 +349,17 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
 
   return (
     <aside className="h-full flex flex-shrink-0 z-50">
-      
+
       {/* Primary Rail */}
       <div className="w-[72px] h-full bg-[#0b1120] flex flex-col items-center py-4 border-r border-slate-800">
         <div className="mb-6">
           <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center shadow-lg">
-             <Heart size={20} className="text-white fill-white/20" />
+            <Heart size={20} className="text-white fill-white/20" />
           </div>
         </div>
 
         <div className="flex-1 flex flex-col gap-2 w-full px-2 overflow-y-auto">
-          <button 
+          <button
             onClick={() => handleModuleChange('crowdfund')}
             title="Crowdfunding"
             className={cn(
@@ -332,7 +370,7 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
             <LayoutDashboard size={22} strokeWidth={isCrowdfund ? 2.5 : 2} />
             <span className="text-[9px] font-bold tracking-tight">CROWDFUND</span>
           </button>
-          
+
           <button
             onClick={() => handleModuleChange('website')}
             title="Website CMS"
@@ -437,14 +475,14 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
       </div>
 
       {/* Secondary Sidebar (Sub-menu) */}
-      <div 
+      <div
         className={cn(
           "h-full bg-slate-900 transition-all duration-300 flex flex-col border-r border-slate-800",
           isOpen ? "w-60" : "w-0 overflow-hidden border-r-0"
         )}
       >
         <div className="h-16 flex items-center px-6 border-b border-slate-800/80 shrink-0">
-           <h2 className="text-slate-200 font-bold tracking-tight">{MODULE_LABEL[activeModule]}</h2>
+          <h2 className="text-slate-200 font-bold tracking-tight">{MODULE_LABEL[activeModule]}</h2>
         </div>
 
         <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-4 custom-scrollbar">
@@ -563,9 +601,10 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
           </button>
         </div>
       </div>
-      
+
       {/* Global styles for custom scrollbar in sidebar */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }

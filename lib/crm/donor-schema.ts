@@ -88,7 +88,7 @@ export const donorImportBodySchema = z.object({
 });
 
 export const donorListQuerySchema = z.object({
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  limit: z.coerce.number().int().min(1).max(50000).default(20),
   offset: z.coerce.number().int().min(0).default(0),
   search: z.string().trim().max(150).optional().default(''),
   jenis: z.enum(['all', ...DONOR_JENIS]).optional().default('all'),

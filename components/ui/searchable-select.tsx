@@ -70,7 +70,7 @@ export function SearchableSelect({
               <Search className="h-4 w-4 text-slate-400" />
               <input
                 autoFocus
-                className="w-full text-sm outline-none placeholder:text-slate-400 bg-transparent text-slate-700"
+                className="w-full text-sm outline-none placeholder:text-slate-500 bg-transparent text-slate-800"
                 placeholder="Cari..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}

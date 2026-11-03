@@ -106,7 +106,7 @@ export function NotificationTemplateForm({ initialData, mode }: Props) {
                 required
                 value={formData.event_trigger}
                 onChange={(e) => setFormData({ ...formData, event_trigger: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-normal text-slate-900 placeholder:text-slate-300 outline-none focus:border-blue-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-normal text-slate-900 placeholder:text-slate-500 outline-none focus:border-blue-500 transition-all"
                 placeholder="Cth: checkout_pending"
               />
             </div>
@@ -132,7 +132,7 @@ export function NotificationTemplateForm({ initialData, mode }: Props) {
                 required={isEmail}
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-normal text-slate-900 placeholder:text-slate-300 outline-none focus:border-blue-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-normal text-slate-900 placeholder:text-slate-500 outline-none focus:border-blue-500 transition-all"
                 placeholder="Cth: Konfirmasi donasi Anda - {invoice_code}"
               />
             </div>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import useSWR from 'swr';
-import { Plus, Search, Edit2, Trash2, Save, Loader2, RefreshCw } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Save, Loader2, RefreshCw, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
@@ -20,11 +20,142 @@ const stripTags = (s: string) => (s || '').replace(/<\/?[^>]+>/g, '');
 function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
     <button type="button" onClick={() => onChange(!checked)} className="flex items-center gap-2">
-      <span className={cn('w-10 h-6 rounded-full transition-colors relative shrink-0', checked ? 'bg-indigo-600' : 'bg-slate-200')}>
+      <span className={cn('w-10 h-6 rounded-full transition-colors relative shrink-0', checked ? 'bg-teal-600' : 'bg-slate-200')}>
         <span className={cn('absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform', checked && 'translate-x-4')} />
       </span>
       <span className="text-sm font-medium text-slate-700">{label}</span>
     </button>
+  );
+}
+
+/**
+ * Komponen Multi-COA Selector dengan Dropdown Pencarian & Inline List
+ */
+function CoaMultiSelect({
+  label,
+  value,
+  onChange,
+  allCoas,
+  prefixFilter,
+}: {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  allCoas: Array<{ coa: string; nama_coa: string }>;
+  prefixFilter?: string; // misalnya '5' untuk beban/expense, '4' untuk penerimaan/revenue
+}) {
+  const [selectedCoa, setSelectedCoa] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Pisahkan kode terpilih menjadi array
+  const currentItems = value
+    ? value.split(',').map(c => c.trim()).filter(Boolean)
+    : [];
+
+  const handleAdd = (codeToAdd: string) => {
+    if (!codeToAdd) return;
+    if (currentItems.includes(codeToAdd)) {
+      toast.info(`COA ${codeToAdd} sudah ada dalam daftar`);
+      return;
+    }
+    const updated = [...currentItems, codeToAdd];
+    onChange(updated.join(','));
+    setSelectedCoa('');
+  };
+
+  const handleRemove = (codeToRemove: string) => {
+    const updated = currentItems.filter(c => c !== codeToRemove);
+    onChange(updated.join(','));
+  };
+
+  // Filter pilihan dropdown
+  const filteredOptions = allCoas.filter(c => {
+    if (prefixFilter && !c.coa.startsWith(prefixFilter)) return false;
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      return c.coa.toLowerCase().includes(term) || c.nama_coa.toLowerCase().includes(term);
+    }
+    return true;
+  });
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="block text-xs font-bold text-slate-700">{label}</label>
+        <span className="text-[11px] text-slate-400 font-medium">
+          {currentItems.length} akun dipilih
+        </span>
+      </div>
+
+      {/* Selector Dropdown & Tombol Tambah */}
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <select
+            value={selectedCoa}
+            onChange={e => {
+              const val = e.target.value;
+              setSelectedCoa(val);
+              if (val) handleAdd(val);
+            }}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-900 focus:outline-none focus:border-teal-500 font-medium"
+          >
+            <option value="">-- Pilih Akun COA untuk Ditambahkan --</option>
+            {filteredOptions.map(c => {
+              const isSelected = currentItems.includes(c.coa);
+              return (
+                <option key={c.coa} value={c.coa} disabled={isSelected}>
+                  {c.coa} — {stripTags(c.nama_coa)} {isSelected ? '(Sudah dipilih)' : ''}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+      </div>
+
+      {/* Inline Table / Card List COA Terpilih */}
+      {currentItems.length > 0 ? (
+        <div className="border border-slate-200 rounded-xl overflow-hidden bg-white max-h-48 overflow-y-auto">
+          <table className="min-w-full text-xs divide-y divide-slate-100">
+            <thead className="bg-slate-50 text-slate-500 font-semibold sticky top-0">
+              <tr>
+                <th className="px-3 py-2 text-left font-mono w-32">Kode COA</th>
+                <th className="px-3 py-2 text-left">Nama Akun Perkiraan</th>
+                <th className="px-3 py-2 text-center w-16">Hapus</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {currentItems.map(code => {
+                const matched = allCoas.find(c => c.coa === code);
+                return (
+                  <tr key={code} className="hover:bg-slate-50">
+                    <td className="px-3 py-1.5 font-mono font-bold text-slate-800 whitespace-nowrap">
+                      {code}
+                    </td>
+                    <td className="px-3 py-1.5 text-slate-600">
+                      {matched ? stripTags(matched.nama_coa) : '-'}
+                    </td>
+                    <td className="px-3 py-1.5 text-center">
+                      <button
+                        type="button"
+                        onClick={() => handleRemove(code)}
+                        className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        title="Hapus akun dari mapping"
+                      >
+                        <X size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="p-3 text-center text-xs text-slate-400 italic bg-slate-50 rounded-xl border border-dashed border-slate-200">
+          Belum ada akun yang dipilih. Gunakan dropdown di atas untuk menambahkan.
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -45,8 +176,13 @@ export default function SaldoDanaPage() {
   const queryParams = new URLSearchParams({ search, active: activeFilter, page: String(page), limit: String(LIMIT) });
   const { data, mutate, isLoading } = useSWR(`/api/fins/saldo-dana?${queryParams.toString()}`, fetcher);
   const rows = data?.rows || [];
+  const coaNameMap: Record<string, string> = data?.coaNameMap || {};
   const totalCount = data?.totalCount || 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / LIMIT));
+
+  // Ambil daftar seluruh akun COA untuk dropdown
+  const { data: coaData } = useSWR('/api/fins/coa?limit=500', fetcher);
+  const allCoasList: Array<{ coa: string; nama_coa: string; level?: number }> = coaData?.rows || [];
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const allChecked = rows.length > 0 && rows.every((r: any) => selected.has(r.coa_dana));
@@ -73,14 +209,12 @@ export default function SaldoDanaPage() {
 
   const commitSearch = () => { setSearch(searchDraft); setPage(1); };
 
-  const lookupCoa = async (coa: string) => {
+  const lookupCoa = (coa: string) => {
     if (!coa) { setFormCoaNama(null); return; }
-    try {
-      const res = await fetch(`/api/fins/coa?search=${encodeURIComponent(coa)}&page=1&limit=1`);
-      const json = await res.json();
-      const match = (json.rows || []).find((r: any) => r.coa === coa);
-      setFormCoaNama(match ? { nama_coa: stripTags(match.nama_coa), level: Number(match.level) } : null);
-    } catch {
+    const match = allCoasList.find(r => r.coa === coa);
+    if (match) {
+      setFormCoaNama({ nama_coa: stripTags(match.nama_coa), level: Number(match.level || 2) });
+    } else {
       setFormCoaNama(null);
     }
   };
@@ -163,14 +297,42 @@ export default function SaldoDanaPage() {
         setIsBulkDeleteOpen(false);
         mutate();
       } else {
-        const err = await res.json();
-        toast.error(err.error || 'Gagal menghapus data');
+        toast.error('Gagal menghapus beberapa data');
       }
-    } catch (err) {
+    } catch {
       toast.error('Gagal menghapus data');
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  // Helper untuk merender daftar kode COA dengan nama artinya di tabel
+  const renderCoaBadges = (coaString: string) => {
+    if (!coaString) return <span className="text-slate-400 italic">Tidak ada</span>;
+    const list = coaString.split(',').map(c => c.trim()).filter(Boolean);
+    if (list.length === 0) return <span className="text-slate-400 italic">Tidak ada</span>;
+
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        {list.map(c => {
+          const name = coaNameMap[c] || allCoasList.find(x => x.coa === c)?.nama_coa;
+          return (
+            <span
+              key={c}
+              title={name ? `${c} - ${name}` : c}
+              className="inline-flex items-center gap-1 rounded bg-slate-100 hover:bg-slate-200 border border-slate-200/80 px-2 py-0.5 text-[11px] font-mono text-slate-700 transition-colors"
+            >
+              <span className="font-semibold text-slate-800">{c}</span>
+              {name && (
+                <span className="font-sans font-normal text-slate-500 max-w-[150px] truncate">
+                  ({stripTags(name)})
+                </span>
+              )}
+            </span>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -179,7 +341,7 @@ export default function SaldoDanaPage() {
         title="Saldo Dana"
         description="Mapping akun (COA) ke akun beban/penerimaan untuk perhitungan saldo dana per kategori"
       >
-        <Button onClick={handleOpenCreate} className="shrink-0">
+        <Button onClick={handleOpenCreate} className="shrink-0 bg-teal-600 hover:bg-teal-700 text-white">
           <Plus size={18} strokeWidth={3} className="mr-2" /> Tambah Mapping
         </Button>
       </PageHeader>
@@ -191,7 +353,7 @@ export default function SaldoDanaPage() {
             type="text" placeholder="Keyword..." value={searchDraft}
             onChange={e => setSearchDraft(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && commitSearch()}
-            className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-900 focus:outline-none focus:border-indigo-500/50"
+            className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-900 focus:outline-none focus:border-teal-500"
           />
         </div>
         <button onClick={commitSearch} className="px-5 py-2.5 rounded-xl border border-slate-100 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
@@ -210,7 +372,7 @@ export default function SaldoDanaPage() {
 
         <div className="ml-auto">
           <select value={activeFilter} onChange={e => { setActiveFilter(e.target.value); setPage(1); }}
-            className="bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-900 focus:outline-none focus:border-indigo-500">
+            className="bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-900 focus:outline-none focus:border-teal-500">
             <option value="all">Status: Semua</option>
             <option value="y">Status: Aktif</option>
             <option value="n">Status: Non Aktif</option>
@@ -250,8 +412,12 @@ export default function SaldoDanaPage() {
                       <td className={cn('px-6 py-4 text-sm', isHeader ? 'font-bold text-slate-800' : 'text-slate-600')} style={{ paddingLeft: isHeader ? 24 : 40 }}>
                         {stripTags(item.nama_coa) || '-'}
                       </td>
-                      <td className="px-6 py-4 text-xs font-mono text-slate-600 max-w-xs">{item.coa_expend || '-'}</td>
-                      <td className="px-6 py-4 text-xs font-mono text-slate-600 max-w-xs">{item.coa_receipt || '-'}</td>
+                      <td className="px-6 py-4 text-xs max-w-sm">
+                        {renderCoaBadges(item.coa_expend)}
+                      </td>
+                      <td className="px-6 py-4 text-xs max-w-sm">
+                        {renderCoaBadges(item.coa_receipt)}
+                      </td>
                       <td className="px-6 py-4 text-center">
                         <span className={cn('text-[11px] font-semibold px-2.5 py-1 rounded-full', item.ops === 'y' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600')}>
                           {item.ops === 'y' ? 'Ya' : 'Tidak'}
@@ -264,10 +430,10 @@ export default function SaldoDanaPage() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => handleOpenEdit(item)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                          <button onClick={() => handleOpenEdit(item)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit mapping">
                             <Edit2 size={16} />
                           </button>
-                          <button onClick={() => setDeletingItem(item)} className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+                          <button onClick={() => setDeletingItem(item)} className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Hapus mapping">
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -298,63 +464,77 @@ export default function SaldoDanaPage() {
         onClose={() => setIsModalOpen(false)}
         title={editingItem ? 'Edit Mapping Saldo Dana' : 'Tambah Mapping Saldo Dana'}
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">COA</label>
-              <Input
-                required
-                disabled={!!editingItem}
-                placeholder="cth. 301.00.000.000"
-                value={formData.coa_dana}
-                onChange={e => { setFormData({ ...formData, coa_dana: e.target.value }); }}
-                onBlur={e => lookupCoa(e.target.value)}
-                className="text-slate-900 font-mono disabled:bg-slate-50 disabled:text-slate-400"
-              />
+              <label className="block text-xs font-bold text-slate-700 mb-1">COA Dana</label>
+              {editingItem ? (
+                <Input
+                  disabled
+                  value={formData.coa_dana}
+                  className="text-slate-900 font-mono bg-slate-50 disabled:text-slate-500 font-semibold"
+                />
+              ) : (
+                <select
+                  required
+                  value={formData.coa_dana}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setFormData({ ...formData, coa_dana: val });
+                    lookupCoa(val);
+                  }}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-900 focus:outline-none focus:border-teal-500 font-medium"
+                >
+                  <option value="">-- Pilih COA Dana (Kelompok 3) --</option>
+                  {allCoasList.filter(c => c.coa.startsWith('3')).map(c => (
+                    <option key={c.coa} value={c.coa}>
+                      {c.coa} — {stripTags(c.nama_coa)}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Nama COA</label>
-              <Input readOnly value={formCoaNama?.nama_coa || ''} className="text-slate-500 bg-slate-50" />
+              <Input readOnly value={formCoaNama?.nama_coa || ''} className="text-slate-600 bg-slate-50" />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">COA Expense</label>
-            <Input
-              placeholder="Pisahkan dengan koma, cth. 501.00.000.000, 502.01.000.000"
-              value={formData.coa_expend}
-              onChange={e => setFormData({ ...formData, coa_expend: e.target.value })}
-              className="text-slate-900 font-mono text-xs"
-            />
-          </div>
+          {/* Selector Dropdown & Inline Table COA Expense */}
+          <CoaMultiSelect
+            label="COA Expense (Beban / Pengeluaran)"
+            value={formData.coa_expend}
+            onChange={val => setFormData({ ...formData, coa_expend: val })}
+            allCoas={allCoasList}
+            prefixFilter="5"
+          />
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">COA Revenue</label>
-            <Input
-              placeholder="Pisahkan dengan koma, cth. 401.00.000.000, 402.01.000.000"
-              value={formData.coa_receipt}
-              onChange={e => setFormData({ ...formData, coa_receipt: e.target.value })}
-              className="text-slate-900 font-mono text-xs"
-            />
-          </div>
+          {/* Selector Dropdown & Inline Table COA Revenue */}
+          <CoaMultiSelect
+            label="COA Revenue (Penerimaan / Donasi)"
+            value={formData.coa_receipt}
+            onChange={val => setFormData({ ...formData, coa_receipt: val })}
+            allCoas={allCoasList}
+            prefixFilter="4"
+          />
 
-          <div className="grid grid-cols-2 gap-4 items-center">
+          <div className="grid grid-cols-2 gap-4 items-center pt-2">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Level</label>
               <Input
                 readOnly
                 value={formCoaNama ? `Level ${formCoaNama.level}${formCoaNama.level === 1 ? ' (Header Kategori)' : ''}` : '-'}
-                className="text-slate-500 bg-slate-50"
+                className="text-slate-500 bg-slate-50 text-xs"
               />
             </div>
             <Toggle checked={formData.ops === 'y'} onChange={v => setFormData({ ...formData, ops: v ? 'y' : 'n' })} label="Operasional" />
           </div>
 
-          <Toggle checked={formData.active === 'y'} onChange={v => setFormData({ ...formData, active: v ? 'y' : 'n' })} label="Aktif" />
+          <Toggle checked={formData.active === 'y'} onChange={v => setFormData({ ...formData, active: v ? 'y' : 'n' })} label="Status Aktif" />
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Batal</Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="bg-teal-600 hover:bg-teal-700 text-white">
               {isSubmitting ? <Loader2 size={16} className="animate-spin mr-2" /> : <Save size={16} className="mr-2" />}
               Simpan
             </Button>
