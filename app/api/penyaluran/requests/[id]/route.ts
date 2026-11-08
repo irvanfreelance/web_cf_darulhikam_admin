@@ -26,9 +26,27 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!parsedId.success) return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
 
   try {
-    const res = await query(DETAIL_SQL, [parsedId.data.id]);
+    const [res, itemsRes] = await Promise.all([
+      query(DETAIL_SQL, [parsedId.data.id]),
+      query(
+        `SELECT id, keterangan, qty, satuan, harga_satuan, subtotal, coa, keterangan_coa
+         FROM disbursement_items
+         WHERE disbursement_request_id = $1
+         ORDER BY id ASC`,
+        [parsedId.data.id]
+      ),
+    ]);
+
     if (res.rowCount === 0) return NextResponse.json({ error: 'Pengajuan tidak ditemukan' }, { status: 404 });
-    return NextResponse.json(res.rows[0]);
+    return NextResponse.json({
+      ...res.rows[0],
+      items: itemsRes.rows.map((it) => ({
+        ...it,
+        qty: Number(it.qty),
+        harga_satuan: Number(it.harga_satuan),
+        subtotal: Number(it.subtotal),
+      })),
+    });
   } catch (error: any) {
     return dbErrorResponse(error);
   }

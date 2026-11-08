@@ -5,6 +5,7 @@ import { query, withTransaction } from '@/lib/db';
 import { invalidateCache } from '@/lib/redis';
 import { dbErrorResponse, parseBody, parseQuery } from '@/lib/http';
 import { actorCode, likeTerm, requestListQuerySchema, requestWriteSchema } from '@/lib/penyaluran/request-schema';
+import { formatWibDate, todayWib } from '@/lib/wib-date';
 
 const LIST_SQL = `
   r.id, r.nomor_pengajuan, r.judul, r.status, r.jenis_penyaluran, r.jumlah_diajukan,
@@ -12,7 +13,8 @@ const LIST_SQL = `
   r.nik_pengaju, r.nik_approver, r.catatan_approver, r.deskripsi, r.created_at,
   r.fins_trans_id, r.fins_reversal_trans_id,
   c.title AS campaign_title, b.nama_lengkap AS beneficiary_nama, b.kode_beneficiary,
-  ft.id_trans AS jurnal_nomor, rev.id_trans AS jurnal_balik_nomor
+  ft.id_trans AS jurnal_nomor, rev.id_trans AS jurnal_balik_nomor,
+  (SELECT COUNT(*) FROM disbursement_items di WHERE di.disbursement_request_id = r.id) AS total_items
 `;
 
 async function nextNomor(client: { query: (sql: string, params?: unknown[]) => Promise<{ rows: { nomor_pengajuan: string }[] }> }) {
@@ -96,14 +98,34 @@ export async function POST(req: Request) {
 
     const actor = actorCode(session.user?.name);
     const status = parsed.data.ajukan ? 'submitted' : 'draft';
+    const tglPengajuan = formatWibDate(parsed.data.tgl_pengajuan || todayWib());
+
+    // Validasi periode terbuka jika ada accounting_periods
+    const periodCheck = await query(
+      `SELECT status FROM accounting_periods 
+       WHERE periode_tahun = EXTRACT(YEAR FROM $1::date)::int 
+         AND periode_bulan = EXTRACT(MONTH FROM $1::date)::int`,
+      [tglPengajuan]
+    );
+    if (periodCheck.rowCount && periodCheck.rows[0].status !== 'open') {
+      return NextResponse.json({ error: 'Periode akuntansi pada tanggal pengajuan berstatus tutup / lock.' }, { status: 409 });
+    }
+
+    // Hitung total dari items jika disediakan
+    let finalJumlahDiajukan = parsed.data.jumlah_diajukan;
+    const items = parsed.data.items || [];
+    if (items.length > 0) {
+      finalJumlahDiajukan = items.reduce((acc, it) => acc + Math.round(Number(it.qty) * Number(it.harga_satuan)), 0);
+    }
+
     const row = await withTransaction(async (client) => {
       const nomor = await nextNomor(client);
       const inserted = await client.query(
         `INSERT INTO disbursement_requests (
            nomor_pengajuan, campaign_id, beneficiary_id, judul, deskripsi, jenis_penyaluran,
-           jumlah_diajukan, coa_debet, coa_kredit, status, nik_pengaju
-         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-         RETURNING id, nomor_pengajuan, status`,
+           jumlah_diajukan, coa_debet, coa_kredit, status, nik_pengaju, tgl_pengajuan
+         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+         RETURNING id, nomor_pengajuan, status, jumlah_diajukan`,
         [
           nomor,
           parsed.data.campaign_id,
@@ -111,13 +133,35 @@ export async function POST(req: Request) {
           parsed.data.judul,
           parsed.data.deskripsi,
           parsed.data.jenis_penyaluran,
-          parsed.data.jumlah_diajukan,
+          finalJumlahDiajukan,
           parsed.data.coa_debet,
           parsed.data.coa_kredit,
           status,
           actor,
+          tglPengajuan,
         ]
       );
+
+      const requestId = Number(inserted.rows[0].id);
+
+      // Simpan rincian items jika ada
+      for (const it of items) {
+        await client.query(
+          `INSERT INTO disbursement_items (
+             disbursement_request_id, keterangan, qty, satuan, harga_satuan, coa, keterangan_coa
+           ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [
+            requestId,
+            it.keterangan,
+            it.qty,
+            it.satuan || null,
+            it.harga_satuan,
+            it.coa,
+            it.keterangan_coa || null,
+          ]
+        );
+      }
+
       return inserted.rows[0];
     });
 

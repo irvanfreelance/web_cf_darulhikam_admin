@@ -33,45 +33,55 @@ type AccordionItem = { icon: any; label: string; href: string };
 type AccordionGroup = { category: string; items: AccordionItem[] };
 
 const finsMenus: AccordionGroup[] = [
-  { category: 'Home', items: [
-    { icon: LayoutDashboard, label: 'Dashboard Cash Bank', href: '/fins/dashboard-cash-bank' },
-    { icon: FileText, label: 'Pengajuan CA', href: '/fins/pengajuan-ca' },
-    { icon: Send, label: 'Pencairan', href: '/fins/pencairan' },
-    { icon: ClipboardCheck, label: 'Pertanggungjawaban CA', href: '/fins/pertanggungjawaban-ca' },
-    { icon: Receipt, label: 'Pengeluaran', href: '/fins/pengeluaran' },
-    { icon: Wallet, label: 'Penerimaan', href: '/fins/penerimaan' },
-    { icon: BookOpen, label: 'Buku Harian', href: '/fins/buku-harian' },
-    { icon: Lock, label: 'Penutupan', href: '/fins/penutupan' },
-    { icon: FileBarChart, label: 'Resume Dana Pengelola', href: '/fins/resume-dana-pengelola' },
-  ]},
-  { category: 'Akuntansi', items: [
-    { icon: Landmark, label: 'Saldo Awal', href: '/fins/saldo-awal' },
-    { icon: BookText, label: 'Rekap Jurnal', href: '/fins/rekap-jurnal' },
-    { icon: Book, label: 'Buku Besar', href: '/fins/buku-besar' },
-    { icon: Scale, label: 'Trial Balance', href: '/fins/trial-balance' },
-  ]},
-  { category: 'Laporan', items: [
-    { icon: BarChart2, label: 'Laporan Keuangan', href: '/fins/laporan-keuangan' },
-    { icon: Calendar, label: 'Laporan Bulanan', href: '/fins/laporan-bulanan' },
-  ]},
-  { category: 'Aset', items: [
-    { icon: Building2, label: 'Entry Aset', href: '/fins/aset/baru' },
-    { icon: FileSpreadsheet, label: 'List Aset', href: '/fins/aset' },
-  ]},
+  {
+    category: 'Home', items: [
+      { icon: LayoutDashboard, label: 'Dashboard Cash Bank', href: '/fins/dashboard-cash-bank' },
+      { icon: FileText, label: 'Pengajuan CA', href: '/fins/pengajuan-ca' },
+      { icon: Send, label: 'Pencairan', href: '/fins/pencairan' },
+      { icon: ClipboardCheck, label: 'Pertanggungjawaban CA', href: '/fins/pertanggungjawaban-ca' },
+      { icon: Receipt, label: 'Pengeluaran', href: '/fins/pengeluaran' },
+      { icon: Wallet, label: 'Penerimaan', href: '/fins/penerimaan' },
+      { icon: BookOpen, label: 'Buku Harian', href: '/fins/buku-harian' },
+      { icon: Lock, label: 'Penutupan', href: '/fins/penutupan' },
+      { icon: FileBarChart, label: 'Resume Dana Pengelola', href: '/fins/resume-dana-pengelola' },
+    ]
+  },
+  {
+    category: 'Akuntansi', items: [
+      { icon: Landmark, label: 'Saldo Awal', href: '/fins/saldo-awal' },
+      { icon: BookText, label: 'Rekap Jurnal', href: '/fins/rekap-jurnal' },
+      { icon: Book, label: 'Buku Besar', href: '/fins/buku-besar' },
+      { icon: Scale, label: 'Trial Balance', href: '/fins/trial-balance' },
+    ]
+  },
+  {
+    category: 'Laporan', items: [
+      { icon: BarChart2, label: 'Laporan Keuangan', href: '/fins/laporan-keuangan' },
+      { icon: Calendar, label: 'Laporan Bulanan', href: '/fins/laporan-bulanan' },
+    ]
+  },
+  {
+    category: 'Aset', items: [
+      { icon: Building2, label: 'Entry Aset', href: '/fins/aset/baru' },
+      { icon: FileSpreadsheet, label: 'List Aset', href: '/fins/aset' },
+    ]
+  },
 ];
 
 const configurationMenus: AccordionGroup[] = [
-  { category: 'Master Setup', items: [
-    { icon: Briefcase, label: 'Profile Lembaga', href: '/fins/profile-lembaga' },
-    { icon: Settings, label: 'Program', href: '/fins/program' },
-    { icon: Hash, label: 'Kode Bank', href: '/fins/kode-bank' },
-    { icon: CreditCard, label: 'Rekening Bank', href: '/fins/rekening-bank' },
-    { icon: FileSpreadsheet, label: 'Chart of Accounts', href: '/fins/coa' },
-    { icon: Building2, label: 'COA Kantor', href: '/fins/coa-kantor' },
-    { icon: Wallet, label: 'Saldo Dana', href: '/fins/saldo-dana' },
-    { icon: BadgeCheck, label: 'Level Approve', href: '/fins/level-approve' },
-    { icon: Calculator, label: 'Rumus Report', href: '/fins/rumus-report' },
-  ]},
+  {
+    category: 'Master Setup', items: [
+      { icon: Briefcase, label: 'Profile Lembaga', href: '/fins/profile-lembaga' },
+      { icon: Settings, label: 'Program', href: '/fins/program' },
+      { icon: Hash, label: 'Kode Bank', href: '/fins/kode-bank' },
+      { icon: CreditCard, label: 'Rekening Bank', href: '/fins/rekening-bank' },
+      { icon: FileSpreadsheet, label: 'Chart of Accounts', href: '/fins/coa' },
+      { icon: Building2, label: 'COA Kantor', href: '/fins/coa-kantor' },
+      { icon: Wallet, label: 'Saldo Dana', href: '/fins/saldo-dana' },
+      { icon: BadgeCheck, label: 'Level Approve', href: '/fins/level-approve' },
+      { icon: Calculator, label: 'Rumus Report', href: '/fins/rumus-report' },
+    ]
+  },
 ];
 
 const penyaluranMenus: AccordionGroup[] = [
@@ -85,17 +95,17 @@ const penyaluranMenus: AccordionGroup[] = [
       { icon: BadgeCheck, label: 'Verifikasi PM', href: '/penyaluran/verifikasi' },
       { icon: Users, label: 'Penerima Manfaat', href: '/penyaluran/penerima-manfaat' },
       { icon: Heart, label: 'List Qurban', href: '/penyaluran/qurban' },
-      { icon: Repeat, label: 'Distribusi Massal', href: '/penyaluran/coming-soon?title=Distribusi+Massal' },
+      { icon: Repeat, label: 'Distribusi Massal', href: '/penyaluran/distribusi-massal' },
     ]
   },
   {
     category: 'Pertanggungjawaban', items: [
-      { icon: ClipboardCheck, label: 'Pertanggungjawaban', href: '/penyaluran/coming-soon?title=Pertanggungjawaban' },
+      { icon: ClipboardCheck, label: 'Pertanggungjawaban', href: '/penyaluran/pertanggungjawaban' },
     ]
   },
   {
     category: 'Laporan', items: [
-      { icon: BarChart2, label: 'Laporan Penyaluran', href: '/penyaluran/coming-soon?title=Laporan+Penyaluran' },
+      { icon: BarChart2, label: 'Laporan Penyaluran', href: '/penyaluran/laporan' },
     ]
   },
 ];
@@ -105,7 +115,7 @@ const crmMenus: AccordionGroup[] = [
     category: 'Donatur', items: [
       { icon: Users, label: 'Data Donatur', href: '/crm/donors' },
       { icon: Calendar, label: 'Jadwal Rutin', href: '/crm/routines' },
-      { icon: BadgeCheck, label: 'Verifikasi Donatur', href: '/crm/coming-soon?title=Verifikasi+Donatur' },
+      { icon: BadgeCheck, label: 'Verifikasi Donatur', href: '/crm/verifikasi' },
     ]
   },
   {
@@ -119,12 +129,12 @@ const crmMenus: AccordionGroup[] = [
   },
   {
     category: 'Report Management', items: [
-      { icon: PieChart, label: 'Analisa Donatur', href: '/crm/coming-soon?title=Analisa+Donatur' },
-      { icon: BarChart2, label: 'Analisa Transaksi', href: '/crm/coming-soon?title=Analisa+Transaksi' },
-      { icon: Activity, label: 'Transaksi Funnel', href: '/crm/coming-soon?title=Transaksi+Funnel' },
-      { icon: Truck, label: 'Analisis Salur', href: '/crm/coming-soon?title=Analisis+Salur' },
-      { icon: Users2, label: 'Analisis PM', href: '/crm/coming-soon?title=Analisis+PM' },
-      { icon: Scale, label: 'Himpun vs Salur', href: '/crm/coming-soon?title=Himpun+vs+Salur' },
+      { icon: PieChart, label: 'Analisa Donatur', href: '/crm/analisa-donatur' },
+      { icon: BarChart2, label: 'Analisa Transaksi', href: '/crm/analisa-transaksi' },
+      { icon: Activity, label: 'Transaksi Funnel', href: '/crm/funnel' },
+      { icon: Truck, label: 'Analisis Salur', href: '/crm/analisis-salur' },
+      { icon: Users2, label: 'Analisis PM', href: '/crm/analisis-pm' },
+      { icon: Scale, label: 'Himpun vs Salur', href: '/crm/himpun-vs-salur' },
       { icon: LayoutDashboard, label: 'Dashboard Penghimpunan', href: '/crm/dashboard' },
     ]
   },

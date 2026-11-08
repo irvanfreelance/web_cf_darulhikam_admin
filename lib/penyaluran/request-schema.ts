@@ -15,6 +15,15 @@ const optionalText = (max: number) =>
     return typeof next === 'string' ? next.trim() : next;
   }, z.string().max(max).nullable());
 
+export const disbursementItemInputSchema = z.object({
+  keterangan: z.string().trim().min(1, 'Keterangan item wajib').max(300),
+  qty: z.coerce.number().positive('Qty harus lebih dari 0').default(1),
+  satuan: optionalText(30),
+  harga_satuan: z.coerce.number().min(0, 'Harga satuan minimal 0'),
+  coa: z.string().trim().min(1, 'COA item wajib').max(14),
+  keterangan_coa: optionalText(100),
+});
+
 export const requestWriteSchema = z.object({
   judul: z.string().trim().min(3, 'Judul minimal 3 karakter').max(300),
   deskripsi: optionalText(4000),
@@ -28,6 +37,8 @@ export const requestWriteSchema = z.object({
   coa_debet: z.string().trim().min(1, 'COA debet wajib').max(14),
   coa_kredit: z.string().trim().min(1, 'COA kredit wajib').max(14),
   ajukan: z.boolean().optional().default(true),
+  tgl_pengajuan: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal YYYY-MM-DD').optional().nullable(),
+  items: z.array(disbursementItemInputSchema).optional().default([]),
 });
 
 export const requestDecisionSchema = z
