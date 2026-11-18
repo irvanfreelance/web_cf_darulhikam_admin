@@ -13,6 +13,8 @@ const assignSchema = z.object({
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const isSuperadmin = session.user?.role === 'superadmin' || (session.user as any)?.impersonatedBy?.role === 'superadmin';
+  if (!isSuperadmin) return NextResponse.json({ error: 'Forbidden: Superadmin only' }, { status: 403 });
 
   const res = await query(
     `SELECT u.id, u.name, u.email, u.role AS global_role,
@@ -20,8 +22,9 @@ export async function GET() {
               json_object_agg(r.module, r.role) FILTER (WHERE r.module IS NOT NULL),
               '{}'::json
             ) AS module_roles
-     FROM users u
+     FROM admins u
      LEFT JOIN user_module_roles r ON r.user_id = u.id
+     WHERE u.status = 'ACTIVE'
      GROUP BY u.id, u.name, u.email, u.role
      ORDER BY u.id ASC`
   );
@@ -31,6 +34,8 @@ export async function GET() {
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const isSuperadmin = session.user?.role === 'superadmin' || (session.user as any)?.impersonatedBy?.role === 'superadmin';
+  if (!isSuperadmin) return NextResponse.json({ error: 'Forbidden: Superadmin only' }, { status: 403 });
 
   const body = await req.json().catch(() => ({}));
   const parsed = assignSchema.safeParse(body);

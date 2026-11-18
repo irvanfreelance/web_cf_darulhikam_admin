@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react';
 import useSWR from 'swr';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, UserCheck } from 'lucide-react';
 import { PageHeader } from '@/components/shared/page-header';
 import { TablePagination } from '@/components/shared/table-pagination';
 import { jsonFetcher } from '@/lib/json-client';
@@ -38,10 +40,32 @@ const MODULE_OPTIONS: Record<string, { label: string; value: string }[]> = {
 };
 
 export default function RbacSettingsPage() {
-  const { data, isLoading, mutate } = useSWR<{ rows: RbacUser[] }>('/api/admin/rbac', jsonFetcher);
+  const { data: session, update } = useSession();
+  const router = useRouter();
+  const isSuperadmin = session?.user?.role === 'superadmin' || (session?.user as any)?.impersonatedBy?.role === 'superadmin';
+  const { data, isLoading, mutate } = useSWR<{ rows: RbacUser[] }>(isSuperadmin ? '/api/admin/rbac' : null, jsonFetcher);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [savingKey, setSavingKey] = useState<string | null>(null);
+
+  if (session && !isSuperadmin) {
+    return (
+      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+        Akses ditolak. Halaman Manajemen User &amp; RBAC hanya dapat diakses oleh <strong>Superadmin</strong>.
+      </div>
+    );
+  }
+
+  const handleImpersonate = async (u: RbacUser) => {
+    try {
+      await update({ impersonateAdminId: u.id });
+      toast.success(`Berhasil login sebagai ${u.name}`);
+      router.push('/dashboard');
+      router.refresh();
+    } catch {
+      toast.error('Gagal melakukan impersonate');
+    }
+  };
 
   const allRows = data?.rows || [];
   const rows = search.trim()
@@ -107,6 +131,7 @@ export default function RbacSettingsPage() {
                 <th className="px-4 py-3">Modul FINS</th>
                 <th className="px-4 py-3">Modul CRM</th>
                 <th className="px-4 py-3">Modul Penyaluran</th>
+                <th className="px-4 py-3 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -151,6 +176,16 @@ export default function RbacSettingsPage() {
                         </select>
                       </td>
                     ))}
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleImpersonate(u)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-100"
+                      >
+                        <UserCheck className="h-3.5 w-3.5" />
+                        Login As
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}

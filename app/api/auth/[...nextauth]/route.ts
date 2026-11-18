@@ -50,7 +50,7 @@ export const authOptions: NextAuthOptions = {
     /**
      * Enrich the JWT token with admin data from DB.
      */
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user?.email) {
         try {
           const result = await query(
@@ -67,6 +67,37 @@ export const authOptions: NextAuthOptions = {
           console.error("[NextAuth] jwt callback error:", err);
         }
       }
+      if (trigger === "update" && session) {
+        const orig = (token as any).impersonatedBy;
+        const isSuperadmin = (orig?.role || token.role) === "superadmin";
+        if (isSuperadmin && session.stopImpersonate && orig) {
+          token.adminId = orig.adminId;
+          token.role = orig.role;
+          token.name = orig.name;
+          token.email = orig.email;
+          delete (token as any).impersonatedBy;
+        } else if (isSuperadmin && session.impersonateAdminId) {
+          const targetRes = await query(
+            `SELECT id, name, email, role FROM admins WHERE id = $1 AND status = 'ACTIVE' LIMIT 1`,
+            [Number(session.impersonateAdminId)]
+          );
+          if (targetRes.rowCount && targetRes.rowCount > 0) {
+            const target = targetRes.rows[0];
+            if (!orig) {
+              (token as any).impersonatedBy = {
+                adminId: token.adminId,
+                role: token.role,
+                name: token.name,
+                email: token.email,
+              };
+            }
+            token.adminId = target.id;
+            token.role = target.role;
+            token.name = target.name;
+            token.email = target.email;
+          }
+        }
+      }
       return token;
     },
 
@@ -78,6 +109,7 @@ export const authOptions: NextAuthOptions = {
         session.user.adminId = token.adminId as number;
         session.user.role = token.role as string;
         session.user.name = token.name as string;
+        (session.user as any).impersonatedBy = (token as any).impersonatedBy || null;
       }
       return session;
     },
