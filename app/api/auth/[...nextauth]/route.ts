@@ -1,6 +1,7 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { query } from "@/lib/db";
+import { getUserModuleRoles } from "@/lib/rbac";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -110,6 +111,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string;
         session.user.name = token.name as string;
         (session.user as any).impersonatedBy = (token as any).impersonatedBy || null;
+        (session.user as any).moduleRoles = token.adminId ? await getUserModuleRoles(token.adminId as number) : {};
       }
       return session;
     },

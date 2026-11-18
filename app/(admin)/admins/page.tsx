@@ -11,6 +11,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/shared/data-table';
 import { Pagination } from '@/components/shared/pagination';
@@ -26,6 +27,8 @@ function cn(...inputs: ClassValue[]) {
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function AdminsPage() {
+  const { data: session } = useSession();
+  const isSuperadmin = (session?.user?.role || '').toLowerCase() === 'superadmin';
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -33,9 +36,17 @@ export default function AdminsPage() {
   const offset = (page - 1) * limit;
 
   const { data: admins, error, isLoading, mutate } = useSWR(
-    `/api/admins?limit=${limit}&offset=${offset}&search=${search}`, 
+    isSuperadmin ? `/api/admins?limit=${limit}&offset=${offset}&search=${encodeURIComponent(search)}` : null,
     fetcher
   );
+
+  if (session && !isSuperadmin) {
+    return (
+      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+        Akses ditolak. Halaman Manajemen Admin hanya dapat diakses oleh <strong>Superadmin</strong>.
+      </div>
+    );
+  }
 
   const totalCount = admins?.[0]?.total_count || 0;
   const totalPages = Math.ceil(totalCount / limit);

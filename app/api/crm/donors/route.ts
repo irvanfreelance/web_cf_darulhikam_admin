@@ -79,6 +79,11 @@ async function assertRefs(data: DonorWrite) {
 }
 
 export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const modRole = await getModuleRole(session.user?.adminId, session.user?.role, 'crm');
+  if (!modRole) return NextResponse.json({ error: 'Forbidden: Tidak ada akses ke modul CRM' }, { status: 403 });
+
   const parsed = parseQuery(req, donorListQuerySchema);
   if (!parsed.ok) return parsed.response;
 

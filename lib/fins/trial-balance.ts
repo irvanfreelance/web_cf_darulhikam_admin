@@ -60,31 +60,38 @@ export async function getTrialBalance(
   let totAkDebet = 0;
   let totAkKredit = 0;
 
-  for (const c of coaRes.rows) {
-    if (c.parent === 'y') continue; // Hanya akun daun
+  const allMutRes = await client.query(
+    `SELECT j.coa,
+       COALESCE(SUM(CASE WHEN pae.fins_trans_id IS NULL THEN j.debet ELSE 0 END), 0)::numeric AS mut_debet,
+       COALESCE(SUM(CASE WHEN pae.fins_trans_id IS NULL THEN j.kredit ELSE 0 END), 0)::numeric AS mut_kredit,
+       COALESCE(SUM(CASE WHEN pae.fins_trans_id IS NOT NULL THEN j.debet ELSE 0 END), 0)::numeric AS adj_debet,
+       COALESCE(SUM(CASE WHEN pae.fins_trans_id IS NOT NULL THEN j.kredit ELSE 0 END), 0)::numeric AS adj_kredit
+     FROM fins_jurnal j
+     LEFT JOIN period_adjusting_entries pae ON pae.fins_trans_id = j.fins_trans_id
+     WHERE j.tgl_exre >= $1 AND j.tgl_exre <= $2
+     ${idKantor ? `AND j.id_kantor = $3` : ''}
+     GROUP BY j.coa`,
+    idKantor ? [periodeFrom, periodeTo, idKantor] : [periodeFrom, periodeTo]
+  );
+  const mutMap = new Map<string, any>();
+  for (const r of allMutRes.rows) mutMap.set(r.coa, r);
 
-    // Saldo awal
-    const { saldoAwal } = await getSaldoAwal(client, c.coa, periodeFrom, idKantor);
+  const leafCoas = coaRes.rows.filter((c: any) => c.parent !== 'y');
+  const saldoList = await Promise.all(
+    leafCoas.map((c: any) => getSaldoAwal(client, c.coa, periodeFrom, idKantor))
+  );
+
+  for (let i = 0; i < leafCoas.length; i++) {
+    const c = leafCoas[i];
+    const { saldoAwal } = saldoList[i];
     const saDebet = c.saldo === 'd' ? Math.max(0, saldoAwal) : 0;
     const saKredit = c.saldo === 'k' ? Math.max(0, saldoAwal) : 0;
 
-    // Mutasi biasa & penyesuaian
-    const mutRes = await client.query(
-      `SELECT
-         COALESCE(SUM(CASE WHEN j.fins_trans_id NOT IN (SELECT fins_trans_id FROM period_adjusting_entries WHERE fins_trans_id IS NOT NULL) THEN j.debet ELSE 0 END), 0)::numeric AS mut_debet,
-         COALESCE(SUM(CASE WHEN j.fins_trans_id NOT IN (SELECT fins_trans_id FROM period_adjusting_entries WHERE fins_trans_id IS NOT NULL) THEN j.kredit ELSE 0 END), 0)::numeric AS mut_kredit,
-         COALESCE(SUM(CASE WHEN j.fins_trans_id IN (SELECT fins_trans_id FROM period_adjusting_entries WHERE fins_trans_id IS NOT NULL) THEN j.debet ELSE 0 END), 0)::numeric AS adj_debet,
-         COALESCE(SUM(CASE WHEN j.fins_trans_id IN (SELECT fins_trans_id FROM period_adjusting_entries WHERE fins_trans_id IS NOT NULL) THEN j.kredit ELSE 0 END), 0)::numeric AS adj_kredit
-       FROM fins_jurnal j
-       WHERE j.coa = $1 AND j.tgl_exre >= $2 AND j.tgl_exre <= $3
-       ${idKantor ? `AND j.id_kantor = $4` : ''}`,
-      idKantor ? [c.coa, periodeFrom, periodeTo, idKantor] : [c.coa, periodeFrom, periodeTo]
-    );
-
-    const mutDebet = Number(mutRes.rows[0]?.mut_debet || 0);
-    const mutKredit = Number(mutRes.rows[0]?.mut_kredit || 0);
-    const adjDebet = Number(mutRes.rows[0]?.adj_debet || 0);
-    const adjKredit = Number(mutRes.rows[0]?.adj_kredit || 0);
+    const mutRow = mutMap.get(c.coa);
+    const mutDebet = Number(mutRow?.mut_debet || 0);
+    const mutKredit = Number(mutRow?.mut_kredit || 0);
+    const adjDebet = Number(mutRow?.adj_debet || 0);
+    const adjKredit = Number(mutRow?.adj_kredit || 0);
 
     // Saldo Akhir
     let saldoAkhir = 0;

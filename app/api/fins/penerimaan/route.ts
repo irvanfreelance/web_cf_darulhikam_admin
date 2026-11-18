@@ -24,7 +24,7 @@ const penerimaanPostSchema = z.object({
   nominal: z.coerce.number().positive('Nominal harus lebih dari 0'),
   quantity: z.coerce.number().int().min(1).default(1),
   keterangan: z.string().trim().min(3, 'Keterangan minimal 3 karakter').max(500),
-  idKantor: z.coerce.number().int().positive().nullable().optional(),
+  idKantor: z.coerce.number().int().positive('Pilih kantor terlebih dahulu'),
   idProgram: z.coerce.number().int().optional().default(0),
   mutasi: z.string().trim().max(2).optional().default('1'),
   kinerja: z.enum(['Kinerja', 'Komersil']).optional().default('Kinerja'),
