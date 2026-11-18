@@ -151,7 +151,11 @@ export default function PengajuanCAPage() {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ periodeFrom, periodeTo, keyword, officeId: officeFilter }),
           });
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            toast.error(data.error || 'Gagal menyetujui pengajuan');
+            return;
+          }
           toast.success(`${data.approved} pengajuan disetujui${data.skipped ? `, ${data.skipped} dilewati (melebihi batas approval)` : ''}`);
           mutate();
         },

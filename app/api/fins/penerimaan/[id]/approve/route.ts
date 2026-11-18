@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getModuleRole, isModuleSupervisor } from '@/lib/rbac';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { query, withTransaction } from '@/lib/db';
@@ -18,6 +19,10 @@ export async function POST(
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const modRole = await getModuleRole(session.user?.adminId, session.user?.role, 'fins');
+  if (!isModuleSupervisor(modRole)) {
+    return NextResponse.json({ error: 'Forbidden: Hanya Akunting/Admin FINS yang dapat menyetujui penerimaan' }, { status: 403 });
   }
 
   const { id } = await params;

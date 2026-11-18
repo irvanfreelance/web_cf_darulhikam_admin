@@ -82,6 +82,11 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isSuperadminRole(session.user?.role)) {
+    return NextResponse.json({ error: 'Forbidden: Superadmin only' }, { status: 403 });
+  }
   try {
     const body = await req.json();
     const { id, ...data } = body;
@@ -107,6 +112,11 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isSuperadminRole(session.user?.role)) {
+    return NextResponse.json({ error: 'Forbidden: Superadmin only' }, { status: 403 });
+  }
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
