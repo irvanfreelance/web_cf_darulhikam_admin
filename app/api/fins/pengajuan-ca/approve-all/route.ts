@@ -2,11 +2,17 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { query } from '@/lib/db';
+import { getModuleRole, isModuleSupervisor } from '@/lib/rbac';
 
 // Bulk-approves every 'unapprove' row matching the given filter set, skipping
 // rows whose nominal falls outside every active fins_level_approve range.
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const modRole = await getModuleRole(session.user?.adminId, session.user?.role, 'fins');
+  if (!isModuleSupervisor(modRole)) {
+    return NextResponse.json({ error: 'Forbidden: Hanya Akunting/Admin FINS yang dapat melakukan approval' }, { status: 403 });
+  }
   const userName = session?.user?.name || 'Unknown';
 
   const body = await req.json().catch(() => ({}));

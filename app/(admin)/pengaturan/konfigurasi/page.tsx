@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import useSWR from 'swr';
+import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { Settings2, Save } from 'lucide-react';
 import { PageHeader } from '@/components/shared/page-header';
@@ -16,17 +17,27 @@ interface SettingRow {
 }
 
 export default function AppSettingsPage() {
-  const { data, isLoading, mutate } = useSWR<{ rows: SettingRow[] }>('/api/admin/settings', jsonFetcher);
+  const { data: session } = useSession();
+  const isSuperadmin = (session?.user?.role || '').toLowerCase() === 'superadmin';
+  const { data, isLoading, mutate } = useSWR<{ rows: SettingRow[] }>(isSuperadmin ? '/api/admin/settings' : null, jsonFetcher);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
 
+  if (session && !isSuperadmin) {
+    return (
+      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+        Akses ditolak. Halaman Konfigurasi Dinamis hanya dapat diakses oleh <strong>Superadmin</strong>.
+      </div>
+    );
+  }
+
   const allRows = data?.rows || [];
   const rows = search.trim()
     ? allRows.filter((r) =>
-        `${r.module} ${r.key} ${r.description} ${r.value}`.toLowerCase().includes(search.trim().toLowerCase())
-      )
+      `${r.module} ${r.key} ${r.description} ${r.value}`.toLowerCase().includes(search.trim().toLowerCase())
+    )
     : allRows;
   const pageSize = 10;
   const pagedRows = rows.slice((page - 1) * pageSize, page * pageSize);

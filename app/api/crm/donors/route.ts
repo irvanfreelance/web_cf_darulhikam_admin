@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getModuleRole, isModuleSupervisor } from '@/lib/rbac';
 import { query } from '@/lib/db';
 import { invalidateCache } from '@/lib/redis';
 import { dbErrorResponse, parseBody, parseQuery } from '@/lib/http';

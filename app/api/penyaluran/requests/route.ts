@@ -136,8 +136,8 @@ export async function POST(req: Request) {
       const inserted = await client.query(
         `INSERT INTO disbursement_requests (
            nomor_pengajuan, campaign_id, beneficiary_id, judul, deskripsi, jenis_penyaluran,
-           jumlah_diajukan, coa_debet, coa_kredit, status, nik_pengaju, tgl_pengajuan
-         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+           jumlah_diajukan, coa_debet, coa_kredit, status, nik_pengaju, tgl_pengajuan, created_by_user_id
+         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
          RETURNING id, nomor_pengajuan, status, jumlah_diajukan`,
         [
           nomor,
@@ -152,6 +152,7 @@ export async function POST(req: Request) {
           status,
           actor,
           tglPengajuan,
+          session.user?.adminId || null,
         ]
       );
 

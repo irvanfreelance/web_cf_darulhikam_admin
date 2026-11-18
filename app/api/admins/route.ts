@@ -55,6 +55,11 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isSuperadminRole(session.user?.role)) {
+    return NextResponse.json({ error: 'Forbidden: Superadmin only' }, { status: 403 });
+  }
   try {
     const body = await req.json();
     const validated = adminSchema.parse(body);
