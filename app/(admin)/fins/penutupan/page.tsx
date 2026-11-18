@@ -30,7 +30,7 @@ export default function PenutupanPage() {
     jsonFetcher
   );
 
-  const { data: kasAccounts } = useSWR<any[]>('/api/fins/coa', async (url: string) => {
+  const { data: kasAccounts } = useSWR<any[]>('/api/fins/coa?active=y&limit=1000', async (url: string) => {
     const res = await fetch(url);
     const json = await res.json();
     const list = json?.rows || json?.data || json || [];

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getModuleRole, isModuleSupervisor } from '@/lib/rbac';
 import { query, withTransaction } from '@/lib/db';
 import { invalidateCache } from '@/lib/redis';
 import { dbErrorResponse, parseBody, parseQuery } from '@/lib/http';
@@ -33,12 +34,21 @@ async function nextNomor(client: { query: (sql: string, params?: unknown[]) => P
 }
 
 export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const modRole = await getModuleRole(session.user?.adminId, session.user?.role, 'penyaluran');
+  if (!modRole) return NextResponse.json({ error: 'Forbidden: Tidak ada akses ke modul Penyaluran' }, { status: 403 });
+
   const parsed = parseQuery(req, requestListQuerySchema);
   if (!parsed.ok) return parsed.response;
 
   try {
     const where = ['1=1'];
     const params: unknown[] = [];
+    if (!isModuleSupervisor(modRole) && session.user?.adminId) {
+      params.push(session.user.adminId);
+      where.push(`r.created_by_user_id = $${params.length}`);
+    }
     if (parsed.data.search) {
       params.push(likeTerm(parsed.data.search));
       const i = params.length;

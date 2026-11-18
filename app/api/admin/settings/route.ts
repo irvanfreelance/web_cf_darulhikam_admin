@@ -12,6 +12,9 @@ const updateSchema = z.object({
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if ((session.user?.role || '').toLowerCase() !== 'superadmin') {
+    return NextResponse.json({ error: 'Forbidden: Superadmin only' }, { status: 403 });
+  }
 
   const res = await query(
     `SELECT key, value, module, description, updated_at
@@ -26,6 +29,9 @@ export async function GET() {
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if ((session.user?.role || '').toLowerCase() !== 'superadmin') {
+    return NextResponse.json({ error: 'Forbidden: Superadmin only' }, { status: 403 });
+  }
 
   const body = await req.json().catch(() => ({}));
   const parsed = updateSchema.safeParse(body);

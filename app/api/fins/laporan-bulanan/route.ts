@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     const totalPenerimaanRes = await query(
       `SELECT COALESCE(SUM(nominal), 0)::numeric AS total
        FROM fins_trans
-       WHERE jenis = 'M' AND approve = 'y'
+       WHERE jenis = 'r' AND approve = 'a'
          AND tgl_exre >= $1 AND tgl_exre <= $2`,
       [startDate, endDate]
     );
@@ -30,7 +30,7 @@ export async function GET(req: Request) {
     const totalPengeluaranRes = await query(
       `SELECT COALESCE(SUM(nominal), 0)::numeric AS total
        FROM fins_trans
-       WHERE jenis = 'P' AND approve = 'y'
+       WHERE jenis = 'e' AND approve = 'a'
          AND tgl_exre >= $1 AND tgl_exre <= $2`,
       [startDate, endDate]
     );
@@ -44,8 +44,8 @@ export async function GET(req: Request) {
        FROM expense_requests e
        LEFT JOIN campaigns c ON c.id = e.campaign_id
        WHERE e.status = 'approved'
-         AND COALESCE(e.approved_at, e.tgl_pengajuan::timestamptz) >= $1
-         AND COALESCE(e.approved_at, e.tgl_pengajuan::timestamptz) <= $2
+         AND COALESCE(e.tgl_approval, e.tgl_pengajuan::timestamptz) >= $1
+         AND COALESCE(e.tgl_approval, e.tgl_pengajuan::timestamptz) <= $2
        GROUP BY COALESCE(c.id, 0), COALESCE(c.title, 'Operasional / Umum'), COALESCE(e.jenis, 'operasional')
        ORDER BY total_realisasi DESC`,
       [startDate, endDate]
@@ -54,10 +54,10 @@ export async function GET(req: Request) {
     // 3. Rincian Penerimaan & Pengeluaran per Kantor
     const perKantorRes = await query(
       `SELECT k.id, k.nama AS nama_kantor,
-              COALESCE(SUM(CASE WHEN t.jenis = 'M' THEN t.nominal ELSE 0 END), 0)::numeric AS total_masuk,
-              COALESCE(SUM(CASE WHEN t.jenis = 'P' THEN t.nominal ELSE 0 END), 0)::numeric AS total_keluar
+              COALESCE(SUM(CASE WHEN t.jenis = 'r' THEN t.nominal ELSE 0 END), 0)::numeric AS total_masuk,
+              COALESCE(SUM(CASE WHEN t.jenis = 'e' THEN t.nominal ELSE 0 END), 0)::numeric AS total_keluar
        FROM fins_kantor k
-       LEFT JOIN fins_trans t ON t.office_id = k.id AND t.approve = 'y' AND t.tgl_exre >= $1 AND t.tgl_exre <= $2
+       LEFT JOIN fins_trans t ON t.id_kantor = k.id AND t.approve = 'a' AND t.tgl_exre >= $1 AND t.tgl_exre <= $2
        GROUP BY k.id, k.nama
        ORDER BY k.id ASC`,
       [startDate, endDate]
@@ -68,10 +68,10 @@ export async function GET(req: Request) {
       `SELECT 
          EXTRACT(YEAR FROM tgl_exre)::int AS tahun,
          EXTRACT(MONTH FROM tgl_exre)::int AS bulan,
-         COALESCE(SUM(CASE WHEN jenis = 'M' THEN nominal ELSE 0 END), 0)::numeric AS masuk,
-         COALESCE(SUM(CASE WHEN jenis = 'P' THEN nominal ELSE 0 END), 0)::numeric AS keluar
+         COALESCE(SUM(CASE WHEN jenis = 'r' THEN nominal ELSE 0 END), 0)::numeric AS masuk,
+         COALESCE(SUM(CASE WHEN jenis = 'e' THEN nominal ELSE 0 END), 0)::numeric AS keluar
        FROM fins_trans
-       WHERE approve = 'y' AND tgl_exre >= ($1::timestamptz - INTERVAL '11 months') AND tgl_exre <= $2
+       WHERE approve = 'a' AND tgl_exre >= ($1::timestamptz - INTERVAL '11 months') AND tgl_exre <= $2
        GROUP BY EXTRACT(YEAR FROM tgl_exre), EXTRACT(MONTH FROM tgl_exre)
        ORDER BY tahun ASC, bulan ASC`,
       [startDate, endDate]

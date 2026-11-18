@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import useSWR from 'swr';
 import Sidebar from '@/components/admin/sidebar';
 import Header from '@/components/admin/header';
+import { ImpersonationBanner } from '@/components/shared/impersonation-banner';
 
 export default function AdminLayout({
   children,
@@ -27,6 +28,7 @@ export default function AdminLayout({
         <Header title={config?.ngo_name || "Lentera Donasi Admin"} />
 
         <main className="flex-1 overflow-y-auto p-8 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <ImpersonationBanner />
           {children}
 
           {/* Footer */}

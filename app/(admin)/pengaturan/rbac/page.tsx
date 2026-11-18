@@ -42,9 +42,7 @@ const MODULE_OPTIONS: Record<string, { label: string; value: string }[]> = {
 export default function RbacSettingsPage() {
   const { data: session, update } = useSession();
   const router = useRouter();
-  const isSuperadmin =
-    (session?.user?.role || '').toLowerCase() === 'superadmin' ||
-    ((session?.user as any)?.impersonatedBy?.role || '').toLowerCase() === 'superadmin';
+  const isSuperadmin = (session?.user?.role || '').toLowerCase() === 'superadmin';
   const { data, isLoading, mutate } = useSWR<{ rows: RbacUser[] }>(isSuperadmin ? '/api/admin/rbac' : null, jsonFetcher);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');

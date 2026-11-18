@@ -4,6 +4,7 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/shared/page-header';
+import { TablePagination } from '@/components/shared/table-pagination';
 import { jsonFetcher, sendJson } from '@/lib/json-client';
 import { formatIDR } from '@/lib/format';
 import { formatWibDateTime } from '@/lib/wib-date';
@@ -21,7 +22,12 @@ type Row = {
 export default function BuktiSetorPage() {
   const [search, setSearch] = useState('');
   const [tahun, setTahun] = useState(String(new Date().getFullYear()));
-  const { data, error } = useSWR<{ rows: Row[] }>(`/api/crm/bukti-setor?search=${encodeURIComponent(search)}&tahun=${tahun}`, jsonFetcher);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const { data, error } = useSWR<{ rows: Row[]; total?: number }>(
+    `/api/crm/bukti-setor?search=${encodeURIComponent(search)}&tahun=${tahun}&limit=${pageSize}&offset=${(page - 1) * pageSize}`,
+    jsonFetcher
+  );
 
   const issue = async (donorId: number) => {
     try {
@@ -60,6 +66,12 @@ export default function BuktiSetorPage() {
             {!data?.rows?.length && <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400">Tidak ada invoice lunas.</td></tr>}
           </tbody>
         </table>
+        <TablePagination
+          page={page}
+          total={data?.total ?? (data?.rows?.length || 0)}
+          pageSize={pageSize}
+          onPageChange={setPage}
+        />
       </div>
     </div>
   );
