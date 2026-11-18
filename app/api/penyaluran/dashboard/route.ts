@@ -12,7 +12,7 @@ export async function GET(req: Request) {
   try {
     const [statusRes, bulanRes, pmRes, lpjRes, realisasiRes] = await Promise.all([
       query(
-        `SELECT status, COUNT(*)::int AS jumlah, COALESCE(SUM(jumlah_diajukan), 0) AS nominal
+        `SELECT status, COUNT(*)::int AS jumlah, COALESCE(SUM(COALESCE(jumlah_disetujui, jumlah_diajukan)), 0) AS nominal
          FROM disbursement_requests
          GROUP BY status
          ORDER BY status`

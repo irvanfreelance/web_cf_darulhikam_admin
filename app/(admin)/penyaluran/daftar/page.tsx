@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import useSWR from 'swr';
+import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { Search } from 'lucide-react';
 import { PageHeader } from '@/components/shared/page-header';
@@ -33,6 +34,10 @@ function hasJournal(row: { fins_trans_id: number | string | null }) {
 }
 
 export default function DaftarPenyaluranPage() {
+  const { data: session } = useSession();
+  const canApprove =
+    ((session?.user?.role || '').toLowerCase() === 'superadmin') ||
+    ['supervisor', 'admin'].includes((session?.user as any)?.moduleRoles?.penyaluran || '');
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [page, setPage] = useState(1);
@@ -121,7 +126,7 @@ export default function DaftarPenyaluranPage() {
                     <td className="px-4 py-3">{row.status}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">
-                        {['submitted', 'reviewed'].includes(row.status) && (
+                        {canApprove && ['submitted', 'reviewed'].includes(row.status) && (
                           <div className="flex flex-wrap items-center gap-2">
                             <input
                               aria-label={`Catatan persetujuan ${row.nomor_pengajuan}`}
@@ -146,7 +151,7 @@ export default function DaftarPenyaluranPage() {
                           <button type="button" disabled={busyId === row.id} onClick={() => journal(row.id, 'reverse')} className="rounded-lg border border-rose-200 px-2 py-1 text-xs text-rose-700 disabled:opacity-60">Jurnal balik</button>
                         )}
                         {row.fins_reversal_trans_id && <span className="text-xs text-slate-400">Sudah dibalik</span>}
-                        {['draft', 'submitted', 'reviewed'].includes(row.status) && (
+                        {canApprove && ['draft', 'submitted', 'reviewed'].includes(row.status) && (
                           <button type="button" onClick={() => { setRejectId(row.id); setCatatan(''); }} className="rounded-lg bg-rose-600 px-2 py-1 text-xs text-white">Tolak</button>
                         )}
                         {['draft', 'rejected'].includes(row.status) && (

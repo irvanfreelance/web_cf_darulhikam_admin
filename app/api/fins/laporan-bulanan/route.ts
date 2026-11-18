@@ -14,8 +14,10 @@ export async function GET(req: Request) {
   const bulan = parseInt(searchParams.get('bulan') || String(now.getMonth() + 1), 10);
   const tahun = parseInt(searchParams.get('tahun') || String(now.getFullYear()), 10);
 
-  const startDate = new Date(Date.UTC(tahun, bulan - 1, 1));
-  const endDate = new Date(Date.UTC(tahun, bulan, 0, 23, 59, 59));
+  const lastDay = new Date(Date.UTC(tahun, bulan, 0)).getUTCDate();
+  const mm = String(bulan).padStart(2, '0');
+  const startDate = new Date(`${tahun}-${mm}-01T00:00:00+07:00`);
+  const endDate = new Date(`${tahun}-${mm}-${String(lastDay).padStart(2, '0')}T23:59:59+07:00`);
 
   try {
     // 1. Ringkasan Penerimaan & Pengeluaran Total Bulan ini

@@ -43,8 +43,8 @@ export default function BuktiSetorPage() {
       <PageHeader title="Bukti Setor" description="Cetak bukti per invoice lunas, atau terbitkan sertifikat tahunan per donatur." />
       {error && <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4 text-sm text-rose-600">{error.message}</div>}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <input aria-label="Cari" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Kode invoice atau nama" className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm" />
-        <input aria-label="Tahun" value={tahun} onChange={(e) => setTahun(e.target.value)} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm" />
+        <input aria-label="Cari" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Kode invoice atau nama" className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm" />
+        <input aria-label="Tahun" value={tahun} onChange={(e) => { setTahun(e.target.value); setPage(1); }} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm" />
       </div>
       <div className="overflow-x-auto rounded-2xl border border-slate-100 bg-white">
         <table className="w-full text-left text-sm">

@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     }
     if (parsed.data.tahun) {
       params.push(parsed.data.tahun);
-      where.push(`EXTRACT(YEAR FROM COALESCE(i.paid_at, i.created_at))::int = $${params.length}`);
+      where.push(`EXTRACT(YEAR FROM COALESCE(i.paid_at, i.created_at) AT TIME ZONE 'Asia/Jakarta')::int = $${params.length}`);
     }
     const clause = where.join(' AND ');
     const [rows, count] = await Promise.all([

@@ -57,8 +57,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const modRole = await getModuleRole(session.user?.adminId, session.user?.role, 'penyaluran');
-  if (!isModuleSupervisor(modRole)) {
-    return NextResponse.json({ error: 'Forbidden: Hanya supervisor/admin penyaluran yang dapat menyetujui atau menolak' }, { status: 403 });
+  if (!modRole) {
+    return NextResponse.json({ error: 'Forbidden: Tidak ada akses ke modul Penyaluran' }, { status: 403 });
   }
 
   const { id } = await params;
@@ -81,6 +81,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     let paramsSql: unknown[] = [];
 
     if (parsed.data.action === 'approve') {
+      if (!isModuleSupervisor(modRole)) {
+        return NextResponse.json({ error: 'Forbidden: Hanya supervisor/admin penyaluran yang dapat menyetujui' }, { status: 403 });
+      }
+      if (row.created_by_user_id && Number(row.created_by_user_id) === Number(session.user?.adminId)) {
+        return NextResponse.json({ error: 'Pengaju tidak boleh menyetujui pengajuan buatannya sendiri' }, { status: 403 });
+      }
       if (!['submitted', 'reviewed'].includes(row.status)) {
         return NextResponse.json({ error: 'Hanya pengajuan yang diajukan yang bisa disetujui' }, { status: 409 });
       }
@@ -95,6 +101,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
              RETURNING id, nomor_pengajuan, status, jumlah_disetujui`;
       paramsSql = [jumlah, actor, parsed.data.catatan, parsedId.data.id];
     } else if (parsed.data.action === 'reject') {
+      if (!isModuleSupervisor(modRole)) {
+        return NextResponse.json({ error: 'Forbidden: Hanya supervisor/admin penyaluran yang dapat menolak' }, { status: 403 });
+      }
       if (!['draft', 'submitted', 'reviewed'].includes(row.status)) {
         return NextResponse.json({ error: 'Pengajuan pada status ini tidak bisa ditolak' }, { status: 409 });
       }

@@ -300,6 +300,8 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
   const pathname = usePathname();
   const { data: config } = useSWR('/api/ngo-config', fetcher);
   const { data: session } = useSession();
+  const isSuperadmin = ((session?.user?.role || '') as string).toLowerCase() === 'superadmin';
+  const moduleRoles: Record<string, string> = ((session?.user as any)?.moduleRoles) || {};
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [activeModule, setActiveModule] = useState<AdminModule>('crowdfund');
   const ACCORDION_MODULES = new Set(['penyaluran', 'crm', 'fins', 'hcm', 'document', 'configuration']);
@@ -395,6 +397,7 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
 
           <div className="w-full h-px bg-slate-800 my-1" />
 
+          {(isSuperadmin || Boolean(moduleRoles.penyaluran)) && (
           <button
             onClick={() => handleModuleChange('penyaluran')}
             title="Penyaluran"
@@ -406,7 +409,9 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
             <Truck size={22} strokeWidth={activeModule === 'penyaluran' ? 2.5 : 2} />
             <span className="text-[9px] font-bold tracking-tight">PENYALURAN</span>
           </button>
+          )}
 
+          {(isSuperadmin || Boolean(moduleRoles.crm)) && (
           <button
             onClick={() => handleModuleChange('crm')}
             title="CRM"
@@ -418,7 +423,9 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
             <Contact size={22} strokeWidth={activeModule === 'crm' ? 2.5 : 2} />
             <span className="text-[9px] font-bold tracking-tight">CRM</span>
           </button>
+          )}
 
+          {(isSuperadmin || Boolean(moduleRoles.fins)) && (
           <button
             onClick={() => handleModuleChange('fins')}
             title="FINS"
@@ -430,6 +437,7 @@ export default function Sidebar({ isOpen, toggle }: { isOpen: boolean, toggle: (
             <Landmark size={22} strokeWidth={activeModule === 'fins' ? 2.5 : 2} />
             <span className="text-[9px] font-bold tracking-tight">FINS</span>
           </button>
+          )}
 
           <button
             onClick={() => handleModuleChange('hcm')}

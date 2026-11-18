@@ -23,7 +23,7 @@ export default function PengeluaranPage() {
     jsonFetcher
   );
 
-  const { data: coaList } = useSWR<any[]>('/api/fins/coa', async (url: string) => {
+  const { data: coaList } = useSWR<any[]>('/api/fins/coa?active=y&limit=1000', async (url: string) => {
     const res = await fetch(url);
     const json = await res.json();
     return (json?.rows || json || []).filter((c: any) => c.active === 'y' && c.parent === 'n');

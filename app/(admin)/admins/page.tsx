@@ -40,15 +40,7 @@ export default function AdminsPage() {
     fetcher
   );
 
-  if (session && !isSuperadmin) {
-    return (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
-        Akses ditolak. Halaman Manajemen Admin hanya dapat diakses oleh <strong>Superadmin</strong>.
-      </div>
-    );
-  }
-
-  const totalCount = admins?.[0]?.total_count || 0;
+  const totalCount = Array.isArray(admins) ? (admins[0]?.total_count || 0) : 0;
   const totalPages = Math.ceil(totalCount / limit);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -58,6 +50,14 @@ export default function AdminsPage() {
     name: '', email: '', role: 'ADMIN', status: 'ACTIVE' 
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (session && !isSuperadmin) {
+    return (
+      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+        Akses ditolak. Halaman Manajemen Admin hanya dapat diakses oleh <strong>Superadmin</strong>.
+      </div>
+    );
+  }
 
   const handleOpenModal = (admin: any = null) => {
     setSelectedAdmin(admin);

@@ -5,6 +5,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { query } from '@/lib/db';
 import { invalidateCache } from '@/lib/redis';
 import { dbErrorResponse, parseBody, parseQuery } from '@/lib/http';
+import { likeTerm } from '@/lib/penyaluran/request-schema';
 import { todayWib } from '@/lib/wib-date';
 
 const cadence = z.enum(['weekly', 'monthly', 'yearly']);
@@ -33,8 +34,8 @@ export async function GET(req: Request) {
       where.push(`r.aktif IS DISTINCT FROM false AND r.next_due IS NOT NULL AND r.next_due <= CURRENT_DATE + 7`);
     }
     if (parsed.data.search) {
-      params.push(`%${parsed.data.search}%`);
-      where.push(`d.name ILIKE $${params.length}`);
+      params.push(likeTerm(parsed.data.search));
+      where.push(`d.name ILIKE $${params.length} ESCAPE '\\'`);
     }
     const res = await query(
       `SELECT r.id, r.donor_id, r.nominal, r.cadence, r.aktif, r.mulai, r.next_due, r.catatan,
@@ -63,10 +64,17 @@ export async function POST(req: Request) {
     const mulai = parsed.data.mulai || todayWib();
     let nextDue = parsed.data.next_due;
     if (!nextDue) {
+      const todayStr = new Date().toISOString().slice(0, 10);
       const d = new Date(`${mulai}T00:00:00Z`);
-      if (parsed.data.cadence === 'weekly') d.setUTCDate(d.getUTCDate() + 7);
-      else if (parsed.data.cadence === 'monthly') d.setUTCMonth(d.getUTCMonth() + 1);
-      else if (parsed.data.cadence === 'yearly') d.setUTCFullYear(d.getUTCFullYear() + 1);
+      const step = () => {
+        if (parsed.data.cadence === 'weekly') d.setUTCDate(d.getUTCDate() + 7);
+        else if (parsed.data.cadence === 'monthly') d.setUTCMonth(d.getUTCMonth() + 1);
+        else if (parsed.data.cadence === 'yearly') d.setUTCFullYear(d.getUTCFullYear() + 1);
+      };
+      step();
+      while (d.toISOString().slice(0, 10) < todayStr) {
+        step();
+      }
       nextDue = d.toISOString().slice(0, 10);
     }
     const res = await query(

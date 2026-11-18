@@ -107,7 +107,7 @@ export default function PenerimaanPage() {
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || 'Gagal menyimpan transaksi');
+        throw new Error(err.errors?.[0]?.message || err.error || 'Gagal menyimpan transaksi');
       }
 
       toast.success(

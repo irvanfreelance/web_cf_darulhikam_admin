@@ -77,7 +77,7 @@ export const authOptions: NextAuthOptions = {
           token.name = orig.name;
           token.email = orig.email;
           delete (token as any).impersonatedBy;
-        } else if (isSuperadmin && session.impersonateAdminId) {
+        } else if (!orig && isSuperadmin && session.impersonateAdminId) {
           const targetRes = await query(
             `SELECT id, name, email, role FROM admins WHERE id = $1 AND status = 'ACTIVE' LIMIT 1`,
             [Number(session.impersonateAdminId)]

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getModuleRole, isModuleSupervisor } from '@/lib/rbac';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
@@ -26,6 +27,10 @@ function fail(error: any) {
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const modRole = await getModuleRole(session.user?.adminId, session.user?.role, 'penyaluran');
+  if (!isModuleSupervisor(modRole)) {
+    return NextResponse.json({ error: 'Forbidden: Hanya supervisor/admin penyaluran yang dapat mencairkan/jurnal' }, { status: 403 });
+  }
   const { id } = await params;
   const parsedId = idSchema.safeParse({ id });
   if (!parsedId.success) return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
