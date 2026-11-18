@@ -9,7 +9,7 @@ import { donorWriteSchema } from '@/lib/crm/donor-schema';
 
 const idSchema = z.object({ id: z.coerce.number().int().positive() });
 
-async function assertRefs(data: z.output<typeof donorWriteSchema>, donorId: number) {
+async function assertRefs(data: Partial<z.output<typeof donorWriteSchema>>, donorId: number) {
   if (data.tim_crm_id) {
     const team = await query('SELECT id FROM crm_teams WHERE id = $1', [data.tim_crm_id]);
     if (team.rowCount === 0) return 'Tim CRM tidak ditemukan';
@@ -86,7 +86,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const parsedId = idSchema.safeParse({ id: rawId });
   if (!parsedId.success) return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
 
-  const parsed = await parseBody(req, donorWriteSchema);
+  const parsed = await parseBody(req, donorWriteSchema.partial());
   if (!parsed.ok) return parsed.response;
 
   try {
@@ -96,30 +96,39 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const problem = await assertRefs(parsed.data, parsedId.data.id);
     if (problem) return NextResponse.json({ error: problem }, { status: 400 });
 
-    const verifiedAt = parsed.data.terverifikasi ? (current.rows[0].verified_at ?? new Date()) : null;
+    const sets: string[] = [];
+    const vals: any[] = [];
+    const mapField = (col: string, val: any) => {
+      if (val !== undefined) {
+        vals.push(val);
+        sets.push(`${col} = $${vals.length}`);
+      }
+    };
+    mapField('name', parsed.data.name);
+    mapField('email', parsed.data.email);
+    mapField('phone', parsed.data.phone);
+    mapField('jenis', parsed.data.jenis);
+    mapField('jenis_kelamin', parsed.data.jenis_kelamin);
+    mapField('alamat', parsed.data.alamat);
+    mapField('nik', parsed.data.nik);
+    mapField('status_aktif', parsed.data.status_aktif);
+    mapField('kantor_id', parsed.data.kantor_id);
+    mapField('tim_crm_id', parsed.data.tim_crm_id);
+    mapField('minat_program', parsed.data.minat_program);
+    if (parsed.data.terverifikasi !== undefined) {
+      const verifiedAt = parsed.data.terverifikasi ? (current.rows[0].verified_at ?? new Date()) : null;
+      mapField('verified_at', verifiedAt);
+    }
+    if (sets.length === 0) {
+      return NextResponse.json({ error: 'Tidak ada field yang diubah' }, { status: 400 });
+    }
+    vals.push(parsedId.data.id);
     const res = await query(
-      `UPDATE donors SET
-         name = $1, email = $2, phone = $3, jenis = $4, jenis_kelamin = $5, alamat = $6,
-         nik = $7, status_aktif = $8, kantor_id = $9, tim_crm_id = $10, minat_program = $11,
-         verified_at = $12
-       WHERE id = $13
+      `UPDATE donors SET ${sets.join(', ')}
+       WHERE id = $${vals.length}
        RETURNING id, name, email, phone, created_at, jenis, jenis_kelamin, alamat, nik,
                  status_aktif, kantor_id, tim_crm_id, minat_program, verified_at, merged_into_id`,
-      [
-        parsed.data.name,
-        parsed.data.email,
-        parsed.data.phone,
-        parsed.data.jenis,
-        parsed.data.jenis_kelamin,
-        parsed.data.alamat,
-        parsed.data.nik,
-        parsed.data.status_aktif,
-        parsed.data.kantor_id,
-        parsed.data.tim_crm_id,
-        parsed.data.minat_program,
-        verifiedAt,
-        parsedId.data.id,
-      ]
+      vals
     );
     await invalidateCache(['api:crm:donors', 'api:donors', 'donors']);
     return NextResponse.json(res.rows[0]);

@@ -15,7 +15,12 @@ export const optionalEmail = z.preprocess((value) => {
 
 export const optionalPhone = z.preprocess((value) => {
   const next = blankToNull(value);
-  return typeof next === 'string' ? next.trim() : next;
+  if (typeof next !== 'string') return next;
+  let digits = next.replace(/[^\d+]/g, '');
+  if (digits.startsWith('+62')) digits = '0' + digits.slice(3);
+  else if (digits.startsWith('62') && digits.length >= 10) digits = '0' + digits.slice(2);
+  digits = digits.replace(/\D/g, '');
+  return digits || null;
 }, z.string().max(20, 'Telepon maksimal 20 karakter').nullable());
 
 export const optionalText = (max: number) =>

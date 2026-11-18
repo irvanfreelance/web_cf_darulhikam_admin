@@ -191,6 +191,8 @@ export default function TrialBalancePage() {
             <tbody>
               {isLoading ? (
                 <tr><td colSpan={10} className="px-4 py-8 text-center text-slate-400">Memuat neraca saldo...</td></tr>
+              ) : error ? (
+                <tr><td colSpan={10} className="px-4 py-8 text-center text-rose-600 font-medium">Gagal memuat neraca saldo: {error.message || 'Terjadi kesalahan server'}</td></tr>
               ) : rows.length ? (
                 rows.map((r: any) => (
                   <tr key={r.coa} className="border-t border-slate-50 hover:bg-slate-50/50">

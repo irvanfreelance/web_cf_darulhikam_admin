@@ -62,6 +62,14 @@ async function assertRefs(data: DonorWrite) {
       if (error?.code !== '42P01') throw error;
     }
   }
+  if (data.email) {
+    const emailRes = await query('SELECT id FROM donors WHERE LOWER(email) = LOWER($1) AND merged_into_id IS NULL', [data.email]);
+    if ((emailRes.rowCount ?? 0) > 0) return 'Email sudah dipakai donatur lain';
+  }
+  if (data.phone) {
+    const phoneRes = await query('SELECT id FROM donors WHERE phone = $1 AND merged_into_id IS NULL', [data.phone]);
+    if ((phoneRes.rowCount ?? 0) > 0) return 'Nomor telepon sudah dipakai donatur lain';
+  }
   if (data.nik) {
     const nik = await query('SELECT id FROM donors WHERE nik = $1', [data.nik]);
     if ((nik.rowCount ?? 0) > 0) return 'NIK sudah dipakai donatur lain';
@@ -98,16 +106,17 @@ export async function GET(req: Request) {
       query(`SELECT COUNT(*)::int AS total FROM donors d WHERE ${where}`, params),
       query(
         `SELECT COUNT(*)::int AS total,
-                COUNT(*) FILTER (WHERE status_aktif IS TRUE)::int AS aktif,
+                COUNT(*) FILTER (WHERE d.status_aktif IS TRUE)::int AS aktif,
                 COUNT(*) FILTER (
-                  WHERE status_aktif IS TRUE
+                  WHERE d.status_aktif IS TRUE
                     AND NOT EXISTS (
                       SELECT 1 FROM invoices i
-                      WHERE i.donor_id = donors.id AND i.status = 'PAID'
+                      WHERE i.donor_id = d.id AND i.status = 'PAID'
                     )
                 )::int AS prospek
-         FROM donors
-         WHERE merged_into_id IS NULL`
+         FROM donors d
+         WHERE ${where}`,
+        params
       ),
     ]);
 

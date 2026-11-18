@@ -23,7 +23,7 @@ const createExpenseSchema = z.object({
   coaKredit: z.string().trim().min(1, 'Pilih akun kas/bank (kredit)'),
   campaignId: z.coerce.number().int().positive().nullable().optional(),
   tglPengajuan: z.string().regex(/^\d{4}-\d{2}-\d{2}/, 'Format tanggal YYYY-MM-DD'),
-  metodeBayar: z.string().trim().default('bank'),
+  metodeBayar: z.enum(['transfer', 'tunai', 'cek', 'giro']).default('transfer'),
   items: z.array(expenseItemSchema).min(1, 'Minimal 1 item rincian belanja'),
 });
 

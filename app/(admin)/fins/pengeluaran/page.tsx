@@ -44,7 +44,7 @@ export default function PengeluaranPage() {
     coaDebet: '',
     coaKredit: '',
     tglPengajuan: new Date().toISOString().slice(0, 10),
-    metodeBayar: 'bank',
+    metodeBayar: 'transfer',
     items: [{ keterangan: '', qty: 1, satuan: 'pcs', hargaSatuan: 0, subtotal: 0 }],
   });
 

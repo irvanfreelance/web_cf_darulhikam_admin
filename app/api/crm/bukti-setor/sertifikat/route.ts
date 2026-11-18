@@ -23,15 +23,16 @@ export async function POST(req: Request) {
     const totals = await query(
       `SELECT COALESCE(SUM(t.amount), 0)::bigint AS total,
               COALESCE(SUM(t.amount) FILTER (WHERE c.is_zakat IS TRUE), 0)::bigint AS zakat,
+              COALESCE(SUM(t.amount) FILTER (WHERE c.is_zakat IS NOT TRUE AND c.is_qurban IS NOT TRUE AND (c.title ILIKE '%infaq%' OR c.title ILIKE '%sedekah%')), 0)::bigint AS infaq,
               COALESCE(SUM(t.amount) FILTER (WHERE c.is_qurban IS TRUE), 0)::bigint AS qurban,
-              COALESCE(SUM(t.amount) FILTER (WHERE c.is_zakat IS NOT TRUE AND c.is_qurban IS NOT TRUE), 0)::bigint AS lainnya,
+              COALESCE(SUM(t.amount) FILTER (WHERE c.is_zakat IS NOT TRUE AND c.is_qurban IS NOT TRUE AND NOT (c.title ILIKE '%infaq%' OR c.title ILIKE '%sedekah%')), 0)::bigint AS lainnya,
               COUNT(DISTINCT i.id)::int AS jumlah,
               ARRAY_REMOVE(ARRAY_AGG(DISTINCT t.campaign_id), NULL) AS campaign_ids
        FROM invoices i
        JOIN transactions t ON t.invoice_id = i.id AND t.invoice_created_at = i.created_at
        JOIN campaigns c ON c.id = t.campaign_id
        WHERE i.donor_id = $1 AND i.status = 'PAID'
-         AND EXTRACT(YEAR FROM COALESCE(i.paid_at, i.created_at))::int = $2`,
+         AND EXTRACT(YEAR FROM COALESCE(i.paid_at, i.created_at) AT TIME ZONE 'Asia/Jakarta')::int = $2`,
       [parsed.data.donor_id, parsed.data.tahun]
     );
     const row = totals.rows[0];
@@ -47,10 +48,11 @@ export async function POST(req: Request) {
          nomor_sertifikat, donor_id, nama_donatur, email_donatur, tahun_donasi,
          total_donasi, total_zakat, total_infaq, total_qurban, total_lainnya,
          jumlah_transaksi, campaign_ids, issued_by, sent_via
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,0,$8,$9,$10,$11,$12,'manual')
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'manual')
        ON CONFLICT (donor_id, tahun_donasi) DO UPDATE SET
          total_donasi = EXCLUDED.total_donasi,
          total_zakat = EXCLUDED.total_zakat,
+         total_infaq = EXCLUDED.total_infaq,
          total_qurban = EXCLUDED.total_qurban,
          total_lainnya = EXCLUDED.total_lainnya,
          jumlah_transaksi = EXCLUDED.jumlah_transaksi,
@@ -59,7 +61,7 @@ export async function POST(req: Request) {
        RETURNING *`,
       [
         nomor, donor.rows[0].id, donor.rows[0].name, donor.rows[0].email, parsed.data.tahun,
-        row.total, row.zakat, row.qurban, row.lainnya, row.jumlah, row.campaign_ids, actorCode(session.user?.name),
+        row.total, row.zakat, row.infaq, row.qurban, row.lainnya, row.jumlah, row.campaign_ids, actorCode(session.user?.name),
       ]
     );
     const org = await query(`SELECT ngo_name, address FROM ngo_configs LIMIT 1`);

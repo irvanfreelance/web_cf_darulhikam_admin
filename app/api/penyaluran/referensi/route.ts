@@ -23,11 +23,11 @@ export async function GET(req: Request) {
 
   try {
     const [campaigns, beneficiaries, programs, coa, campaignCoa] = await Promise.all([
-      query(`SELECT id, title FROM campaigns ORDER BY title ASC LIMIT 500`),
+      query(`SELECT id, title FROM campaigns WHERE status = 'ACTIVE' ORDER BY title ASC LIMIT 500`),
       query(
         `SELECT id, kode_beneficiary, nama_lengkap, status_verifikasi
          FROM beneficiaries
-         WHERE deleted_at IS NULL
+         WHERE deleted_at IS NULL AND status_verifikasi = 'verified'
          ORDER BY nama_lengkap ASC
          LIMIT 500`
       ),
@@ -38,7 +38,7 @@ export async function GET(req: Request) {
          ORDER BY nama ASC`
       ),
       optionalRows(
-        `SELECT coa, nama_coa FROM fins_coa WHERE active = 'y' ORDER BY coa ASC LIMIT 400`
+        `SELECT coa, nama_coa FROM fins_coa WHERE active = 'y' AND parent = 'n' ORDER BY coa ASC LIMIT 400`
       ),
       optionalRows(
         `SELECT DISTINCT ON (campaign_id) campaign_id, coa_expense, coa_fund, coa_receipt

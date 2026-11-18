@@ -35,15 +35,18 @@ export async function GET(req: Request) {
       [startDate, endDate]
     );
 
-    // 2. Rincian Pengeluaran per Program (dari expense_requests yang approve / fins_trans)
+    // 2. Rincian Pengeluaran per Program (dari expense_requests yang approve)
     const perProgramRes = await query(
-      `SELECT p.id, p.nama_program, p.kategori,
+      `SELECT COALESCE(c.id, 0) AS id,
+              COALESCE(c.title, 'Operasional / Umum') AS nama_program,
+              COALESCE(e.jenis, 'operasional') AS kategori,
               COALESCE(SUM(e.total_amount), 0)::numeric AS total_realisasi
        FROM expense_requests e
-       JOIN ngo_programs p ON p.id = e.program_id
+       LEFT JOIN campaigns c ON c.id = e.campaign_id
        WHERE e.status = 'approved'
-         AND e.approved_at >= $1 AND e.approved_at <= $2
-       GROUP BY p.id, p.nama_program, p.kategori
+         AND COALESCE(e.approved_at, e.tgl_pengajuan::timestamptz) >= $1
+         AND COALESCE(e.approved_at, e.tgl_pengajuan::timestamptz) <= $2
+       GROUP BY COALESCE(c.id, 0), COALESCE(c.title, 'Operasional / Umum'), COALESCE(e.jenis, 'operasional')
        ORDER BY total_realisasi DESC`,
       [startDate, endDate]
     );

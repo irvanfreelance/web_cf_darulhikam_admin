@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { z } from 'zod';
 import { query } from '@/lib/db';
 import { dbErrorResponse, parseQuery } from '@/lib/http';
@@ -8,6 +10,8 @@ const querySchema = z.object({
 });
 
 export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const parsed = parseQuery(req, querySchema);
   if (!parsed.ok) return parsed.response;
 

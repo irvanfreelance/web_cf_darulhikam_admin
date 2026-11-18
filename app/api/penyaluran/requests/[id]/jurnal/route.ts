@@ -110,7 +110,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         note: `REVERSAL ${source.id_trans}`,
       });
       await client.query(
-        `UPDATE disbursement_requests SET fins_reversal_trans_id = $1, updated_at = NOW() WHERE id = $2 AND fins_reversal_trans_id IS NULL`,
+        `UPDATE disbursement_requests SET fins_reversal_trans_id = $1, status = CASE WHEN status = 'disbursed' THEN 'approved' ELSE status END, updated_at = NOW() WHERE id = $2 AND fins_reversal_trans_id IS NULL`,
         [reversed.id, row.id]
       );
       return { already: false, fins_trans_id: Number(row.fins_trans_id), reversal_id: reversed.id, id_trans: reversed.idTrans };

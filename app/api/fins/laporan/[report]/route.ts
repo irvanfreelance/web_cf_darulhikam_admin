@@ -42,8 +42,9 @@ export async function GET(
     );
 
     // 2. Ambil Trial Balance periode berjalan dan periode pembanding
-    const tbBerjalanData = await getTrialBalance(null, { periodeFrom, periodeTo });
-    const tbPembandingData = await getTrialBalance(null, {
+    const dbClient = { query: (sql: string, p?: any[]) => query(sql, p) };
+    const tbBerjalanData = await getTrialBalance(dbClient, { periodeFrom, periodeTo });
+    const tbPembandingData = await getTrialBalance(dbClient, {
       periodeFrom: prevPeriodeFrom,
       periodeTo: prevPeriodeTo,
     });

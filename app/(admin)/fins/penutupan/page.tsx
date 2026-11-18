@@ -30,10 +30,11 @@ export default function PenutupanPage() {
     jsonFetcher
   );
 
-  const { data: bankAccounts } = useSWR<any[]>('/api/fins/rekening-bank', async (url: string) => {
+  const { data: kasAccounts } = useSWR<any[]>('/api/fins/coa', async (url: string) => {
     const res = await fetch(url);
     const json = await res.json();
-    return json?.rows || json || [];
+    const list = json?.rows || json?.data || json || [];
+    return Array.isArray(list) ? list.filter((c: any) => c.coa?.startsWith('101.01.') && c.parent !== 'y') : [];
   });
 
   const { data: offices } = useSWR<any[]>('/api/crm/kantor', jsonFetcher);
@@ -161,8 +162,8 @@ export default function PenutupanPage() {
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none"
               >
                 <option value="">— Pilih Akun Kas —</option>
-                {(bankAccounts || []).map((b: any) => (
-                  <option key={b.id_rekening} value={b.coa}>{b.keterangan} ({b.coa})</option>
+                {(kasAccounts || []).map((c: any) => (
+                  <option key={c.coa} value={c.coa}>{c.nama_perkiraan || c.nama_coa} ({c.coa})</option>
                 ))}
               </select>
             </div>

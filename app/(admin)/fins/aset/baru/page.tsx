@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { ArrowLeft, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import { formatIDR } from '@/lib/format';
 
 export default function BaruAsetPage() {
@@ -13,9 +14,9 @@ export default function BaruAsetPage() {
   const [form, setForm] = useState({
     kodeAset: `AST-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
     aset: '',
-    coa: '103.01.001.000',
-    coaDebit: '503.01.001.000',
-    coaKredit: '103.02.001.000',
+    coa: '102.01.001.000',
+    coaDebit: '502.01.001.000',
+    coaKredit: '102.02.001.000',
     deskripsi: '',
     tglAkuisisi: new Date().toISOString().slice(0, 10),
     biayaAkuisisi: 10000000,
@@ -46,12 +47,14 @@ export default function BaruAsetPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || (data.errors ? JSON.stringify(data.errors) : 'Gagal menyimpan aset'));
+        throw new Error(data.errors?.[0]?.message || data.error || 'Gagal menyimpan aset');
       }
 
+      toast.success('Aset berhasil disimpan & jadwal penyusutan dibuat');
       router.push('/fins/aset');
     } catch (err: any) {
       setErrorMsg(err.message);
+      toast.error(err.message || 'Gagal menyimpan aset');
     } finally {
       setLoading(false);
     }

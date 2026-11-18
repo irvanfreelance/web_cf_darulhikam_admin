@@ -14,6 +14,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { formatIDR } from '@/lib/format';
+import { TablePagination } from '@/components/shared/table-pagination';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -29,6 +30,13 @@ const formatDate = (dateStr: string) => {
 
 export default function AsetPage() {
   const { data: asetList, error, mutate, isLoading } = useSWR('/api/fins/aset', fetcher);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const pageSize = 10;
+  const filteredAset = (asetList || []).filter((item: any) =>
+    !search.trim() || `${item.kode_aset} ${item.aset} ${item.coa}`.toLowerCase().includes(search.trim().toLowerCase())
+  );
+  const pagedAset = filteredAset.slice((page - 1) * pageSize, page * pageSize);
   const [postingMonth, setPostingMonth] = useState(11);
   const [postingYear, setPostingYear] = useState(2026);
   const [isPosting, setIsPosting] = useState(false);
@@ -201,14 +209,14 @@ export default function AsetPage() {
                     Memuat data aset...
                   </td>
                 </tr>
-              ) : asetList?.length === 0 ? (
+              ) : pagedAset.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-10 text-center text-slate-500">
                     Belum ada data aset tetap. Klik Entry Aset Baru untuk menambahkan.
                   </td>
                 </tr>
               ) : (
-                asetList?.map((item: any) => {
+                pagedAset.map((item: any) => {
                   const biaya = Number(item.biaya_akuisisi || 0);
                   const susut = Number(item.akumulasi_posted || 0);
                   const nilaiBuku = biaya - susut;
@@ -284,6 +292,24 @@ export default function AsetPage() {
             </tbody>
           </table>
         </div>
+        <TablePagination
+          page={page}
+          total={filteredAset.length}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Cari kode aset, nama, atau COA..."
+          exportData={filteredAset.map((item: any, idx: number) => ({
+            No: idx + 1,
+            'Kode Aset': item.kode_aset,
+            'Nama Aset': item.aset,
+            COA: item.coa,
+            'Biaya Akuisisi': Number(item.biaya_akuisisi || 0),
+            'Akumulasi Susut': Number(item.akumulasi_posted || 0),
+          }))}
+          exportFilename="Daftar_Aset_Tetap.xlsx"
+        />
       </div>
     </div>
   );

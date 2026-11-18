@@ -61,7 +61,14 @@ export async function POST(req: Request) {
     const donor = await query('SELECT id FROM donors WHERE id = $1', [parsed.data.donor_id]);
     if (donor.rowCount === 0) return NextResponse.json({ error: 'Donatur tidak ditemukan' }, { status: 404 });
     const mulai = parsed.data.mulai || todayWib();
-    const nextDue = parsed.data.next_due || mulai;
+    let nextDue = parsed.data.next_due;
+    if (!nextDue) {
+      const d = new Date(`${mulai}T00:00:00Z`);
+      if (parsed.data.cadence === 'weekly') d.setUTCDate(d.getUTCDate() + 7);
+      else if (parsed.data.cadence === 'monthly') d.setUTCMonth(d.getUTCMonth() + 1);
+      else if (parsed.data.cadence === 'yearly') d.setUTCFullYear(d.getUTCFullYear() + 1);
+      nextDue = d.toISOString().slice(0, 10);
+    }
     const res = await query(
       `INSERT INTO donor_routines (donor_id, nominal, cadence, aktif, mulai, next_due, catatan)
        VALUES ($1,$2,$3,$4,$5,$6,$7)

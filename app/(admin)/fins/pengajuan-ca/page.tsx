@@ -255,6 +255,7 @@ export default function PengajuanCAPage() {
           sumberDana: header.sumberDana,
           departmentId: header.departmentId,
           tanggal: header.tanggal,
+          viaBayar: '',
           bankAccount: '101.01.001.000',
         },
         lines: detailLines.map(l => ({ key: l.key.startsWith('draft-') ? undefined : l.key, coa: l.coa, namaAkun: l.namaAkun, quantity: l.quantity, nominal: l.nominal, keterangan: l.keterangan })),
@@ -264,7 +265,7 @@ export default function PengajuanCAPage() {
         : await fetch('/api/fins/pengajuan-ca', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        toast.error(body.error || 'Gagal menyimpan pengajuan');
+        toast.error(body.errors?.[0]?.message || body.error || 'Gagal menyimpan pengajuan');
         return false;
       }
       toast.success('Pengajuan CA tersimpan');

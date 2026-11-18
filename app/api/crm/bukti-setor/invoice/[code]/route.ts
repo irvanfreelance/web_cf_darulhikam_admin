@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { query } from '@/lib/db';
 import { dbErrorResponse } from '@/lib/http';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ code: string }> }) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { code } = await params;
   try {
     const [invoice, org] = await Promise.all([

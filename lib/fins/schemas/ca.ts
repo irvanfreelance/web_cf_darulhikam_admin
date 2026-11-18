@@ -5,7 +5,7 @@ export const caHeaderSchema = z.object({
   sumberDana: z.string().trim().min(1, 'Sumber dana wajib dipilih'),
   departmentId: z.coerce.number().int().positive().nullable().optional(),
   tanggal: z.string().regex(/^\d{4}-\d{2}-\d{2}/, 'Format tanggal harus YYYY-MM-DD'),
-  viaBayar: z.enum(['bank', 'cash', ''], { error: 'Via bayar harus bank atau cash' }),
+  viaBayar: z.enum(['bank', 'cash', ''], { error: 'Via bayar harus bank atau cash' }).optional().default(''),
   bankAccount: z.string().trim().optional().default(''),
   bankRekId: z.coerce.number().int().positive().nullable().optional(),
 });

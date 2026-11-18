@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { z } from 'zod';
 import { query } from '@/lib/db';
 import { dbErrorResponse, parseQuery } from '@/lib/http';
@@ -7,11 +9,13 @@ import { likeTerm } from '@/lib/penyaluran/request-schema';
 const querySchema = z.object({
   search: z.string().trim().max(150).optional().default(''),
   tahun: z.preprocess((value) => (value === '' || value == null ? undefined : value), z.coerce.number().int().min(2000).max(2100).optional()),
-  limit: z.coerce.number().int().min(1).max(100).default(30),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
   offset: z.coerce.number().int().min(0).default(0),
 });
 
 export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const parsed = parseQuery(req, querySchema);
   if (!parsed.ok) return parsed.response;
   try {

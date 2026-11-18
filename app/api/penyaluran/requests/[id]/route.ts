@@ -79,7 +79,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       if (!['submitted', 'reviewed'].includes(row.status)) {
         return NextResponse.json({ error: 'Hanya pengajuan yang diajukan yang bisa disetujui' }, { status: 409 });
       }
-      const jumlah = parsed.data.jumlah_disetujui ?? Number(row.jumlah_diajukan);
+      const jumlah = parsed.data.jumlah_disetujui ?? Number(row.jumlah_disetujui ?? row.jumlah_diajukan);
       if (jumlah > Number(row.jumlah_diajukan)) {
         return NextResponse.json({ error: 'Jumlah disetujui tidak boleh melebihi jumlah diajukan' }, { status: 400 });
       }

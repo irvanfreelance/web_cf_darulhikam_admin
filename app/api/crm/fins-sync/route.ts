@@ -30,8 +30,8 @@ const PAID_SQL = `
   FROM invoices i
   LEFT JOIN payment_methods pm ON pm.id = i.payment_method_id
   LEFT JOIN accounting_periods ap
-    ON ap.periode_tahun = EXTRACT(YEAR FROM COALESCE(i.paid_at, i.created_at))::int
-   AND ap.periode_bulan = EXTRACT(MONTH FROM COALESCE(i.paid_at, i.created_at))::int
+    ON ap.periode_tahun = EXTRACT(YEAR FROM COALESCE(i.paid_at, i.created_at) AT TIME ZONE 'Asia/Jakarta')::int
+   AND ap.periode_bulan = EXTRACT(MONTH FROM COALESCE(i.paid_at, i.created_at) AT TIME ZONE 'Asia/Jakarta')::int
   WHERE i.status = 'PAID' AND i.fins_synced_at IS NULL AND i.fins_trans_id IS NULL
 `;
 

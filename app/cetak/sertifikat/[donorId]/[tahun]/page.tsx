@@ -28,6 +28,7 @@ export default async function CetakSertifikatPage({ params }: { params: Promise<
       <p>Diberikan kepada <strong>{cert.nama_donatur}</strong> atas donasi tahun {cert.tahun_donasi} sebesar <strong>{formatIDR(Number(cert.total_donasi))}</strong>.</p>
       <ul className="text-sm text-slate-600">
         <li>Zakat: {formatIDR(Number(cert.total_zakat || 0))}</li>
+        <li>Infaq / Sedekah: {formatIDR(Number(cert.total_infaq || 0))}</li>
         <li>Qurban: {formatIDR(Number(cert.total_qurban || 0))}</li>
         <li>Lainnya: {formatIDR(Number(cert.total_lainnya || 0))}</li>
         <li>Jumlah transaksi: {cert.jumlah_transaksi}</li>

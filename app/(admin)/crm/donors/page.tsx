@@ -11,6 +11,7 @@ import { Pagination } from '@/components/shared/pagination';
 import KPICard from '@/components/shared/kpi-card';
 import { jsonFetcher } from '@/lib/json-client';
 import { formatIDR } from '@/lib/format';
+import { todayWib } from '@/lib/wib-date';
 import { Users, BadgeCheck, User } from 'lucide-react';
 import type { CrmDonor, CrmDonorStats, CrmKantor, CrmTeam } from '@/types/crm';
 
@@ -89,7 +90,7 @@ export default function CrmDonorsPage() {
 
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Donatur');
-      XLSX.writeFile(workbook, `Data_Donatur_CRM_${new Date().toISOString().split('T')[0]}.xlsx`);
+      XLSX.writeFile(workbook, `Data_Donatur_CRM_${todayWib()}.xlsx`);
 
       toast.dismiss();
       toast.success('Data donatur berhasil diexport');
@@ -195,9 +196,9 @@ export default function CrmDonorsPage() {
                     {offset + idx + 1}
                   </td>
                   <td className="px-4 py-3">
-                    <a href={`/crm/donors/${donor.id}`} className="font-medium text-slate-800 underline-offset-2 hover:text-teal-700 hover:underline">
+                    <Link href={`/crm/donors/${donor.id}`} className="font-medium text-slate-800 underline-offset-2 hover:text-teal-700 hover:underline">
                       {donor.name}
-                    </a>
+                    </Link>
                     <div className="text-xs text-slate-400">{donor.nik || `ID ${donor.id}`}</div>
                   </td>
                   <td className="px-4 py-3 capitalize text-slate-600">{donor.jenis}{donor.jenis_kelamin ? ` · ${donor.jenis_kelamin}` : ''}</td>
@@ -213,9 +214,9 @@ export default function CrmDonorsPage() {
                   <td className="px-4 py-3 text-slate-600">{donor.tim_crm_nama || '—'}</td>
                   <td className="px-4 py-3 text-right text-slate-800">{formatIDR(Number(donor.total_donated || 0))}</td>
                   <td className="px-4 py-3 text-center">
-                    <a href={`/crm/donors/${donor.id}`} className="inline-flex rounded-lg p-2 text-slate-400 hover:bg-teal-50 hover:text-teal-700" aria-label={`Detail ${donor.name}`}>
+                    <Link href={`/crm/donors/${donor.id}`} className="inline-flex rounded-lg p-2 text-slate-400 hover:bg-teal-50 hover:text-teal-700" aria-label={`Detail ${donor.name}`}>
                       <Eye size={16} />
-                    </a>
+                    </Link>
                   </td>
                 </tr>
               )) : (

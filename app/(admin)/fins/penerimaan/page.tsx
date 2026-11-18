@@ -403,9 +403,9 @@ export default function PenerimaanPage() {
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-teal-500 focus:outline-none"
                 >
                   <option value="">— Pilih Akun Kas / Bank —</option>
-                  {(coaList || []).map((c: any) => (
+                  {(coaList || []).filter((c: any) => c.coa?.startsWith('101.') && c.parent !== 'y').map((c: any) => (
                     <option key={c.coa} value={c.coa}>
-                      {c.coa} - {c.nama_perkiraan}
+                      {c.coa} - {c.nama_perkiraan || c.nama_coa}
                     </option>
                   ))}
                 </select>
@@ -422,9 +422,9 @@ export default function PenerimaanPage() {
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-teal-500 focus:outline-none"
                 >
                   <option value="">— Pilih Akun Pendapatan —</option>
-                  {(coaList || []).map((c: any) => (
+                  {(coaList || []).filter((c: any) => (c.coa?.startsWith('4') || c.coa?.startsWith('3')) && c.parent !== 'y').map((c: any) => (
                     <option key={c.coa} value={c.coa}>
-                      {c.coa} - {c.nama_perkiraan}
+                      {c.coa} - {c.nama_perkiraan || c.nama_coa}
                     </option>
                   ))}
                 </select>

@@ -90,10 +90,13 @@ export async function POST(req: Request) {
     if (campaign.rowCount === 0) return NextResponse.json({ error: 'Program/kampanye tidak ditemukan' }, { status: 400 });
     if (parsed.data.beneficiary_id) {
       const beneficiary = await query(
-        'SELECT id FROM beneficiaries WHERE id = $1 AND deleted_at IS NULL',
+        `SELECT id, status_verifikasi FROM beneficiaries WHERE id = $1 AND deleted_at IS NULL`,
         [parsed.data.beneficiary_id]
       );
       if (beneficiary.rowCount === 0) return NextResponse.json({ error: 'Penerima manfaat tidak ditemukan' }, { status: 400 });
+      if (beneficiary.rows[0].status_verifikasi !== 'verified') {
+        return NextResponse.json({ error: 'Penerima manfaat belum terverifikasi' }, { status: 400 });
+      }
     }
 
     const actor = actorCode(session.user?.name);

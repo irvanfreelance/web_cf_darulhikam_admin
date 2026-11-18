@@ -39,6 +39,10 @@ export const requestWriteSchema = z.object({
   ajukan: z.boolean().optional().default(true),
   tgl_pengajuan: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal YYYY-MM-DD').optional().nullable(),
   items: z.array(disbursementItemInputSchema).optional().default([]),
+}).superRefine((data, ctx) => {
+  if (data.coa_debet === data.coa_kredit) {
+    ctx.addIssue({ code: 'custom', path: ['coa_kredit'], message: 'COA debet dan COA kredit tidak boleh sama' });
+  }
 });
 
 export const requestDecisionSchema = z
