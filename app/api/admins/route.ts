@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { isSuperadminRole } from '@/lib/rbac';
 import { query } from '@/lib/db';
 import { redis, safeFlushCache } from '@/lib/redis';
 import { z } from 'zod';
@@ -11,6 +14,11 @@ const adminSchema = z.object({
 });
 
 export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isSuperadminRole(session.user?.role)) {
+    return NextResponse.json({ error: 'Forbidden: Superadmin only' }, { status: 403 });
+  }
   try {
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '10');

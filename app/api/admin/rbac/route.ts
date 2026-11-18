@@ -13,7 +13,9 @@ const assignSchema = z.object({
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const isSuperadmin = session.user?.role === 'superadmin' || (session.user as any)?.impersonatedBy?.role === 'superadmin';
+  const isSuperadmin =
+    (session.user?.role || '').toLowerCase() === 'superadmin' ||
+    ((session.user as any)?.impersonatedBy?.role || '').toLowerCase() === 'superadmin';
   if (!isSuperadmin) return NextResponse.json({ error: 'Forbidden: Superadmin only' }, { status: 403 });
 
   const res = await query(
@@ -34,7 +36,9 @@ export async function GET() {
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const isSuperadmin = session.user?.role === 'superadmin' || (session.user as any)?.impersonatedBy?.role === 'superadmin';
+  const isSuperadmin =
+    (session.user?.role || '').toLowerCase() === 'superadmin' ||
+    ((session.user as any)?.impersonatedBy?.role || '').toLowerCase() === 'superadmin';
   if (!isSuperadmin) return NextResponse.json({ error: 'Forbidden: Superadmin only' }, { status: 403 });
 
   const body = await req.json().catch(() => ({}));

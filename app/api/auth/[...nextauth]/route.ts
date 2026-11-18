@@ -69,7 +69,7 @@ export const authOptions: NextAuthOptions = {
       }
       if (trigger === "update" && session) {
         const orig = (token as any).impersonatedBy;
-        const isSuperadmin = (orig?.role || token.role) === "superadmin";
+        const isSuperadmin = ((orig?.role || token.role || '') as string).toLowerCase() === 'superadmin';
         if (isSuperadmin && session.stopImpersonate && orig) {
           token.adminId = orig.adminId;
           token.role = orig.role;

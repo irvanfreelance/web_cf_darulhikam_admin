@@ -19,12 +19,18 @@ export async function getUserModuleRoles(userId: number): Promise<Record<string,
   }
 }
 
+export function isSuperadminRole(role: string | undefined | null): boolean {
+  const r = (role || '').toLowerCase();
+  return r === 'superadmin';
+}
+
 export async function getModuleRole(
   userId: number | undefined,
   globalRole: string | undefined,
   module: AppModule
 ): Promise<ModuleRole | null> {
-  if (globalRole === 'admin' || globalRole === 'superadmin') return 'admin';
+  const g = (globalRole || '').toLowerCase();
+  if (g === 'admin' || g === 'superadmin') return 'admin';
   if (!userId) return null;
   const roles = await getUserModuleRoles(userId);
   return roles[module] ?? null;

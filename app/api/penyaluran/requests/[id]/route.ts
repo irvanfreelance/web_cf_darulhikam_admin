@@ -1,3 +1,4 @@
+import { getModuleRole, isModuleSupervisor } from '@/lib/rbac';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth/next';
@@ -55,6 +56,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const modRole = await getModuleRole(session.user?.adminId, session.user?.role, 'penyaluran');
+  if (!isModuleSupervisor(modRole)) {
+    return NextResponse.json({ error: 'Forbidden: Hanya supervisor/admin penyaluran yang dapat menyetujui atau menolak' }, { status: 403 });
+  }
 
   const { id } = await params;
   const parsedId = idSchema.safeParse({ id });
